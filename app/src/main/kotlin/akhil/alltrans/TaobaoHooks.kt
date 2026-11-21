@@ -182,6 +182,73 @@ internal object TaobaoHooks {
 
     private class DxCall(val view: View, val original: StaticLayout)
 
+    // ------------------------------------------- Other self-drawing text views
+
+    /**
+     * Custom views (outside Alibaba apps too) that draw a StaticLayout field in
+     * onDraw() and set their text through an obfuscated method, e.g. Douyin's
+     * IMLightTextView in the message list. Translated at draw time with the
+     * same display-only swap as DinamicX: the view's field is never changed.
+     */
+    private val LAYOUT_FIELD_VIEWS = listOf(
+        "com.ss.android.ugc.aweme.im.widget.IMLightTextView" to "staticLayout",
+    )
+
+    private val layoutRequests: MutableSet<StaticLayout> =
+        Collections.synchronizedSet(Collections.newSetFromMap(WeakHashMap()))
+
+    @Volatile
+    private var layoutFieldViewsInstalled = false
+
+    fun installLayoutFieldViews(context: Context) {
+        if (layoutFieldViewsInstalled) return
+        layoutFieldViewsInstalled = true
+        val loader = context.classLoader
+        for ((className, fieldName) in LAYOUT_FIELD_VIEWS) {
+            try {
+                val cls = Class.forName(className, false, loader)
+                val field = cls.getDeclaredField(fieldName).apply { isAccessible = true }
+                HookRuntime.hook(cls.getDeclaredMethod("onDraw", Canvas::class.java), DxOnDrawHook(field, ::translateAtDraw))
+                Utils.debugLog("$TAG: hooked $className#onDraw ($fieldName)")
+            } catch (_: ClassNotFoundException) {
+            } catch (t: Throwable) {
+                Utils.debugLog("$TAG: $className not hooked: ${t.message}")
+            }
+        }
+    }
+
+    /** Cached translation now, or request one and redraw the view when it arrives. */
+    private fun translateAtDraw(view: View, layout: StaticLayout): DxTranslated? {
+        val text = layout.text?.toString() ?: return null
+        if (!SetTextHookHandler.isNotWhiteSpace(text) || SetTextHookHandler.shouldSkipTranslation(text)) return null
+        val cached = cachedTranslation(text)
+        if (cached != null) {
+            if (cached == text) return null
+            return rebuild(layout, cached).also { dxTranslations[layout] = it }
+        }
+        if (!layoutRequests.add(layout)) return null
+        val getTranslate = GetTranslate().apply {
+            stringToBeTrans = text
+            userData = DxCall(view, layout)
+            originalCallable = DrawTimeCallback
+            canCallOriginal = true
+            pendingCompositeKey = 31 * System.identityHashCode(layout) + text.hashCode()
+            forceCacheResult = true
+        }
+        GetTranslateToken().apply { this.getTranslate = getTranslate }.doAll()
+        return null
+    }
+
+    private object DrawTimeCallback : OriginalCallable {
+        override fun callOriginalMethod(translatedString: CharSequence?, userData: Any?) {
+            val call = userData as? DxCall ?: return
+            val translated = translatedString?.toString().orEmpty()
+            if (translated.isEmpty() || translated == call.original.text?.toString()) return
+            dxTranslations[call.original] = rebuild(call.original, translated)
+            call.view.invalidate()
+        }
+    }
+
     private fun hookDxFastText(loader: ClassLoader) {
         try {
             val cls = Class.forName(DX_FAST_TEXT, false, loader)
@@ -245,15 +312,22 @@ internal object TaobaoHooks {
         }
     }
 
-    /** Draws the translated layout in place of the original one. */
-    private class DxOnDrawHook(private val field: java.lang.reflect.Field) : SafeHook() {
+    /**
+     * Draws the translated layout in place of the original one.
+     * [onMiss] (optional) is asked for a translation when none is known yet;
+     * views without a hookable text setter use it to translate at draw time.
+     */
+    private class DxOnDrawHook(
+        private val field: java.lang.reflect.Field,
+        private val onMiss: ((View, StaticLayout) -> DxTranslated?)? = null,
+    ) : SafeHook() {
         private val swapped = ThreadLocal<StaticLayout?>()
         private val canvasSaved = ThreadLocal<Boolean>()
 
         override fun beforeHookedMethod(param: HookParam) {
             val view = param.thisObject as? View ?: return
             val original = field.get(view) as? StaticLayout ?: return
-            val translated = dxTranslations[original] ?: return
+            val translated = dxTranslations[original] ?: onMiss?.invoke(view, original) ?: return
             val canvas = param.args.firstOrNull() as? Canvas
             val marquee = translated.marquee
             if (marquee != null && canvas != null && view.width > 0) {

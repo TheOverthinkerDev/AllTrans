@@ -289,6 +289,8 @@ internal class AttachBaseContextHookHandler : SafeHook() {
 
                 // Renderers of Alibaba apps that bypass the generic hooks
                 if (PreferenceList.AlibabaOptimize) TaobaoHooks.install(context)
+                // Other self-drawing text views (display-only draw-time swap)
+                TaobaoHooks.installLayoutFieldViews(context)
             } else {
                 Utils.debugLog("Extended view translation hooks disabled for $packageName")
             }
