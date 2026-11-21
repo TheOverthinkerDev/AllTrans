@@ -472,7 +472,8 @@ class Alltrans : XposedModule() {
         @SuppressLint("StaticFieldLeak")
         val notifyHook: NotificationHookHandler = NotificationHookHandler()
 
-        private const val CACHE_MAX_SIZE = 200
+        // Data-level translation (MTOP) adds hundreds of strings per screen.
+        private const val CACHE_MAX_SIZE = 2000
 
         @Volatile
         private var _cache: LruCache<String, String>? = null

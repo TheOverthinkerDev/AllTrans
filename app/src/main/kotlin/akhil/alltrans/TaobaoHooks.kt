@@ -57,6 +57,7 @@ internal object TaobaoHooks {
         val loader = context.classLoader
         hookDxFastText(loader)
         hookNavigationTab(loader)
+        MtopTranslator.install(loader)
     }
 
     // ------------------------------------------------------------- Tab bar
