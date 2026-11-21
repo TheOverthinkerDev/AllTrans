@@ -244,8 +244,8 @@ internal class GetTranslateToken {
             val encodedText = URLEncoder.encode(text, "UTF-8")
             val queryParams =
                 "?from=${URLEncoder.encode(fromLang ?: PreferenceList.DEFAULT_SOURCE_LANGUAGE, "UTF-8")}&to=${URLEncoder.encode(toLang ?: PreferenceList.DEFAULT_TARGET_LANGUAGE, "UTF-8")}&text=$encodedText"
-            directUri = "content://akhil.alltrans.GtransProvider$queryParams".toUri()
-            proxyUri = "content://settings/system/alltransProxyProviderURI/akhil.alltrans.GtransProvider$queryParams".toUri()
+            directUri = "content://${BuildConfig.APPLICATION_ID}.GtransProvider$queryParams".toUri()
+            proxyUri = "content://settings/system/alltransProxyProviderURI/${BuildConfig.APPLICATION_ID}.GtransProvider$queryParams".toUri()
         } catch (e: UnsupportedEncodingException) {
             Log.e(TAG, "UTF-8 not supported?!", e)
             return text
@@ -338,8 +338,8 @@ internal class GetTranslateToken {
             val encodedText = URLEncoder.encode(text, "UTF-8")
             val queryParams =
                 "?from=${URLEncoder.encode(fromLang ?: PreferenceList.DEFAULT_SOURCE_LANGUAGE, "UTF-8")}&to=${URLEncoder.encode(toLang ?: PreferenceList.DEFAULT_TARGET_LANGUAGE, "UTF-8")}&text=$encodedText"
-            directUri = "content://akhil.alltrans.EdgeProvider$queryParams".toUri()
-            proxyUri = "content://settings/system/alltransProxyProviderURI/akhil.alltrans.EdgeProvider$queryParams".toUri()
+            directUri = "content://${BuildConfig.APPLICATION_ID}.EdgeProvider$queryParams".toUri()
+            proxyUri = "content://settings/system/alltransProxyProviderURI/${BuildConfig.APPLICATION_ID}.EdgeProvider$queryParams".toUri()
         } catch (e: UnsupportedEncodingException) {
             Log.e(TAG, "UTF-8 not supported?!", e)
             return text
@@ -432,8 +432,8 @@ internal class GetTranslateToken {
                 "?from=${URLEncoder.encode(fromLang ?: PreferenceList.VIETPHRASE_SOURCE_LANGUAGE, "UTF-8")}" +
                     "&to=${URLEncoder.encode(toLang ?: PreferenceList.VIETPHRASE_TARGET_LANGUAGE, "UTF-8")}" +
                     "&text=$encodedText"
-            directUri = "content://akhil.alltrans.VietPhraseProvider$queryParams".toUri()
-            proxyUri = "content://settings/system/alltransProxyProviderURI/akhil.alltrans.VietPhraseProvider$queryParams".toUri()
+            directUri = "content://${BuildConfig.APPLICATION_ID}.VietPhraseProvider$queryParams".toUri()
+            proxyUri = "content://settings/system/alltransProxyProviderURI/${BuildConfig.APPLICATION_ID}.VietPhraseProvider$queryParams".toUri()
         } catch (e: UnsupportedEncodingException) {
             Log.e(TAG, "UTF-8 not supported?!", e)
             return text

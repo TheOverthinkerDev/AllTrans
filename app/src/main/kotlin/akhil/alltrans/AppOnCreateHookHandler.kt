@@ -38,7 +38,7 @@ internal class AppOnCreateHookHandler : SafeHook() {
                 Utils.debugLog("AllTrans: Application context set successfully from Application.onCreate")
 
                 // Aplicar hooks (exceto para o próprio AllTrans)
-                if (packageName != "akhil.alltrans") {
+                if (packageName != BuildConfig.APPLICATION_ID) {
                     try {
                         AttachBaseContextHookHandler.readPrefAndHook(appContext)
                     } catch (e: Throwable) {

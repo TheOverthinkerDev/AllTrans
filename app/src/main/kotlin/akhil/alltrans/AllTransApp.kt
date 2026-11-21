@@ -21,7 +21,7 @@ class AllTransApp : Application() {
         if (state.getBoolean(KEY_MIGRATED, false)) return
         val dir = java.io.File(applicationInfo.dataDir, "shared_prefs")
         dir.listFiles()?.map { it.name.removeSuffix(".xml") }
-            ?.filter { it.contains('.') && !it.startsWith("akhil.alltrans") && !AppConfig.isAlibabaApp(it) }
+            ?.filter { it.contains('.') && !it.startsWith(BuildConfig.APPLICATION_ID) && !AppConfig.isAlibabaApp(it) }
             ?.forEach { pkg ->
                 getSharedPreferences(pkg, Context.MODE_PRIVATE).edit()
                     .remove("AlibabaOptimize").remove("SafeMode").remove("MtopTranslate").commit()

@@ -87,7 +87,7 @@ object RemotePrefs {
     }
 
     private fun isSettingsFile(name: String) =
-        name == GLOBAL || (name.contains('.') && !name.startsWith("akhil.alltrans") && !name.startsWith("androidx."))
+        name == GLOBAL || (name.contains('.') && !name.startsWith(BuildConfig.APPLICATION_ID) && !name.startsWith("androidx."))
 
     /** Mirror [name] to the framework whenever it changes in this process. */
     fun watch(name: String) {

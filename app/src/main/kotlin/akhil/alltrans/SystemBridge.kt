@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit
  */
 internal object SystemBridge {
     const val METHOD = "alltransSystemBridge"
-    private const val MODULE_PACKAGE = "akhil.alltrans"
+    private const val MODULE_PACKAGE = BuildConfig.APPLICATION_ID
     private const val KEY_OP = "op"
     private const val KEY_PKG = "pkg"
     private const val KEY_LOCALES = "locales"

@@ -40,7 +40,7 @@ class SharedPrefProvider : ContentProvider() {
     ): Cursor {
         Utils.debugLog("Got URI as - " + uri.toString())
         val packageName = uri.toString()
-            .replaceFirst("content://akhil.alltrans.SharedPrefProvider/".toRegex(), "")
+            .replaceFirst("content://${BuildConfig.APPLICATION_ID}.SharedPrefProvider/".toRegex(), "")
         val cols = arrayOf<String?>("sharedPreferences")
         val cursor = MatrixCursor(cols)
 

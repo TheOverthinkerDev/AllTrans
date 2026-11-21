@@ -156,7 +156,7 @@ internal class AttachBaseContextHookHandler : SafeHook() {
                 // Tentar primeiro via proxy
                 if (Alltrans.isProxyEnabled) {
                     try {
-                        val proxyUri = "content://settings/system/alltransProxyProviderURI/akhil.alltrans.SharedPrefProvider/$packageName".toUri()
+                        val proxyUri = "content://settings/system/alltransProxyProviderURI/${BuildConfig.APPLICATION_ID}.SharedPrefProvider/$packageName".toUri()
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             val queryArgs = Bundle().apply {
@@ -188,7 +188,7 @@ internal class AttachBaseContextHookHandler : SafeHook() {
                 // Fallback para conexão direta
                 if (globalPref == null) {
                     try {
-                        val directUri = "content://akhil.alltrans.SharedPrefProvider/$packageName".toUri()
+                        val directUri = "content://${BuildConfig.APPLICATION_ID}.SharedPrefProvider/$packageName".toUri()
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             val queryArgs = Bundle().apply {
@@ -258,7 +258,7 @@ internal class AttachBaseContextHookHandler : SafeHook() {
                 val appInfo = context.applicationInfo
                 if ((appInfo.flags and (ApplicationInfo.FLAG_SYSTEM or ApplicationInfo.FLAG_UPDATED_SYSTEM_APP)) != 0) {
                     // É um app do sistema mas não está na lista branca
-                    if (packageName != "akhil.alltrans" && packageName != "com.android.providers.settings") {
+                    if (packageName != BuildConfig.APPLICATION_ID && packageName != "com.android.providers.settings") {
                         return true
                     }
                 }
@@ -798,7 +798,7 @@ internal class AttachBaseContextHookHandler : SafeHook() {
             }
 
             // Evitar chamar readPrefAndHook para o próprio pacote AllTrans
-            if (packageName != "akhil.alltrans") {
+            if (packageName != BuildConfig.APPLICATION_ID) {
                 try {
                     readPrefAndHook(usableContext)
                 } catch (e: Throwable) {

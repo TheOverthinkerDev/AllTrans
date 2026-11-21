@@ -158,7 +158,7 @@ class AppSettingsFragment : PreferenceFragmentCompat() {
         val dir = File(context.applicationInfo.dataDir, "shared_prefs")
         val names = dir.listFiles()?.map { it.name.removeSuffix(".xml") }.orEmpty()
         // Global prefs, the app's own prefs, and one file per app (package names contain dots).
-        return names.filter { it == "AllTransPref" || it == AppSettings.PREFS || (it.contains('.') && !it.startsWith("akhil.alltrans")) }
+        return names.filter { it == "AllTransPref" || it == AppSettings.PREFS || (it.contains('.') && !it.startsWith(BuildConfig.APPLICATION_ID)) }
     }
 
     private fun exportTo(uri: Uri) {
@@ -274,9 +274,9 @@ class AppSettingsFragment : PreferenceFragmentCompat() {
             // classes need the Xposed framework and cannot run in this app.)
             val result = try {
                 val authority = when (provider) {
-                    "edge" -> "akhil.alltrans.EdgeProvider"
-                    "vietphrase" -> "akhil.alltrans.VietPhraseProvider"
-                    else -> "akhil.alltrans.GtransProvider"
+                    "edge" -> "${BuildConfig.APPLICATION_ID}.EdgeProvider"
+                    "vietphrase" -> "${BuildConfig.APPLICATION_ID}.VietPhraseProvider"
+                    else -> "${BuildConfig.APPLICATION_ID}.GtransProvider"
                 }
                 val enc = { s: String -> java.net.URLEncoder.encode(s, "UTF-8") }
                 val uri = Uri.parse("content://$authority?from=${enc(from)}&to=${enc(to)}&text=${enc(text)}")
@@ -308,7 +308,7 @@ class AppSettingsFragment : PreferenceFragmentCompat() {
         val info = context.packageManager.getPackageInfo(context.packageName, 0)
         findPreference<Preference>("Version")?.summary = "${info.versionName} (${info.longVersionCode})"
         val links = mapOf(
-            "Source" to "https://github.com/TheOverthinkerDev/AllTrans",
+            "Source" to "https://github.com/TheOverthinkerDev/ReAllTrans",
             "CreditsOriginal" to "https://github.com/akhilkedia/AllTrans",
             "CreditsVietPhrase" to "https://github.com/Chanhnh/AllTrans",
             "CreditsLibxposed" to "https://github.com/libxposed"

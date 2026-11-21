@@ -58,22 +58,22 @@
                 android:value="true" />
         </service>
         <provider
-            android:authorities="akhil.alltrans.SharedPrefProvider"
+            android:authorities="${applicationId}.SharedPrefProvider"
             android:name="akhil.alltrans.SharedPrefProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
         <provider
-            android:authorities="akhil.alltrans.GtransProvider"
+            android:authorities="${applicationId}.GtransProvider"
             android:name="akhil.alltrans.GtransProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
         <provider
-            android:authorities="akhil.alltrans.EdgeProvider"
+            android:authorities="${applicationId}.EdgeProvider"
             android:name="akhil.alltrans.EdgeProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
         <provider
-            android:authorities="akhil.alltrans.VietPhraseProvider"
+            android:authorities="${applicationId}.VietPhraseProvider"
             android:name="akhil.alltrans.VietPhraseProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />

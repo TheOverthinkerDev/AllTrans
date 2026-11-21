@@ -1,271 +1,94 @@
-# AllTrans
+# ReAllTrans
 
 [English](README_en.md)
 
-> **Về bản fork này:** fork từ [akhilkedia/AllTrans](https://github.com/akhilkedia/AllTrans) (bản gốc chỉ chạy tới Android 13), gộp thêm phần port libxposed API 102 và các tính năng của [Chanhnh/AllTrans](https://github.com/Chanhnh/AllTrans), đồng thời giữ lại tên gói gốc `akhil.alltrans`. Mục tiêu là chạy được trên Android 14–17. Đã thử trên Redmi K40s chạy HyperOS 4 (Android 17) với framework Wukong.
+ReAllTrans là module Xposed (libxposed API 102) dịch giao diện ứng dụng Android ngay khi ứng dụng đang chạy, không cần sửa APK. Dự án làm tiếp [AllTrans](https://github.com/akhilkedia/AllTrans) của Akhil Kedia (chỉ chạy tới Android 13) để chạy được trên Android 14 đến 17, có kế thừa phần port của [Chanhnh](https://github.com/Chanhnh/AllTrans).
 
-AllTrans là một module Xposed/LSPosed giúp dịch giao diện ứng dụng Android ngay khi ứng dụng đang chạy. Bạn không cần chỉnh sửa APK, không cần sao chép văn bản sang ứng dụng khác — văn bản trên màn hình sẽ được thay bằng bản dịch theo ngôn ngữ bạn chọn.
-
-## Tổng quan
-
-- **Tên gói:** `akhil.alltrans`
-- **Phiên bản:** `3.0.0` (`versionCode` 300)
-- **Android tối thiểu:** Android 10 (API 29)
-- **Compile/target SDK:** 36
-- **Nền tảng:** LSPosed 2.1+ hoặc môi trường Xposed tương thích libxposed API
-- **Giao diện:** Material 3, hỗ trợ sáng/tối
-- **Ngôn ngữ giao diện:** English, Tiếng Việt, 简体中文, 繁體中文 (Đài Loan)
-- **Dịch vụ dịch:** Google Translate, Microsoft Translate, VietPhrase
-
-Cài đặt mặc định:
-
-- Dịch vụ dịch: `Google Translate`
-- Ngôn ngữ nguồn: `Tự nhận diện`
-- Ngôn ngữ đích: `Tiếng Việt`
+- Tên gói: `ovtk.realltrans`
+- Phiên bản: 3.1.0
+- Android 10 trở lên, đã thử trên Redmi K40s (HyperOS, Android 17) với LSPosed 2.2.1 (API 102)
 
 ## Tính năng
 
-- Dịch văn bản trong ứng dụng theo thời gian thực, không cần sửa APK
-- Dịch văn bản thường, gợi ý trong ô nhập (`setHint`), thông báo và nội dung `WebView`
-- Dịch mở rộng cho View tùy chỉnh và nội dung được vẽ ngoài `TextView`
-- Cài đặt toàn cục và ghi đè riêng cho từng ứng dụng
-- Chọn ngôn ngữ nguồn/đích linh hoạt; hỗ trợ tự nhận diện ngôn ngữ
-- Bộ nhớ đệm bản dịch giúp giảm yêu cầu lặp lại và tăng tốc hiển thị
-- Tự động đánh dấu xoá bộ nhớ đệm khi đổi dịch vụ dịch, đổi ngôn ngữ hoặc thay đổi engine dịch
-- `VietPhrase` dịch offline từ tiếng Trung sang tiếng Việt bằng từ điển cục bộ
-- Bộ quy tắc `VietPhrase` xử lý tên riêng, đại từ, số/ngày, nhãn chương và định dạng câu
-- Chế độ gỡ lỗi ghi log ra `logcat` để thuận tiện báo lỗi
+- Dịch chữ trong ứng dụng khi đang chạy: chữ thường, gợi ý trong ô nhập, thông báo, WebView và chữ của View tự vẽ.
+- Ba dịch vụ dịch: Google Translate, Microsoft Translate và VietPhrase (Trung sang Việt, chạy offline).
+- Cài đặt chung cho mọi ứng dụng, và cài đặt riêng cho từng ứng dụng khi cần.
+- Bộ nhớ đệm bản dịch, tự làm mới khi đổi dịch vụ hoặc ngôn ngữ.
+- Chữ dịch dài tự chạy qua lại thay vì bị cắt bằng "…" (tuỳ chọn).
+- Tối ưu riêng cho ứng dụng Alibaba (Taobao, Tmall, Xianyu…): dịch chữ DinamicX, thanh tab, trang UC WebView. Có chế độ an toàn chỉ đổi phần hiển thị.
+- Chọn ngôn ngữ có sẵn của ứng dụng (tính năng ngôn ngữ riêng cho từng ứng dụng của Android 13+), dùng được cả trên ROM đã ẩn mục này.
+- Tự yêu cầu thêm ứng dụng vào phạm vi LSPosed khi bạn chọn dịch ứng dụng đó.
+- Màn hình cài đặt của chính ReAllTrans: ngôn ngữ, giao diện sáng/tối, trạng thái module, thử dịch, sao lưu và khôi phục cài đặt.
+- Giao diện tiếng Anh, tiếng Việt, tiếng Trung giản thể và phồn thể.
 
 ## Yêu cầu
 
-| Thành phần | Yêu cầu |
-| --- | --- |
-| Thiết bị | Android 10 trở lên (API 29+) |
-| Module | LSPosed 2.1+ hoặc môi trường Xposed tương thích libxposed API |
-| Quyền hệ thống | Thiết bị đã cài LSPosed (thường cần root/Magisk, KernelSU hoặc APatch) |
-| Internet | Cần cho Google Translate và Microsoft Translate; không cần cho VietPhrase |
-| Build | JDK 17, Android SDK 36 |
+- Android 10 trở lên.
+- Máy đã root và cài LSPosed 2.1 trở lên, hoặc framework khác hỗ trợ libxposed API 102.
+- Internet nếu dùng Google Translate hoặc Microsoft Translate. VietPhrase không cần mạng.
+- Chọn ngôn ngữ có sẵn của ứng dụng cần Android 13 trở lên.
 
 ## Cài đặt
 
-1. Build hoặc tải APK của AllTrans.
-2. Cài APK trên thiết bị.
-3. Mở LSPosed, bật module **AllTrans**.
-4. Chọn phạm vi ứng dụng cần dịch trong mục **Scope**.
-5. Khởi động lại thiết bị hoặc buộc dừng các ứng dụng đích.
-6. Mở AllTrans và cấu hình dịch vụ dịch, ngôn ngữ nguồn/đích.
+1. Tải `ReAllTrans-v3.1.0.apk` ở trang [Releases](https://github.com/TheOverthinkerDev/ReAllTrans/releases) và cài lên máy.
+2. Mở LSPosed, bật module **ReAllTrans** và chọn **System Framework** trong phạm vi của module.
+3. Khởi động lại máy.
+4. Mở ReAllTrans, vào tab **ReAllTrans** để xem trạng thái module. Mục **Framework** phải báo đang hoạt động.
 
-> Nếu ứng dụng đích không truy vấn được provider trực tiếp, có thể chọn thêm **System Framework** trong phạm vi module để dùng cơ chế proxy.
->
-> **Cài đặt** được truyền tới ứng dụng đích qua **libxposed remote preferences**: app AllTrans dùng [libxposed/service](https://github.com/libxposed/service) 102 để sao chép từng tệp cài đặt (`AllTransPref` và mỗi ứng dụng một nhóm) lên framework, còn module đọc bằng `getRemotePreferences()` của [libxposed/api](https://github.com/libxposed/api). Chỉ khi framework không hỗ trợ remote preferences mới dùng lại `SharedPrefProvider`. Mục **AllTrans → Trạng thái module → Truyền cài đặt** cho biết đang dùng đường nào.
+Nếu bạn đang dùng AllTrans cũ (tên gói `akhil.alltrans`): ReAllTrans là một ứng dụng riêng, không tự nhận cài đặt cũ. Hãy sao lưu cài đặt trong AllTrans cũ (nếu có chức năng này), gỡ AllTrans cũ và tắt module cũ trong LSPosed để tránh hai module cùng dịch, rồi khôi phục cài đặt trong ReAllTrans.
 
 ## Sử dụng
 
-### Cài đặt toàn cục
+1. Tab **Cài đặt dịch**: chọn dịch vụ dịch, ngôn ngữ nguồn và ngôn ngữ đích.
+2. Tab **Ứng dụng**: đánh dấu ứng dụng muốn dịch. Nếu ứng dụng chưa nằm trong phạm vi LSPosed, LSPosed sẽ hiện thông báo xin phép. Bấm **Approve** để đồng ý. Nếu không đồng ý trong khoảng 20 giây, ô đánh dấu tự bỏ.
+3. Buộc dừng rồi mở lại ứng dụng đích. Có thể dùng nút **Buộc dừng & mở lại** trong trang của ứng dụng đó.
 
-1. Mở tab **Toàn cục**.
-2. Chọn **Dịch vụ dịch**.
-3. Chọn **Ngôn ngữ nguồn** và **Ngôn ngữ đích**.
-4. Bật **Công tắc chính**.
-5. Mở tab **Ứng dụng**, bật dịch cho các ứng dụng mong muốn.
-6. Buộc dừng và mở lại ứng dụng đích.
+Trong danh sách ứng dụng:
 
-### Cài đặt riêng cho từng ứng dụng
+- Ứng dụng đã được thiết lập (đang dịch, dùng ngôn ngữ có sẵn, hoặc có cài đặt riêng) luôn được đánh dấu và nằm ở đầu danh sách.
+- Ô đánh dấu màu cam nghĩa là ứng dụng đang dùng ngôn ngữ có sẵn thay vì bản dịch.
+- Bỏ đánh dấu sẽ hỏi lại, sau đó tắt dịch, xoá cài đặt riêng, đưa ngôn ngữ của ứng dụng về theo hệ thống và gỡ ứng dụng khỏi phạm vi LSPosed.
 
-1. Mở ứng dụng cần cấu hình trong tab **Ứng dụng**.
-2. Bật **Dịch ứng dụng này**.
-3. Bật **Ghi đè cài đặt toàn cục** nếu muốn dùng cấu hình riêng.
-4. Chọn dịch vụ dịch, ngôn ngữ và các tuỳ chọn nâng cao.
-5. Buộc dừng ứng dụng đích để áp dụng.
+Trong trang của từng ứng dụng:
 
-**Phạm vi LSPosed là bắt buộc.** Với libxposed API 102, framework chỉ nạp module vào những ứng dụng nằm trong phạm vi của nó, mà việc dịch chạy ngay trong ứng dụng đích, nên chỉ tick trong AllTrans là chưa đủ. Khi tick một ứng dụng chưa có phạm vi, AllTrans tự gửi yêu cầu thêm phạm vi (libxposed service); LSPosed hiện thông báo **Scope Request** để bạn duyệt. Danh sách và màn cài đặt riêng ghi rõ ứng dụng nào chưa có phạm vi.
-
-**Ngôn ngữ có sẵn của ứng dụng.** Mục **Ngôn ngữ ứng dụng** dùng Android 13+ per-app language (`LocaleManager`). Chỉ chọn được khi ứng dụng khai báo `localeConfig` với Android (cùng điều kiện để Android liệt kê ứng dụng trong Cài đặt → Ngôn ngữ ứng dụng), và chỉ hiện đúng các ngôn ngữ ứng dụng khai báo. Dịch AllTrans và ngôn ngữ có sẵn loại trừ nhau: khi đang dùng một bên, bên kia chuyển xám và chạm vào sẽ báo cần tắt bên đang dùng trước. Đặt ngôn ngữ có sẵn sẽ gỡ ứng dụng khỏi phạm vi LSPosed (không cần hook nữa); bật dịch sẽ yêu cầu thêm lại.
-
-**Danh sách ứng dụng.** Mọi ứng dụng đã cấu hình (đang dịch, dùng ngôn ngữ có sẵn, hoặc có cài đặt riêng) đều được tick và nằm ở đầu danh sách; ứng dụng dùng ngôn ngữ có sẵn có ô tick màu cam. Bỏ tick sẽ hỏi xác nhận rồi tắt dịch, xoá cài đặt riêng, đưa ngôn ngữ về theo hệ thống và gỡ khỏi phạm vi LSPosed.
-
-### Các cài đặt chính
-
-| Cài đặt | Mô tả |
-| --- | --- |
-| Công tắc chính | Bật/tắt toàn bộ module |
-| Dịch vụ dịch | Chọn Google Translate, Microsoft Translate hoặc VietPhrase |
-| Ngôn ngữ nguồn | Ngôn ngữ hiện tại của ứng dụng; có thể tự nhận diện |
-| Ngôn ngữ đích | Ngôn ngữ bạn muốn dịch sang |
-| Dịch văn bản thường | Dịch văn bản được đặt bằng `setText` |
-| Dịch gợi ý văn bản | Dịch văn bản được đặt bằng `setHint` |
-| Dịch mở rộng cho View | Bật thêm hook cho View tùy chỉnh, hàm khởi tạo layout và phương thức View của framework |
-| Dịch WebView | Dịch nội dung bên trong `WebView` |
-| Dịch thông báo | Dịch văn bản trong thông báo |
-| Bật bộ nhớ đệm | Lưu bản dịch để tái sử dụng |
-| Độ trễ | Thời gian chờ trước khi thay thế văn bản bằng bản dịch |
-| Độ trễ WebView | Thời gian chờ trước khi bắt đầu dịch WebView |
-| Tự cuộn bản dịch dài | Bản dịch không vừa chỗ sẽ chạy qua lại thay vì bị cắt bằng "…" (TextView một dòng, chữ DinamicX, trang UC WebView). Không thay đổi focus, thao tác chạm hay cuộn của ứng dụng |
-| Chế độ gỡ lỗi | Ghi log chi tiết ra `logcat` |
-
-### Ứng dụng Alibaba (Taobao, Tmall, Xianyu…)
-
-Cài đặt riêng cho từng ứng dụng, áp dụng khi ứng dụng có các thành phần tương ứng (DinamicX, UC WebView, MTOP). Cần buộc dừng ứng dụng sau khi đổi. Mặc định "Bật" chỉ áp dụng cho ứng dụng Alibaba (Taobao, Taobao Lite, Tmall, Xianyu, 1688, AliExpress, Fliggy, Ele.me, eTao); với ứng dụng khác, tối ưu Alibaba mặc định tắt trừ khi bạn tự bật.
-
-| Cài đặt | Mặc định | Mô tả |
-| --- | --- | --- |
-| Tối ưu cho ứng dụng Alibaba | Bật | Dịch chữ DinamicX (vẽ bằng `StaticLayout` riêng), thanh tab Taobao (đổi sang icon không chữ `_i18n` và hiện tiêu đề đã dịch) và trang UC/U4 WebView. Chỉ thay đổi phần hiển thị |
-| Chế độ an toàn (chỉ đổi hiển thị) | Bật | AllTrans không bao giờ đụng vào dữ liệu của ứng dụng |
-| Dịch dữ liệu mạng (MTOP, thử nghiệm) | Tắt | Chỉ bật được khi tắt chế độ an toàn. Dịch chữ trong phản hồi API chỉ-đọc (giỏ hàng, trang sản phẩm) trước khi ứng dụng đọc, chỉ ở các khoá hiển thị, sửa trực tiếp trên JSON gốc. Cần cho các màn hình chỉ vẽ từ dữ liệu như giỏ hàng Taobao (Weex 2). Có thể ảnh hưởng tính năng của ứng dụng |
-
-## Dịch vụ dịch
-
-| Dịch vụ | ID | Internet | Ghi chú |
-| --- | --- | --- | --- |
-| Google Translate | `g` | Có | Dùng danh sách mã ngôn ngữ của Google |
-| Microsoft Translate | `edge` | Có | Dùng endpoint Edge và mã ngôn ngữ native của Microsoft/Edge |
-| VietPhrase | `vietphrase` | Không | Chỉ hỗ trợ `zh → vi`, dùng từ điển cục bộ trong `assets/vietphrase` |
-
-### Google Translate
-
-Phù hợp cho nhu cầu dịch tổng quát với danh sách ngôn ngữ rộng. Cần kết nối Internet.
-
-### Microsoft Translate
-
-Dùng endpoint Edge và mã ngôn ngữ native của Edge. Khi đổi giữa Google Translate và Microsoft Translate, danh sách ngôn ngữ sẽ được cập nhật tương ứng. Nếu ngôn ngữ đang chọn không có trong danh sách mới, AllTrans sẽ đặt lại về ngôn ngữ mặc định thay vì gửi mã không hợp lệ.
-
-### VietPhrase
-
-- Chỉ dịch từ tiếng Trung (`zh`) sang tiếng Việt (`vi`)
-- Dùng từ điển cục bộ, không cần Internet
-- Bộ quy tắc xử lý tên riêng, đại từ, số/ngày, nhãn chương và định dạng câu
-- Phù hợp khi cần dịch nhanh, ổn định và hoạt động ngoại tuyến
-- Bộ quy tắc và một số dữ liệu đại từ được chuyển từ dự án `vietphrase-translator` của duongden (GPL-3.0)
-
-## Bộ nhớ đệm
-
-- Bộ nhớ đệm lưu bản dịch theo văn bản để tránh gọi lại dịch vụ nhiều lần
-- Có thể xoá thủ công trong cài đặt toàn cục hoặc cài đặt riêng của ứng dụng
-- AllTrans tự đánh dấu xoá bộ nhớ đệm khi đổi dịch vụ dịch hoặc ngôn ngữ
-- Bộ nhớ đệm cũng được làm mới khi phiên bản engine dịch thay đổi
-- Sau khi xoá bộ nhớ đệm, cần buộc dừng ứng dụng đích để áp dụng
-
-## Ngôn ngữ
-
-Giao diện AllTrans có 4 ngôn ngữ:
-
-- English
-- Tiếng Việt
-- 简体中文
-- 繁體中文 (Đài Loan)
-
-Danh sách ngôn ngữ dịch phụ thuộc vào dịch vụ đang chọn. Riêng VietPhrase chỉ hỗ trợ cặp `zh → vi`.
+- **Ghi đè cài đặt toàn cục**: dùng dịch vụ, ngôn ngữ và tuỳ chọn riêng cho ứng dụng này.
+- **Ngôn ngữ của ứng dụng**: chỉ chọn được khi ứng dụng có khai báo danh sách ngôn ngữ với Android. Mục này ghi ứng dụng hỗ trợ bao nhiêu ngôn ngữ.
+- Dịch và ngôn ngữ có sẵn không dùng cùng lúc. Khi đang dùng một bên, bên kia chuyển xám, chạm vào sẽ báo cần tắt bên nào trước.
+- Nhóm **Ứng dụng Alibaba** chỉ bật sẵn cho các ứng dụng Alibaba. Với ứng dụng khác, nhóm này mặc định tắt.
 
 ## Quyền riêng tư
 
-- AllTrans không có máy chủ trung gian riêng và không thu thập dữ liệu phân tích.
-- Khi dùng Google Translate hoặc Microsoft Translate, văn bản cần dịch được gửi tới dịch vụ tương ứng.
-- VietPhrase xử lý hoàn toàn cục bộ trên thiết bị.
-- Quyền `QUERY_ALL_PACKAGES` được dùng để hiển thị danh sách ứng dụng cho bạn chọn.
-- Quyền `INTERNET` được dùng cho các dịch vụ dịch trực tuyến.
+- ReAllTrans không có máy chủ riêng và không thu thập dữ liệu sử dụng.
+- Khi dùng Google Translate hoặc Microsoft Translate, chữ cần dịch được gửi tới dịch vụ đó.
+- VietPhrase dịch hoàn toàn trên máy.
+- Quyền `INTERNET` dùng cho dịch vụ dịch trực tuyến. Quyền `QUERY_ALL_PACKAGES` dùng để liệt kê ứng dụng cho bạn chọn.
+- Root chỉ được dùng khi hook hệ thống không hoạt động, để đổi ngôn ngữ ứng dụng hoặc buộc dừng ứng dụng.
 
 ## Cơ chế hoạt động
 
-- Hook các điểm hiển thị văn bản như `TextView.setText`, `setHint`, `StaticLayout.Builder.build()`, hàm khởi tạo layout, phương thức View của framework và setter của View tùy chỉnh.
-- Hỗ trợ dịch thông báo và nội dung `WebView`.
-- Mỗi provider được gọi qua `ContentProvider` nội bộ:
-  - `content://akhil.alltrans.GtransProvider`
-  - `content://akhil.alltrans.EdgeProvider`
-  - `content://akhil.alltrans.VietPhraseProvider`
-- Provider được chọn sẽ được dùng cố định. Nếu provider không khả dụng hoặc trả kết quả rỗng, AllTrans giữ nguyên văn bản gốc.
-- Query provider ưu tiên đi qua proxy, sau đó fallback sang query trực tiếp.
-
-## Build
-
-Dự án dùng Gradle Android application module, Kotlin và Java 17.
-
-```bash
-./gradlew :app:testDebugUnitTest
-./gradlew :app:assembleDebug
-./gradlew :app:assembleRelease
-```
-
-APK đầu ra:
-
-- `app/build/outputs/apk/debug/AllTrans-v3.0.0-debug.apk`
-- `app/build/outputs/apk/release/AllTrans-v3.0.0-release.apk`
-
-Để ký bản release, cấu hình các thuộc tính sau trong `gradle.properties`:
-
-```properties
-RELEASE_STORE_FILE=/duong/dan/den/keystore.jks
-RELEASE_STORE_PASSWORD=...
-RELEASE_KEY_ALIAS=...
-RELEASE_KEY_PASSWORD=...
-```
+- LSPosed nạp module vào các ứng dụng trong phạm vi. Module hook những chỗ hiển thị chữ (như `TextView.setText`, `StaticLayout`, thông báo, WebView), gửi chữ đi dịch và thay bằng bản dịch.
+- Việc dịch do các ContentProvider trong ReAllTrans đảm nhận (Google, Microsoft, VietPhrase). Ứng dụng đích gọi tới chúng qua một proxy trong tiến trình hệ thống, vì vậy cần phạm vi **System Framework**.
+- Cài đặt được ReAllTrans chép lên framework bằng [libxposed/service](https://github.com/libxposed/service). Ứng dụng đích đọc lại bằng `getRemotePreferences()` của [libxposed/api](https://github.com/libxposed/api), không phải hỏi qua provider mỗi lần mở.
+- Đổi ngôn ngữ có sẵn và buộc dừng ứng dụng được thực hiện trong tiến trình hệ thống qua hook, hoặc qua root nếu hook không có.
 
 ## Cấu trúc dự án
 
-| Thành phần | Vai trò |
-| --- | --- |
-| `Alltrans.kt` | Entry point của module, hook proxy SettingsProvider |
-| `AttachBaseContextHookHandler.kt` | Đọc preference, quản lý cache và áp dụng hook |
-| `GetTranslateToken.kt` | Điều phối provider, xử lý cache và fallback |
-| `EdgeProvider.kt` | Microsoft Translate |
-| `GtransProvider.kt` | Google Translate |
-| `VietPhraseProvider.kt` | ContentProvider cho VietPhrase |
-| `VietPhraseTranslator.kt` | Nạp từ điển và engine VietPhrase |
-| `VietPhraseTranslationEngine.kt` | Pipeline dịch và rule engine |
-| `PreferenceList.kt` | Đọc preference toàn cục/riêng ứng dụng |
-| `GlobalPreferencesFragment.kt` | Giao diện cài đặt toàn cục |
-| `LocalPreferenceFragment.kt` | Giao diện cài đặt theo ứng dụng |
-| `app/src/main/assets/vietphrase/` | Từ điển và dữ liệu VietPhrase |
+Xem [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md): vai trò của từng tệp và cách build.
 
 ## Khắc phục sự cố
 
-**Ứng dụng không được dịch**
-
-- Kiểm tra module AllTrans đã bật trong LSPosed chưa.
-- Kiểm tra ứng dụng đích đã nằm trong Scope chưa.
-- Kiểm tra **Công tắc chính** và **Dịch ứng dụng này** đã bật chưa.
-- Buộc dừng rồi mở lại ứng dụng đích.
-- Thử bật **Chế độ gỡ lỗi** và xem log `logcat`.
-
-**Google Translate hoặc Microsoft Translate không hoạt động**
-
-- Kiểm tra kết nối Internet.
-- Thử đổi giữa Google Translate và Microsoft Translate.
-- Nếu dùng proxy, kiểm tra cấu hình proxy của hệ thống.
-
-**VietPhrase không dịch**
-
-- VietPhrase chỉ hỗ trợ `zh → vi`.
-- Kiểm tra từ điển trong `assets/vietphrase` có đầy đủ không.
-
-**Một số nội dung vẫn không dịch**
-
-- Game hoặc ứng dụng vẽ văn bản trực tiếp bằng canvas thường không hook được.
-- Thử bật **Dịch mở rộng cho View**.
-- Thử tăng **Độ trễ** hoặc **Độ trễ WebView**.
-
-**Ứng dụng đích bị lỗi sau khi dịch**
-
-- Tắt **Tự cuộn bản dịch dài**.
-- Tắt **Dịch thông báo** hoặc **Dịch WebView** nếu không cần.
-- Xoá bộ nhớ đệm và buộc dừng ứng dụng đích.
+Xem [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 
 ## Đóng góp
 
-- Fork repository, tạo nhánh mới và gửi pull request.
-- Khi báo lỗi, kèm theo:
-  - Phiên bản Android
-  - Phiên bản LSPosed
-  - Tên và phiên bản ứng dụng đích
-  - Log `logcat` với tag `AllTrans`
-  - Các bước tái hiện lỗi
+- Báo lỗi hoặc đề xuất ở mục [Issues](https://github.com/TheOverthinkerDev/ReAllTrans/issues).
+- Khi báo lỗi, ghi rõ phiên bản Android, ROM, phiên bản LSPosed, tên và phiên bản ứng dụng đích, các bước gây lỗi. Nếu được, bật **Nâng cao: Bật chế độ gỡ lỗi** và gửi kèm log `adb logcat -s AllTrans`.
+- Muốn sửa code: fork repository, tạo nhánh mới và gửi pull request.
 
-## Ghi công
+## Credits
 
-- **Bản gốc:** [akhilkedia/AllTrans](https://github.com/akhilkedia/AllTrans) của Akhil Kedia
-- **VietPhrase từ Chanhnh:** bộ dịch VietPhrase, bản port libxposed API 102 và nhiều tính năng từ [Chanhnh/AllTrans](https://github.com/Chanhnh/AllTrans)
-- **libxposed:** [libxposed/api](https://github.com/libxposed/api) và [libxposed/service](https://github.com/libxposed/service) (Apache-2.0)
-- Bộ quy tắc và dữ liệu VietPhrase tham khảo từ [duongden/script-vietphrase-translator](https://github.com/duongden/script-vietphrase-translator)
+- **Bản gốc:** [AllTrans](https://github.com/akhilkedia/AllTrans) của Akhil Kedia.
+- **VietPhrase từ Chanhnh:** bộ dịch VietPhrase, bản port libxposed API 102 và nhiều tính năng từ [Chanhnh/AllTrans](https://github.com/Chanhnh/AllTrans). Quy tắc và một phần dữ liệu VietPhrase lấy từ [duongden/script-vietphrase-translator](https://github.com/duongden/script-vietphrase-translator).
+- **libxposed:** [libxposed/api](https://github.com/libxposed/api) và [libxposed/service](https://github.com/libxposed/service) (Apache-2.0).
 
-## Giấy phép
-
-GPL-3.0-or-later. Xem file `LICENSE.GPL` để biết chi tiết.
+Giấy phép: GPL-3.0-or-later, xem [LICENSE.GPL](LICENSE.GPL).

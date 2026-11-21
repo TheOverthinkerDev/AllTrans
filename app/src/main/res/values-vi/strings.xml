@@ -2,7 +2,7 @@
 <resources>
     <string name="search">"Tìm kiếm"</string>
 
-    <string name="app_name">"AllTrans"</string>
+    <string name="app_name">"ReAllTrans"</string>
     <string name="clear_cache_success">"Vui lòng buộc dừng ứng dụng được dịch. Bộ nhớ đệm bản dịch của ứng dụng này sẽ được xóa ở lần khởi động tiếp theo."</string>
     <string name="wut_why_null">"Không thể tải trang cài đặt theo từng ứng dụng. Hãy đóng và mở lại ứng dụng."</string>
 
@@ -240,7 +240,7 @@
     <string name="safe_mode">"Chế độ an toàn (chỉ đổi hiển thị)"</string>
     <string name="safe_mode_summary_off">"Có thể bật dịch ở tầng dữ liệu bên dưới. Không khuyên dùng."</string>
     <string name="mtop_translate">"Dịch dữ liệu mạng (MTOP, thử nghiệm)"</string>
-    <string name="safe_mode_summary_on">"AllTrans chỉ thay đổi phần được vẽ lên màn hình, không bao giờ đụng vào dữ liệu của ứng dụng. Khuyên dùng."</string>
+    <string name="safe_mode_summary_on">"ReAllTrans chỉ thay đổi phần được vẽ lên màn hình, không bao giờ đụng vào dữ liệu của ứng dụng. Khuyên dùng."</string>
     <string name="alibaba_optimize_summary_off">"Chỉ dùng các hook chung."</string>
     <string name="mtop_translate_summary_on">"Dịch chữ trong dữ liệu giỏ hàng và trang sản phẩm trước khi ứng dụng đọc. Việc này thay đổi dữ liệu của ứng dụng và có thể ảnh hưởng tính năng; hãy tắt nếu có gì bất thường."</string>
     <string name="app_language_applied">"Đã đặt ngôn ngữ ứng dụng: %1$s. Mở lại ứng dụng nếu chưa đổi."</string>
@@ -252,15 +252,15 @@
     <string name="app_language_loading">"Đang tải…"</string>
     <string name="nav_apps">"Ứng dụng"</string>
     <string name="nav_translation">"Cài đặt dịch"</string>
-    <string name="nav_alltrans">"AllTrans"</string>
-    <string name="alltrans_settings">"Cài đặt AllTrans"</string>
+    <string name="nav_alltrans">"ReAllTrans"</string>
+    <string name="alltrans_settings">"Cài đặt ReAllTrans"</string>
     <string name="pref_cat_alibaba_defaults">"Ứng dụng Alibaba (mặc định cho mọi ứng dụng)"</string>
     <string name="force_stop">"Buộc dừng &amp; mở lại"</string>
     <string name="force_stop_summary">"Áp dụng ngay cài đặt vừa đổi: dừng ứng dụng rồi mở lại."</string>
     <string name="force_stop_done">"Đã khởi động lại ứng dụng."</string>
     <string name="force_stop_failed">"Không dừng được ứng dụng: %1$s. Hãy bật phạm vi System Framework rồi khởi động lại máy, hoặc cấp quyền root."</string>
     <string name="pref_cat_appearance">"Giao diện"</string>
-    <string name="ui_language">"Ngôn ngữ AllTrans"</string>
+    <string name="ui_language">"Ngôn ngữ ReAllTrans"</string>
     <string name="theme">"Chủ đề"</string>
     <string name="theme_system">"Theo hệ thống"</string>
     <string name="theme_light">"Sáng"</string>
@@ -270,29 +270,29 @@
     <string name="pref_cat_status">"Trạng thái module"</string>
     <string name="status_framework">"Framework"</string>
     <string name="status_framework_active">"Đang hoạt động: %1$s. Phạm vi System Framework đang chạy."</string>
-    <string name="status_framework_inactive">"Chưa kết nối được dịch vụ Xposed. Hãy bật module AllTrans trong LSPosed/Vector (kèm phạm vi System Framework) rồi mở lại AllTrans."</string>
+    <string name="status_framework_inactive">"Chưa kết nối được dịch vụ Xposed. Hãy bật module ReAllTrans trong LSPosed/Vector (kèm phạm vi System Framework) rồi mở lại ReAllTrans."</string>
     <string name="status_scope">"Phạm vi: %1$d ứng dụng — %2$s"</string>
     <string name="status_sync">"Truyền cài đặt"</string>
     <string name="status_sync_remote">"libxposed remote preferences: ứng dụng đích đọc cài đặt trực tiếp từ framework."</string>
-    <string name="status_sync_provider">"Framework không hỗ trợ remote preferences; ứng dụng đích đọc cài đặt qua provider của AllTrans."</string>
-    <string name="status_sync_none">"Chưa kết nối framework; ứng dụng đích dùng provider của AllTrans."</string>
+    <string name="status_sync_provider">"Framework không hỗ trợ remote preferences; ứng dụng đích đọc cài đặt qua provider của ReAllTrans."</string>
+    <string name="status_sync_none">"Chưa kết nối framework; ứng dụng đích dùng provider của ReAllTrans."</string>
     <string name="status_apps">"Ứng dụng"</string>
     <string name="status_apps_on">"Đang bật dịch, %1$d ứng dụng được chọn."</string>
     <string name="status_apps_off">"Công tắc chính đang tắt (%1$d ứng dụng được chọn)."</string>
     <string name="status_root">"Root"</string>
     <string name="status_root_tap">"Chạm để kiểm tra (trình quản lý root có thể hỏi cấp quyền)."</string>
-    <string name="status_root_yes">"AllTrans đã được cấp quyền root."</string>
+    <string name="status_root_yes">"ReAllTrans đã được cấp quyền root."</string>
     <string name="status_root_no">"Không có root hoặc chưa được cấp quyền."</string>
     <string name="pref_cat_data">"Dữ liệu"</string>
     <string name="clear_all_cache">"Xoá toàn bộ bộ nhớ đệm dịch"</string>
     <string name="clear_all_cache_summary">"Mỗi ứng dụng sẽ xoá bản dịch đã lưu ở lần khởi động tiếp theo."</string>
     <string name="clear_all_cache_done">"Đã yêu cầu xoá bộ nhớ đệm cho %1$d ứng dụng. Khởi động lại chúng để áp dụng."</string>
     <string name="backup_export">"Sao lưu cài đặt"</string>
-    <string name="backup_export_summary">"Lưu toàn bộ cài đặt AllTrans (chung, từng ứng dụng, giao diện) ra tệp JSON."</string>
+    <string name="backup_export_summary">"Lưu toàn bộ cài đặt ReAllTrans (chung, từng ứng dụng, giao diện) ra tệp JSON."</string>
     <string name="backup_export_done">"Đã lưu %1$d tệp cài đặt."</string>
     <string name="backup_import">"Khôi phục cài đặt"</string>
     <string name="backup_import_summary">"Nạp cài đặt từ tệp sao lưu. Cài đặt hiện tại sẽ bị thay thế."</string>
-    <string name="backup_import_confirm">"Thay toàn bộ cài đặt AllTrans hiện tại bằng nội dung trong tệp này?"</string>
+    <string name="backup_import_confirm">"Thay toàn bộ cài đặt ReAllTrans hiện tại bằng nội dung trong tệp này?"</string>
     <string name="backup_import_done">"Đã khôi phục %1$d tệp cài đặt. Khởi động lại các ứng dụng được dịch để áp dụng."</string>
     <string name="backup_failed">"Thất bại: %1$s"</string>
     <string name="pref_cat_tools">"Công cụ"</string>
@@ -310,8 +310,8 @@
     <string name="app_language_parse_failed">"Danh sách ngôn ngữ (localeConfig) của ứng dụng bị lỗi, nên Android không cho đổi ngôn ngữ riêng."</string>
     <string name="app_language_check_failed">"Không kiểm tra được ngôn ngữ của ứng dụng: %1$s"</string>
     <string name="scope_title">"Phạm vi LSPosed"</string>
-    <string name="scope_in">"Ứng dụng đã nằm trong phạm vi của AllTrans."</string>
-    <string name="scope_not_in">"Chưa nằm trong phạm vi của AllTrans: không dịch được. Chạm để yêu cầu thêm."</string>
+    <string name="scope_in">"Ứng dụng đã nằm trong phạm vi của ReAllTrans."</string>
+    <string name="scope_not_in">"Chưa nằm trong phạm vi của ReAllTrans: không dịch được. Chạm để yêu cầu thêm."</string>
     <string name="scope_no_service">"Chưa kết nối dịch vụ Xposed; hãy mở LSPosed để kiểm tra phạm vi."</string>
     <string name="scope_requested">"Đã gửi yêu cầu thêm phạm vi. Hãy xác nhận trong thông báo hoặc hộp thoại của framework."</string>
     <string name="scope_approved">"Đã thêm %1$s vào phạm vi. Mở lại ứng dụng để bắt đầu dịch."</string>
@@ -325,7 +325,7 @@
     <string name="credits_libxposed">"libxposed"</string>
     <string name="credits_libxposed_summary">"libxposed API và service (Apache-2.0) — github.com/libxposed"</string>
     <string name="app_language_available">"Hỗ trợ %1$d ngôn ngữ."</string>
-    <string name="list_clear_confirm">"Bỏ ứng dụng này khỏi AllTrans? Dịch sẽ tắt, cài đặt riêng bị xoá, ngôn ngữ có sẵn về theo hệ thống và ứng dụng được gỡ khỏi phạm vi LSPosed."</string>
+    <string name="list_clear_confirm">"Bỏ ứng dụng này khỏi ReAllTrans? Dịch sẽ tắt, cài đặt riêng bị xoá, ngôn ngữ có sẵn về theo hệ thống và ứng dụng được gỡ khỏi phạm vi LSPosed."</string>
     <string name="scope_removed">"Đã gỡ %1$s khỏi phạm vi LSPosed (không cần khi dùng ngôn ngữ có sẵn)."</string>
     <string name="lock_translation_built_in">"Đang dùng ngôn ngữ có sẵn. Hãy đặt về Theo hệ thống trước."</string>
     <string name="lock_built_in_translation">"Đang bật dịch. Hãy tắt dịch trước."</string>

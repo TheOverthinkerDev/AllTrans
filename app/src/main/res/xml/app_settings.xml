@@ -160,7 +160,7 @@
             app:key="Source"
             app:persistent="false"
             app:title="@string/about_source"
-            app:summary="https://github.com/TheOverthinkerDev/AllTrans"
+            app:summary="https://github.com/TheOverthinkerDev/ReAllTrans"
             android:layout="@layout/preference_material_item" />
 
         <Preference
