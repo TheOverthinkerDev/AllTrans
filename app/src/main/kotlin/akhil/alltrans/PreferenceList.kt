@@ -78,10 +78,11 @@ internal object PreferenceList {
         TranslatorProvider =
             getValue(lPref, "TranslatorProvider", getValue(gPref, "TranslatorProvider", "g")) as String?
 
-        // App-specific by nature, so always read from the per-app settings.
-        AlibabaOptimize = getValue(lPref, "AlibabaOptimize", true) as Boolean
-        SafeMode = getValue(lPref, "SafeMode", true) as Boolean
-        MtopTranslate = getValue(lPref, "MtopTranslate", false) as Boolean
+        // Per-app value if the user set one for this app, else the global default
+        // (independent of "override global settings").
+        AlibabaOptimize = getValue(lPref, "AlibabaOptimize", getValue(gPref, "AlibabaOptimize", true)) as Boolean
+        SafeMode = getValue(lPref, "SafeMode", getValue(gPref, "SafeMode", true)) as Boolean
+        MtopTranslate = getValue(lPref, "MtopTranslate", getValue(gPref, "MtopTranslate", false)) as Boolean
 
         val useLocalSettings = getValue(lPref, "OverRide", false) as Boolean
 

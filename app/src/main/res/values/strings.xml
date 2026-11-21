@@ -33,7 +33,7 @@
     <string name="description">"Description"</string>
 
     <string name="apps_to_translate">"Apps"</string>
-    <string name="global_settings">"Global"</string>
+    <string name="global_settings">"Translation settings"</string>
     <string name="instructions">"Instructions"</string>
 
 
@@ -303,4 +303,56 @@
     <string name="app_language_system_default">"System default"</string>
     <string name="app_language_no_list">"%1$s. The app does not declare its languages; showing what its resources contain (may be empty)."</string>
     <string name="app_language_loading">"Loading…"</string>
+    <string name="nav_apps">"Apps"</string>
+    <string name="nav_translation">"Translation"</string>
+    <string name="nav_alltrans">"AllTrans"</string>
+    <string name="alltrans_settings">"AllTrans settings"</string>
+    <string name="pref_cat_alibaba_defaults">"Alibaba apps (default for all apps)"</string>
+    <string name="force_stop">"Force stop &amp; reopen"</string>
+    <string name="force_stop_summary">"Apply changed settings now: stops the app and opens it again."</string>
+    <string name="force_stop_done">"App restarted."</string>
+    <string name="force_stop_failed">"Could not stop the app: %1$s. Enable the System Framework scope and reboot, or grant root."</string>
+    <string name="pref_cat_appearance">"Appearance"</string>
+    <string name="ui_language">"AllTrans language"</string>
+    <string name="theme">"Theme"</string>
+    <string name="theme_system">"Follow system"</string>
+    <string name="theme_light">"Light"</string>
+    <string name="theme_dark">"Dark"</string>
+    <string name="dynamic_color">"Dynamic colours"</string>
+    <string name="dynamic_color_summary">"Use colours from the wallpaper (Android 12+)."</string>
+    <string name="pref_cat_status">"Module status"</string>
+    <string name="status_framework">"Framework"</string>
+    <string name="status_framework_active">"Active: %1$s. System Framework scope is working."</string>
+    <string name="status_framework_inactive">"System hook not detected. Enable AllTrans and the System Framework scope in LSPosed/Vector, then reboot. Translation inside apps may still work."</string>
+    <string name="status_apps">"Apps"</string>
+    <string name="status_apps_on">"Translation on, %1$d app(s) enabled."</string>
+    <string name="status_apps_off">"Master switch is off (%1$d app(s) enabled)."</string>
+    <string name="status_root">"Root"</string>
+    <string name="status_root_tap">"Tap to check (your root manager may ask for permission)."</string>
+    <string name="status_root_yes">"Root is granted to AllTrans."</string>
+    <string name="status_root_no">"Root is not available or not granted."</string>
+    <string name="pref_cat_data">"Data"</string>
+    <string name="clear_all_cache">"Clear all translation caches"</string>
+    <string name="clear_all_cache_summary">"Every app clears its saved translations the next time it starts."</string>
+    <string name="clear_all_cache_done">"Cache clear requested for %1$d app(s). Restart them to apply."</string>
+    <string name="backup_export">"Back up settings"</string>
+    <string name="backup_export_summary">"Save all AllTrans settings (global, per app, appearance) to a JSON file."</string>
+    <string name="backup_export_done">"Saved %1$d settings file(s)."</string>
+    <string name="backup_import">"Restore settings"</string>
+    <string name="backup_import_summary">"Load settings from a backup file. Current settings are replaced."</string>
+    <string name="backup_import_confirm">"Replace all current AllTrans settings with the ones in this file?"</string>
+    <string name="backup_import_done">"Restored %1$d settings file(s). Restart translated apps to apply."</string>
+    <string name="backup_failed">"Failed: %1$s"</string>
+    <string name="pref_cat_tools">"Tools"</string>
+    <string name="test_translate">"Test translation"</string>
+    <string name="test_translate_summary">"Translate a sample text with the global service and languages."</string>
+    <string name="test_translate_run">"Translate"</string>
+    <string name="test_translate_result">"%1$s\n\n(%2$s, %3$d ms)"</string>
+    <string name="test_translate_failed">"No result from %1$s. Check the connection or try another service."</string>
+    <string name="pref_cat_about">"About"</string>
+    <string name="about_version">"Version"</string>
+    <string name="about_credits">"Credits"</string>
+    <string name="about_credits_summary">"Original AllTrans by Akhil Kedia; libxposed port, VietPhrase and more by Chanhnh; Android 14–17 fork by TheOverthinkerDev."</string>
+    <string name="about_source">"Source code"</string>
+    <string name="about_license">"License"</string>
 </resources>

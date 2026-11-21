@@ -27,6 +27,14 @@
         app:title="@string/clear_cache"
         android:layout="@layout/preference_material_item" />
 
+    <Preference
+        app:iconSpaceReserved="false"
+        app:key="ForceStop"
+        app:persistent="false"
+        app:summary="@string/force_stop_summary"
+        app:title="@string/force_stop"
+        android:layout="@layout/preference_material_item" />
+
     <PreferenceCategory
         app:title="@string/pref_cat_app_language"
         app:iconSpaceReserved="false"

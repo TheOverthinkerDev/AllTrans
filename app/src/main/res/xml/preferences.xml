@@ -87,6 +87,40 @@
 
     <PreferenceCategory
         app:iconSpaceReserved="false"
+        app:title="@string/pref_cat_alibaba_defaults"
+        app:allowDividerAbove="true">
+
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:key="AlibabaOptimize"
+            app:title="@string/alibaba_optimize"
+            app:summaryOn="@string/alibaba_optimize_summary_on"
+            app:summaryOff="@string/alibaba_optimize_summary_off"
+            app:defaultValue="true" />
+
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:key="SafeMode"
+            app:dependency="AlibabaOptimize"
+            app:disableDependentsState="true"
+            app:title="@string/safe_mode"
+            app:summaryOn="@string/safe_mode_summary_on"
+            app:summaryOff="@string/safe_mode_summary_off"
+            app:defaultValue="true" />
+
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:key="MtopTranslate"
+            app:dependency="SafeMode"
+            app:title="@string/mtop_translate"
+            app:summaryOn="@string/mtop_translate_summary_on"
+            app:summaryOff="@string/mtop_translate_summary_off"
+            app:defaultValue="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
         app:title="@string/pref_cat_advanced_settings"
         app:allowDividerAbove="true">
 

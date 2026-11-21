@@ -265,6 +265,18 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
         }
 
         setupAppLanguage(applicationInfo!!.packageName)
+        setupForceStop(applicationInfo!!.packageName)
+
+        // Alibaba switches not set for this app follow the global default: show
+        // that value without saving it, so the app keeps following the default.
+        for ((key, default) in listOf("AlibabaOptimize" to true, "SafeMode" to true, "MtopTranslate" to false)) {
+            if (localPrefs?.contains(key) == true) continue
+            findPreference<SwitchPreference>(key)?.apply {
+                isPersistent = false
+                isChecked = globalSettings?.getBoolean(key, default) ?: default
+                isPersistent = true
+            }
+        }
 
         findPreference<SwitchPreference>("LocalEnabled")?.setOnPreferenceChangeListener { _, newValue ->
             val enabled = newValue as Boolean
@@ -278,6 +290,34 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
                 }
                 apply()
             }
+            true
+        }
+    }
+
+    /** "Force stop & reopen": applies changed settings without going to system settings. */
+    private fun setupForceStop(pkg: String) {
+        val pref = findPreference<Preference>("ForceStop") ?: return
+        pref.setOnPreferenceClickListener {
+            val appContext = requireContext().applicationContext
+            pref.isEnabled = false
+            Thread {
+                val result = SystemBridge.forceStop(appContext, pkg)
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    pref.isEnabled = true
+                    if (result.ok) {
+                        appContext.packageManager.getLaunchIntentForPackage(pkg)?.let { launch ->
+                            launch.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                            // Give the process a moment to die before relaunching.
+                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                try { appContext.startActivity(launch) } catch (_: Throwable) {}
+                            }, 400)
+                        }
+                        Toast.makeText(appContext, R.string.force_stop_done, Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(appContext, appContext.getString(R.string.force_stop_failed, result.error ?: ""), Toast.LENGTH_LONG).show()
+                    }
+                }
+            }.start()
             true
         }
     }
@@ -299,23 +339,23 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
 
         fun describe(tags: String?): String =
             if (tags.isNullOrEmpty()) getString(R.string.app_language_system_default)
-            else tags.split(',').joinToString(", ") { AppLocaleBridge.displayName(it) }
+            else tags.split(',').joinToString(", ") { SystemBridge.displayName(it) }
 
         Thread {
-            val supported = AppLocaleBridge.supportedLocales(appContext, pkg)
-            val current = AppLocaleBridge.get(appContext, pkg)
+            val supported = SystemBridge.supportedLocales(appContext, pkg)
+            val current = SystemBridge.getLocales(appContext, pkg)
             main.post {
                 if (!isAdded) return@post
                 pref.entries = (listOf(getString(R.string.app_language_system_default)) +
-                    supported.map { AppLocaleBridge.displayName(it) }).toTypedArray()
+                    supported.map { SystemBridge.displayName(it) }).toTypedArray()
                 pref.entryValues = (listOf("") + supported).toTypedArray()
-                val currentTag = current.locales.orEmpty().substringBefore(',')
+                val currentTag = current.value.orEmpty().substringBefore(',')
                 pref.value = currentTag
                 pref.isEnabled = current.ok
                 pref.summary = when {
                     !current.ok -> getString(R.string.app_language_unavailable, current.error ?: "")
-                    supported.isEmpty() -> getString(R.string.app_language_no_list, describe(current.locales))
-                    else -> describe(current.locales)
+                    supported.isEmpty() -> getString(R.string.app_language_no_list, describe(current.value))
+                    else -> describe(current.value)
                 }
             }
         }.start()
@@ -324,14 +364,14 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
             val tag = newValue as? String ?: ""
             pref.isEnabled = false
             Thread {
-                val result = AppLocaleBridge.set(appContext, pkg, tag)
+                val result = SystemBridge.setLocales(appContext, pkg, tag)
                 main.post {
                     if (!isAdded) return@post
                     pref.isEnabled = true
                     if (result.ok) {
-                        pref.value = result.locales.orEmpty().substringBefore(',')
-                        pref.summary = describe(result.locales)
-                        Toast.makeText(appContext, getString(R.string.app_language_applied, describe(result.locales)), Toast.LENGTH_SHORT).show()
+                        pref.value = result.value.orEmpty().substringBefore(',')
+                        pref.summary = describe(result.value)
+                        Toast.makeText(appContext, getString(R.string.app_language_applied, describe(result.value)), Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(appContext, getString(R.string.app_language_unavailable, result.error ?: ""), Toast.LENGTH_LONG).show()
                     }

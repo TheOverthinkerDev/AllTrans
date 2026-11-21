@@ -4,17 +4,21 @@
     <item
         android:id="@+id/navigation_apps"
         android:icon="@drawable/ic_apps"
-        android:title="Apps" />
+        android:title="@string/nav_apps" />
 
     <item
         android:id="@+id/navigation_settings"
         android:icon="@drawable/ic_settings"
-        android:title="Global" />
-
+        android:title="@string/nav_translation" />
 
     <item
         android:id="@+id/navigation_instructions"
         android:icon="@drawable/ic_instructions"
         android:title="@string/instructions" />
+
+    <item
+        android:id="@+id/navigation_alltrans"
+        android:icon="@drawable/ic_tune"
+        android:title="@string/nav_alltrans" />
 
 </menu>

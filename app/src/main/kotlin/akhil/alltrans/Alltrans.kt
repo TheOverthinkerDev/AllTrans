@@ -365,9 +365,9 @@ class Alltrans : XposedModule() {
             }
 
             private fun handleProxyCall(param: HookParam, method: String?, extras: Bundle?) {
-                if (AppLocaleBridge.METHOD == method) {
-                    // Per-app language request from the AllTrans app (caller is checked inside).
-                    param.setResult(AppLocaleBridge.handleInSystem(param.thisObject, extras))
+                if (SystemBridge.METHOD == method) {
+                    // Privileged request from the AllTrans app (caller is checked inside).
+                    param.setResult(SystemBridge.handleInSystem(param.thisObject, extras))
                     return
                 }
                 if ("alltransProxyCall" == method) {

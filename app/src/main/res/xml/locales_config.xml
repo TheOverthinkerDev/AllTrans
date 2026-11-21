@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Languages of the AllTrans UI, so Android's per-app language screen lists it. -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="vi" />
+    <locale android:name="zh" />
+    <locale android:name="zh-TW" />
+</locale-config>

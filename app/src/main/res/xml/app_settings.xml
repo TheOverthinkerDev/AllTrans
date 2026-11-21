@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:title="@string/pref_cat_appearance">
+
+        <ListPreference
+            app:iconSpaceReserved="false"
+            app:key="UiLanguage"
+            app:persistent="false"
+            app:title="@string/ui_language"
+            app:entries="@array/ui_language_entries"
+            app:entryValues="@array/ui_language_values"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_material_item" />
+
+        <ListPreference
+            app:iconSpaceReserved="false"
+            app:key="Theme"
+            app:defaultValue="system"
+            app:title="@string/theme"
+            app:entries="@array/theme_entries"
+            app:entryValues="@array/theme_values"
+            app:useSimpleSummaryProvider="true"
+            android:layout="@layout/preference_material_item" />
+
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:key="DynamicColor"
+            app:defaultValue="false"
+            app:title="@string/dynamic_color"
+            app:summary="@string/dynamic_color_summary" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:allowDividerAbove="true"
+        app:title="@string/pref_cat_status">
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="StatusFramework"
+            app:persistent="false"
+            app:title="@string/status_framework"
+            app:summary="@string/app_language_loading"
+            android:layout="@layout/preference_material_item" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="StatusApps"
+            app:persistent="false"
+            app:title="@string/status_apps"
+            android:layout="@layout/preference_material_item" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="StatusRoot"
+            app:persistent="false"
+            app:title="@string/status_root"
+            app:summary="@string/status_root_tap"
+            android:layout="@layout/preference_material_item" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:allowDividerAbove="true"
+        app:title="@string/pref_cat_data">
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="ClearAllCache"
+            app:persistent="false"
+            app:title="@string/clear_all_cache"
+            app:summary="@string/clear_all_cache_summary"
+            android:layout="@layout/preference_material_item" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="Export"
+            app:persistent="false"
+            app:title="@string/backup_export"
+            app:summary="@string/backup_export_summary"
+            android:layout="@layout/preference_material_item" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="Import"
+            app:persistent="false"
+            app:title="@string/backup_import"
+            app:summary="@string/backup_import_summary"
+            android:layout="@layout/preference_material_item" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:allowDividerAbove="true"
+        app:title="@string/pref_cat_tools">
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="TestTranslate"
+            app:persistent="false"
+            app:title="@string/test_translate"
+            app:summary="@string/test_translate_summary"
+            android:layout="@layout/preference_material_item" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        app:allowDividerAbove="true"
+        app:title="@string/pref_cat_about">
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="Version"
+            app:persistent="false"
+            app:title="@string/about_version"
+            android:layout="@layout/preference_material_item" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="Credits"
+            app:persistent="false"
+            app:selectable="false"
+            app:title="@string/about_credits"
+            app:summary="@string/about_credits_summary"
+            android:layout="@layout/preference_material_item" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="Source"
+            app:persistent="false"
+            app:title="@string/about_source"
+            app:summary="https://github.com/TheOverthinkerDev/AllTrans"
+            android:layout="@layout/preference_material_item" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="License"
+            app:persistent="false"
+            app:selectable="false"
+            app:title="@string/about_license"
+            app:summary="GNU General Public License v3.0 or later"
+            android:layout="@layout/preference_material_item" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

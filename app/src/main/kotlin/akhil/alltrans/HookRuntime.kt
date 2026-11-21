@@ -30,6 +30,16 @@ object HookRuntime {
         this.module = module
     }
 
+    /** "Vector 2.1 (123), API 102" for the status screen. */
+    fun frameworkDescription(): String {
+        val m = module ?: return "unknown"
+        return try {
+            "${m.frameworkName} ${m.frameworkVersion} (${m.frameworkVersionCode}), API ${m.apiVersion}"
+        } catch (t: Throwable) {
+            "unknown (${t.message})"
+        }
+    }
+
     private fun requireModule(): XposedModule =
         module ?: throw IllegalStateException("HookRuntime has not been attached to XposedModule")
 
