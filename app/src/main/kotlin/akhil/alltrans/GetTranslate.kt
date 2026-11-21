@@ -153,7 +153,10 @@ class GetTranslate : Callback {
                     }
                     fun apply() {
                         tv.setTag(appliedKey, translatedText.toString())
-                        if (isHint) tv.hint = translatedText else tv.text = translatedText
+                        if (isHint) tv.hint = translatedText else {
+                            tv.text = translatedText
+                            MarqueeHelper.onTranslated(tv)
+                        }
                     }
 
                     if (translatedText.toString() == originalString) {

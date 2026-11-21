@@ -239,6 +239,8 @@ class SetTextHookHandler : SafeHook() {
     override fun beforeHookedMethod(param: HookParam) {
         val methodName = param.method.name
         val textView = param.thisObject as? TextView ?: return
+        // New text replaces whatever AllTrans was scrolling: restore the view.
+        if (methodName == "setText") MarqueeHelper.reset(textView)
 
         if (param.args.isEmpty() || param.args[0] !is CharSequence) return
 
@@ -264,12 +266,7 @@ class SetTextHookHandler : SafeHook() {
         if (methodName == "setText" && !PreferenceList.SetText) return
 
         // EditText: não traduz conteúdo editável (apenas hint)
-        if (isEditableTextView(textView) && methodName != "setHint") {
-            if (PreferenceList.Scroll) configureScroll(textView)
-            return
-        }
-
-        if (PreferenceList.Scroll) configureScroll(textView)
+        if (isEditableTextView(textView) && methodName != "setHint") return
 
         // Verificação de skip antes de detecção de idioma
         if (shouldSkipTranslation(originalText)) {
@@ -306,6 +303,7 @@ class SetTextHookHandler : SafeHook() {
             if (cachedSpannedTranslation != null) {
                 markApplied(textView, cachedSpannedTranslation, isHint)
                 modifyArgument(param, cachedSpannedTranslation)
+                if (!isHint) MarqueeHelper.onTranslated(textView)
                 return
             }
         } else {
@@ -313,6 +311,7 @@ class SetTextHookHandler : SafeHook() {
             if (cachedTranslation != null) {
                 if (methodName != "append") markApplied(textView, cachedTranslation, isHint)
                 modifyArgument(param, cachedTranslation)
+                if (!isHint && methodName != "append") MarqueeHelper.onTranslated(textView)
                 return
             }
         }
@@ -343,23 +342,5 @@ class SetTextHookHandler : SafeHook() {
         }
 
         requestTranslation(requestKey, textView, compositeKey, spanPayload, isHint)
-    }
-
-    private fun configureScroll(textView: TextView) {
-        try {
-            if (textView.movementMethod == null && !textView.isSingleLine) {
-                textView.isVerticalScrollBarEnabled = true
-                textView.movementMethod = ScrollingMovementMethod.getInstance()
-                textView.scrollBarStyle = View.SCROLLBARS_INSIDE_INSET
-            } else if (textView.isSingleLine) {
-                textView.ellipsize = TextUtils.TruncateAt.MARQUEE
-                textView.marqueeRepeatLimit = -1
-                textView.isFocusable = true
-                textView.isFocusableInTouchMode = true
-                textView.isSelected = true
-            }
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to configure scroll", e)
-        }
     }
 }

@@ -111,8 +111,8 @@
 
     <!-- Scroll -->
     <string name="scroll">"Scroll Long Translated Text"</string>
-    <string name="scroll_summary_off">"Do not scroll translated text if it is too long. Text may be truncated, but this will not interfere with the app's scrolling/clicking. Turn on to scroll long translations."</string>
-    <string name="scroll_summary_on">"Scroll translated text if it is too long. This may interfere with the app's scrolling/clicking. Turn off to disable scrolling."</string>
+    <string name="scroll_summary_off">"Translations that do not fit are cut off with “…”."</string>
+    <string name="scroll_summary_on">"Translations that do not fit scroll back and forth. Does not change focus, clicks or scrolling of the app."</string>
 
     <!-- Anonymous Usage and Crash Data -->
     <string name="debug">"Advanced: Enable debug mode."</string>
@@ -285,4 +285,14 @@
     <string name="button_download">"Download"</string>
     <string name="button_delete">"Delete"</string>
     <string name="Uzbek_micro">"Uzbek"</string>
+    <string name="alibaba_optimize_summary_on">"Translates DinamicX text, the tab bar and UC WebView pages. Only changes what is shown on screen."</string>
+    <string name="pref_cat_alibaba">"Alibaba apps (Taobao, Tmall, Xianyu…)"</string>
+    <string name="alibaba_optimize">"Optimize for Alibaba apps"</string>
+    <string name="mtop_translate_summary_off">"Network data is not changed. Screens drawn only from data (e.g. Taobao cart) stay untranslated."</string>
+    <string name="safe_mode">"Safe mode (display only)"</string>
+    <string name="safe_mode_summary_off">"Data-level translation may be enabled below. Not recommended."</string>
+    <string name="mtop_translate">"Translate network data (MTOP, experimental)"</string>
+    <string name="safe_mode_summary_on">"AllTrans only changes what is drawn on screen and never touches the app\'s data. Recommended."</string>
+    <string name="alibaba_optimize_summary_off">"Only the generic hooks are used."</string>
+    <string name="mtop_translate_summary_on">"Translates text in the cart and item page responses before the app reads them. This changes the app\'s data and could affect app features; turn off if anything misbehaves."</string>
 </resources>

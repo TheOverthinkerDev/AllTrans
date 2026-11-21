@@ -146,7 +146,8 @@ internal object UcWebViewTranslator {
     private fun apply(view: View, translations: Map<String, String>) {
         val map = JSONObject()
         translations.forEach { (k, v) -> map.put(k, v) }
-        evaluate(view, APPLY_SCRIPT.replace("__MAP__", map.toString()), null)
+        val script = APPLY_SCRIPT.replace("__SCROLL__", PreferenceList.Scroll.toString()).replace("__MAP__", map.toString())
+        evaluate(view, script, null)
     }
 
     private fun evaluate(view: View, script: String, callback: ((String?) -> Unit)?) {
@@ -201,15 +202,38 @@ internal object UcWebViewTranslator {
         })();
     """.trimIndent()
 
+    // With scrolling on, an element whose translated text overflows horizontally
+    // gets an inline text-indent animation (styles only; the DOM is unchanged).
     private val APPLY_SCRIPT = """
         (function(){
           try {
-            var m = __MAP__;
+            var m = __MAP__, scroll = __SCROLL__, touched = [];
             var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false), n;
             while ((n = w.nextNode())) {
               var t = n.nodeValue.trim();
-              if (m.hasOwnProperty(t)) { n.nodeValue = n.nodeValue.replace(t, m[t]); n.__atDone = true; }
+              if (m.hasOwnProperty(t)) {
+                n.nodeValue = n.nodeValue.replace(t, m[t]); n.__atDone = true;
+                if (scroll && n.parentElement) touched.push(n.parentElement);
+              }
             }
+            if (!touched.length) return;
+            if (!document.getElementById('__atMarqueeStyle')) {
+              var s = document.createElement('style'); s.id = '__atMarqueeStyle';
+              s.textContent = '@keyframes __atMarquee{0%,12%{text-indent:0}88%,100%{text-indent:var(--at-d)}}';
+              (document.head || document.documentElement).appendChild(s);
+            }
+            requestAnimationFrame(function(){
+              touched.forEach(function(el){
+                // Text-only elements: text-indent would also move images/icons.
+                if (el.__atMarquee || el.children.length > 0) return;
+                var d = el.scrollWidth - el.clientWidth;
+                if (d <= 2) return;
+                el.__atMarquee = true;
+                el.style.setProperty('--at-d', (-d) + 'px');
+                el.style.textOverflow = 'clip';
+                el.style.animation = '__atMarquee ' + Math.max(3, d / 40 + 2) + 's linear infinite alternate';
+              });
+            });
           } catch (e) {}
         })();
     """.trimIndent()

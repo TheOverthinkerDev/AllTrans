@@ -92,8 +92,18 @@ Cài đặt mặc định:
 | Bật bộ nhớ đệm | Lưu bản dịch để tái sử dụng |
 | Độ trễ | Thời gian chờ trước khi thay thế văn bản bằng bản dịch |
 | Độ trễ WebView | Thời gian chờ trước khi bắt đầu dịch WebView |
-| Tự cuộn bản dịch dài | Tự cuộn nếu bản dịch dài hơn vùng hiển thị |
+| Tự cuộn bản dịch dài | Bản dịch không vừa chỗ sẽ chạy qua lại thay vì bị cắt bằng "…" (TextView một dòng, chữ DinamicX, trang UC WebView). Không thay đổi focus, thao tác chạm hay cuộn của ứng dụng |
 | Chế độ gỡ lỗi | Ghi log chi tiết ra `logcat` |
+
+### Ứng dụng Alibaba (Taobao, Tmall, Xianyu…)
+
+Cài đặt riêng cho từng ứng dụng, áp dụng khi ứng dụng có các thành phần tương ứng (DinamicX, UC WebView, MTOP). Cần buộc dừng ứng dụng sau khi đổi.
+
+| Cài đặt | Mặc định | Mô tả |
+| --- | --- | --- |
+| Tối ưu cho ứng dụng Alibaba | Bật | Dịch chữ DinamicX (vẽ bằng `StaticLayout` riêng), thanh tab Taobao (đổi sang icon không chữ `_i18n` và hiện tiêu đề đã dịch) và trang UC/U4 WebView. Chỉ thay đổi phần hiển thị |
+| Chế độ an toàn (chỉ đổi hiển thị) | Bật | AllTrans không bao giờ đụng vào dữ liệu của ứng dụng |
+| Dịch dữ liệu mạng (MTOP, thử nghiệm) | Tắt | Chỉ bật được khi tắt chế độ an toàn. Dịch chữ trong phản hồi API chỉ-đọc (giỏ hàng, trang sản phẩm) trước khi ứng dụng đọc, chỉ ở các khoá hiển thị, sửa trực tiếp trên JSON gốc. Cần cho các màn hình chỉ vẽ từ dữ liệu như giỏ hàng Taobao (Weex 2). Có thể ảnh hưởng tính năng của ứng dụng |
 
 ## Dịch vụ dịch
 

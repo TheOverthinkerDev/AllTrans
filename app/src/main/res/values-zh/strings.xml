@@ -46,8 +46,8 @@
 	<string name="delay_webview">"开始翻译 WebView 前的延迟"</string>
 	<string name="delay_webview_summary">"开始翻译 WebView 前的等待时间（毫秒）。默认值为 500。设置为 0 可提高翻译速度。如果部分网页内容未翻译，请设置为 3000–5000。"</string>
 	<string name="scroll">"自动滚动长译文"</string>
-	<string name="scroll_summary_off">"如果译文过长则不滚动。文本可能被截断，但不会干扰应用的滚动/点击。开启以滚动长译文。"</string>
-	<string name="scroll_summary_on">"如果译文过长则自动滚动。这可能会干扰应用的滚动/点击。关闭以禁用滚动。"</string>
+    <string name="scroll_summary_off">"放不下的译文会以“…”截断。"</string>
+    <string name="scroll_summary_on">"放不下的译文会来回滚动。不会改变应用的焦点、点击或滚动。"</string>
 	<string name="debug">"高级：启用调试模式。"</string>
 	<string name="debug_summary_off">"调试模式已关闭，不会将调试数据写入 logcat。发送错误报告前请开启。"</string>
 	<string name="debug_summary_on">"调试模式已开启，正在写入 logcat。这会降低性能，如非必要请关闭。"</string>
@@ -210,4 +210,14 @@
 	<string name="Mongolian_micro">"蒙古语"</string>
 	<string name="Nepali_micro">"尼泊尔语"</string>
 	<string name="Zulu_micro">"祖鲁语"</string>
+    <string name="alibaba_optimize_summary_on">"翻译 DinamicX 文本、底部标签栏和 UC WebView 页面。仅改变屏幕显示。"</string>
+    <string name="pref_cat_alibaba">"阿里系应用（淘宝、天猫、闲鱼…）"</string>
+    <string name="alibaba_optimize">"针对阿里系应用优化"</string>
+    <string name="mtop_translate_summary_off">"不修改网络数据。仅由数据绘制的页面（如淘宝购物车）不会被翻译。"</string>
+    <string name="safe_mode">"安全模式（仅改变显示）"</string>
+    <string name="safe_mode_summary_off">"可在下方开启数据层翻译。不推荐。"</string>
+    <string name="mtop_translate">"翻译网络数据（MTOP，实验性）"</string>
+    <string name="safe_mode_summary_on">"AllTrans 只改变屏幕上绘制的内容，从不修改应用数据。推荐。"</string>
+    <string name="alibaba_optimize_summary_off">"仅使用通用钩子。"</string>
+    <string name="mtop_translate_summary_on">"在应用读取前翻译购物车和商品页数据中的文本。这会修改应用数据，可能影响应用功能；如有异常请关闭。"</string>
 </resources>

@@ -30,6 +30,17 @@ internal object PreferenceList {
     var DelayWebView: Int = 0
     var Scroll: Boolean = false
 
+    // Per-app options for Alibaba apps (DinamicX / UC WebView / MTOP).
+    /** Use the renderer-specific hooks (DinamicX text, tab bar, UC WebView). */
+    var AlibabaOptimize: Boolean = true
+    /** Only change what is drawn or displayed; never the app's data. */
+    var SafeMode: Boolean = true
+    /** Translate MTOP API responses (changes app data). Only when SafeMode is off. */
+    var MtopTranslate: Boolean = false
+
+    val mtopTranslationAllowed: Boolean
+        get() = AlibabaOptimize && !SafeMode && MtopTranslate
+
     var TranslatorProvider: String? = "g"
 
     fun isVietPhraseLanguagePair(fromLanguage: String?, toLanguage: String?): Boolean {
@@ -66,6 +77,11 @@ internal object PreferenceList {
 
         TranslatorProvider =
             getValue(lPref, "TranslatorProvider", getValue(gPref, "TranslatorProvider", "g")) as String?
+
+        // App-specific by nature, so always read from the per-app settings.
+        AlibabaOptimize = getValue(lPref, "AlibabaOptimize", true) as Boolean
+        SafeMode = getValue(lPref, "SafeMode", true) as Boolean
+        MtopTranslate = getValue(lPref, "MtopTranslate", false) as Boolean
 
         val useLocalSettings = getValue(lPref, "OverRide", false) as Boolean
 

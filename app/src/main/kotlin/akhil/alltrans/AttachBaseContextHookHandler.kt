@@ -287,8 +287,8 @@ internal class AttachBaseContextHookHandler : SafeHook() {
                 // Legacy layout constructors still used by many custom View implementations
                 applyLegacyLayoutHooks(context)
 
-                // App-specific renderers that bypass the generic hooks
-                TaobaoHooks.install(context)
+                // Renderers of Alibaba apps that bypass the generic hooks
+                if (PreferenceList.AlibabaOptimize) TaobaoHooks.install(context)
             } else {
                 Utils.debugLog("Extended view translation hooks disabled for $packageName")
             }
@@ -296,7 +296,7 @@ internal class AttachBaseContextHookHandler : SafeHook() {
             // WebView hooks
             applyWebViewHooks(packageName)
             // UC/U4 WebView (Alibaba apps); no-op when the app does not ship it
-            if (PreferenceList.LoadURL) UcWebViewTranslator.install(context.classLoader)
+            if (PreferenceList.LoadURL && PreferenceList.AlibabaOptimize) UcWebViewTranslator.install(context.classLoader)
 
             // Notification hooks
             applyNotificationHooks()

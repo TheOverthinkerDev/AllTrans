@@ -14,19 +14,16 @@ import java.util.Collections
 import java.util.WeakHashMap
 
 /**
- * App-specific hooks for Taobao (com.taobao.taobao).
- *
- * Taobao renders much of its UI without TextView.setText():
+ * Hooks for Alibaba apps (Taobao and others built on the same frameworks).
+ * Each part is installed only when the app ships the class it targets, and
+ * only the display is changed, except MTOP which is opt-in (see MtopTranslator):
  *  - DinamicX components draw text with DXNativeFastText, which receives a
- *    prebuilt StaticLayout through setStaticLayout(). The generic StaticLayout
- *    hook does not see these builds, so "大家都在搜", search keywords, promo tags
- *    and the search-box suggestions stayed in Chinese.
- *
- * Not covered: the bottom tab bar (NavigationTabIndicatorView) has no text view
- * at all; its labels are part of the icon images (TUrlImageView).
+ *    prebuilt StaticLayout through setStaticLayout(); the translation is swapped
+ *    in only while drawing.
+ *  - Taobao's bottom tab bar draws its labels into the icon bitmaps; text-free
+ *    "_i18n" icons plus the (translated) title TextView are used instead.
  */
 internal object TaobaoHooks {
-    const val PACKAGE = "com.taobao.taobao"
     private const val TAG = "AllTrans:Taobao"
     private const val DX_FAST_TEXT = "com.taobao.android.dinamicx.view.DXNativeFastText"
     private const val NAV_TAB = "com.taobao.tao.navigation.NavigationTabIndicatorView"
@@ -51,14 +48,21 @@ internal object TaobaoHooks {
     fun isBuildingLayout(): Boolean = genericStaticLayoutDisabled || buildingLayout.get() == true
 
     fun install(context: Context) {
-        if (context.packageName != PACKAGE || installed) return
+        if (installed) return
         installed = true
-        genericStaticLayoutDisabled = true
         val loader = context.classLoader
-        hookDxFastText(loader)
-        hookNavigationTab(loader)
-        MtopTranslator.install(loader)
+        if (hasClass(loader, DX_FAST_TEXT)) {
+            genericStaticLayoutDisabled = true
+            hookDxFastText(loader)
+        }
+        if (hasClass(loader, NAV_TAB)) hookNavigationTab(loader)
+        // Changes app data: opt-in, and never in safe mode.
+        if (PreferenceList.mtopTranslationAllowed) MtopTranslator.install(loader)
+        Utils.debugLog("$TAG: installed for ${context.packageName} (safeMode=${PreferenceList.SafeMode}, mtop=${PreferenceList.mtopTranslationAllowed})")
     }
+
+    private fun hasClass(loader: ClassLoader, name: String): Boolean =
+        try { Class.forName(name, false, loader); true } catch (_: Throwable) { false }
 
     // ------------------------------------------------------------- Tab bar
 
@@ -166,8 +170,15 @@ internal object TaobaoHooks {
      * it re-laid the item out around the longer string and sized the view 0x0.
      * The translation is swapped in only for the duration of onDraw().
      */
-    private val dxTranslations: MutableMap<StaticLayout, StaticLayout> =
+    private val dxTranslations: MutableMap<StaticLayout, DxTranslated> =
         Collections.synchronizedMap(WeakHashMap())
+
+    /**
+     * [fitted]: translation fitted into the original box (shrunk, then "…").
+     * [marquee]: single unbroken line, set when "scroll long translations" is on
+     * and the one-line translation still does not fit; drawn sliding back and forth.
+     */
+    private class DxTranslated(val fitted: StaticLayout, val marquee: StaticLayout?, val boxWidth: Int)
 
     private class DxCall(val view: View, val original: StaticLayout)
 
@@ -237,28 +248,48 @@ internal object TaobaoHooks {
     /** Draws the translated layout in place of the original one. */
     private class DxOnDrawHook(private val field: java.lang.reflect.Field) : SafeHook() {
         private val swapped = ThreadLocal<StaticLayout?>()
+        private val canvasSaved = ThreadLocal<Boolean>()
 
         override fun beforeHookedMethod(param: HookParam) {
-            val view = param.thisObject ?: return
+            val view = param.thisObject as? View ?: return
             val original = field.get(view) as? StaticLayout ?: return
             val translated = dxTranslations[original] ?: return
-            field.set(view, translated)
+            val canvas = param.args.firstOrNull() as? Canvas
+            val marquee = translated.marquee
+            if (marquee != null && canvas != null && view.width > 0) {
+                // Clip to the view and slide the unbroken line back and forth.
+                canvas.save()
+                canvas.clipRect(0, 0, view.width, view.height)
+                canvas.translate(-MarqueeHelper.offset(view, marquee.width - translated.boxWidth), 0f)
+                canvasSaved.set(true)
+                field.set(view, marquee)
+            } else {
+                field.set(view, translated.fitted)
+            }
             swapped.set(original)
         }
 
         override fun afterHookedMethod(param: HookParam) {
             val original = swapped.get() ?: return
             swapped.remove()
-            param.thisObject?.let { field.set(it, original) }
+            val view = param.thisObject as? View ?: return
+            field.set(view, original)
+            if (canvasSaved.get() == true) {
+                canvasSaved.remove()
+                (param.args.firstOrNull() as? Canvas)?.restore()
+                // Next frame only while the view keeps being drawn.
+                view.postInvalidateOnAnimation()
+            }
         }
     }
+
 
     /**
      * Builds a layout for [text] with the same paint, width, alignment and
      * spacing as [source]. Translations are often longer, so keep the original
      * line count and ellipsize instead of overflowing the fixed-size view.
      */
-    private fun rebuild(source: StaticLayout, text: String): StaticLayout {
+    private fun rebuild(source: StaticLayout, text: String): DxTranslated {
         buildingLayout.set(true)
         try {
             val includePad = source.topPadding != 0 || source.bottomPadding != 0
@@ -296,7 +327,17 @@ internal object TaobaoHooks {
                         "textClass=${source.text?.javaClass?.simpleName}"
                 )
             }
-            return layout
+            // One-line text that still does not fit: also keep an unbroken
+            // version to scroll, if the user enabled scrolling.
+            val marquee = if (PreferenceList.Scroll && lines == 1 && paint.measureText(text) > width) {
+                val full = kotlin.math.ceil(paint.measureText(text).toDouble()).toInt() + 1
+                StaticLayout.Builder.obtain(styled, 0, styled.length, paint, full)
+                    .setLineSpacing(source.spacingAdd, source.spacingMultiplier)
+                    .setIncludePad(includePad)
+                    .setMaxLines(1)
+                    .build()
+            } else null
+            return DxTranslated(layout, marquee, width)
         } finally {
             buildingLayout.remove()
         }

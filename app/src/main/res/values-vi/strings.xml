@@ -68,8 +68,8 @@
     <string name="delay_webview_summary">"Đặt thời gian chờ (mili giây) trước khi bắt đầu dịch WebView. Mặc định là 500. Đặt 0 để tăng tốc dịch. Đặt 3000–5000 nếu một phần nội dung web chưa được dịch."</string>
 
     <string name="scroll">"Tự cuộn bản dịch dài"</string>
-    <string name="scroll_summary_off">"Không cuộn bản dịch nếu quá dài. Văn bản có thể bị cắt bớt nhưng sẽ không ảnh hưởng đến thao tác cuộn/chạm của ứng dụng. Bật để cuộn bản dịch dài."</string>
-    <string name="scroll_summary_on">"Đang cuộn bản dịch nếu quá dài. Điều này có thể ảnh hưởng đến thao tác cuộn/chạm của ứng dụng. Tắt để tắt tính năng này."</string>
+    <string name="scroll_summary_off">"Bản dịch không vừa chỗ sẽ bị cắt bằng “…”."</string>
+    <string name="scroll_summary_on">"Bản dịch không vừa chỗ sẽ chạy qua lại. Không thay đổi focus, thao tác chạm hay cuộn của ứng dụng."</string>
 
     <string name="debug">"Nâng cao: Bật chế độ gỡ lỗi."</string>
     <string name="debug_summary_off">"Chế độ gỡ lỗi đang tắt. Không ghi dữ liệu gỡ lỗi vào logcat. Hãy bật tính năng này trước khi gửi báo cáo lỗi."</string>
@@ -233,4 +233,14 @@
     <string name="Mongolian_micro">"Tiếng Mông Cổ"</string>
     <string name="Nepali_micro">"Tiếng Nepal"</string>
     <string name="Zulu_micro">"Tiếng Zulu"</string>
+    <string name="alibaba_optimize_summary_on">"Dịch chữ DinamicX, thanh tab và trang UC WebView. Chỉ thay đổi phần hiển thị trên màn hình."</string>
+    <string name="pref_cat_alibaba">"Ứng dụng Alibaba (Taobao, Tmall, Xianyu…)"</string>
+    <string name="alibaba_optimize">"Tối ưu cho ứng dụng Alibaba"</string>
+    <string name="mtop_translate_summary_off">"Không thay đổi dữ liệu mạng. Màn hình chỉ vẽ từ dữ liệu (ví dụ giỏ hàng Taobao) sẽ không được dịch."</string>
+    <string name="safe_mode">"Chế độ an toàn (chỉ đổi hiển thị)"</string>
+    <string name="safe_mode_summary_off">"Có thể bật dịch ở tầng dữ liệu bên dưới. Không khuyên dùng."</string>
+    <string name="mtop_translate">"Dịch dữ liệu mạng (MTOP, thử nghiệm)"</string>
+    <string name="safe_mode_summary_on">"AllTrans chỉ thay đổi phần được vẽ lên màn hình, không bao giờ đụng vào dữ liệu của ứng dụng. Khuyên dùng."</string>
+    <string name="alibaba_optimize_summary_off">"Chỉ dùng các hook chung."</string>
+    <string name="mtop_translate_summary_on">"Dịch chữ trong dữ liệu giỏ hàng và trang sản phẩm trước khi ứng dụng đọc. Việc này thay đổi dữ liệu của ứng dụng và có thể ảnh hưởng tính năng; hãy tắt nếu có gì bất thường."</string>
 </resources>

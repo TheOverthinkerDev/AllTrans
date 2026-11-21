@@ -1,51 +1,55 @@
 package akhil.alltrans
 
 import android.os.Looper
-import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 /**
- * Translates selected Taobao MTOP API responses before the app reads them.
+ * Opt-in: translates selected MTOP API responses before the app reads them.
  *
- * Some screens never put their text into Android views: the cart is rendered by
- * Weex 2 (UnicornView, Skia in native code) and parts of the item page by
- * engines the view hooks cannot reach. All of them get their text from MTOP
- * JSON responses, which pass through MtopResponse.setBytedata() on a network
- * thread. Rewriting the CJK display strings there translates those screens
- * whatever renders them.
+ * Some screens never put their text into Android views (Taobao's cart is
+ * rendered by Weex 2 / Skia in native code), but they get it from MTOP JSON
+ * responses passing through MtopResponse.setBytedata() on a network thread.
  *
- * Kept deliberately narrow: only allow-listed APIs, only string values that
- * contain CJK, never values under id/url/code/param-like keys or values that
- * look like embedded JSON or links, and a time budget so a slow translator
- * delays the response by at most a few seconds (untranslated strings are left
- * as they are).
+ * This changes the app's data, so it is off unless the user disables safe mode
+ * and enables it for the app, and it is kept as narrow as possible:
+ *  - only read-only APIs on the allow-list (never cart/order/pay actions);
+ *  - only string values under display keys (title, text, name, desc, ...);
+ *  - only values containing CJK, never links or embedded JSON;
+ *  - the raw JSON text is edited in place: every other byte (numbers, key
+ *    order, whitespace, other strings) stays exactly as the server sent it;
+ *  - a time budget, after which remaining strings are left untranslated.
  */
 internal object MtopTranslator {
     private const val TAG = "AllTrans:Mtop"
 
-    /** API name prefixes whose responses are translated (lower case). */
+    /** Read-only APIs whose responses are translated (lower-case prefixes). */
     private val API_ALLOWLIST = listOf(
-        "mtop.trade.query.bag",          // cart
+        "mtop.trade.query.bag",          // cart (query only)
         "mtop.taobao.detail.data.get",   // item page
     )
 
-    // Text travels URL-encoded in the provider URI (~9 bytes per CJK char).
+    /** Keys whose values are pure display text. */
+    private val DISPLAY_KEY = Regex(
+        "(?i)^(title|subtitle|sub_title|text|name|desc|description|content|label|tip|tips|hint|placeholder|" +
+            "msg|message|summary|tag|tags|tagtext|buttontext|btntext|shopname|sellernick|itemtitle|skutext|" +
+            "propname|valuename|pricedesc|pricetext|promotiontext|benefittext|ruletext)$"
+    )
+    private val DISPLAY_SUFFIX = Regex("(Title|Text|Name|Desc|Label|Tip|Tips|Message|Summary)$")
+
     private const val CHUNK_CHARS = 600
     private const val BUDGET_MS = 6000L
     private val pool = Executors.newFixedThreadPool(4) { r -> Thread(r, "AllTrans-mtop").apply { isDaemon = true } }
-
     private val CJK = Regex("[㐀-鿿]")
-    private val SKIP_KEY = Regex(
-        "(?i)(^|_)(id|ids|url|urls|link|href|img|image|images|pic|pics|icon|logo|avatar|key|code|token|sign|" +
-            "spm|scm|track|trackparams|utparam|utparams|params|param|args|extra|exparams|args|query|scheme|" +
-            "md5|hash|version|style|css|template|bizcode|event|events|action|actions|cookie)$|" +
-            "(Id|ID|Ids|Url|URL|Key|Code|Param|Params|Args|Token)$"
-    )
+
+    @Volatile
+    private var installed = false
 
     fun install(loader: ClassLoader) {
+        if (installed) return
+        installed = true
         try {
             val cls = Class.forName("mtopsdk.mtop.domain.MtopResponse", false, loader)
             val hooked = HookRuntime.hookAllMethods(cls, "setBytedata", object : SafeHook() {
@@ -64,18 +68,23 @@ internal object MtopTranslator {
         }
     }
 
+    private fun isDisplayKey(key: String?) = key != null && (DISPLAY_KEY.matches(key) || DISPLAY_SUFFIX.containsMatchIn(key))
+
+    private fun isCandidate(key: String?, value: String): Boolean {
+        if (!isDisplayKey(key)) return false
+        val v = value.trim()
+        if (v.isEmpty() || v.length > 300 || !CJK.containsMatchIn(v)) return false
+        if (v.startsWith("{") || v.startsWith("[") || v.startsWith("http") || v.startsWith("//") || v.contains("://")) return false
+        return !v.contains('\n')
+    }
+
     private fun translate(api: String, bytes: ByteArray): ByteArray? {
         if (bytes.isEmpty()) return null
         val start = System.currentTimeMillis()
-        val root = try {
-            JSONObject(String(bytes, Charsets.UTF_8))
-        } catch (_: Throwable) {
-            return null
-        }
-        val data = root.opt("data") ?: return null
+        val json = String(bytes, Charsets.UTF_8)
 
         val texts = LinkedHashSet<String>()
-        collect(data, null, texts)
+        if (scan(json, null, texts) == null) return null   // not well-formed: leave untouched
         if (texts.isEmpty()) return null
 
         val translations = HashMap<String, String>()
@@ -91,65 +100,99 @@ internal object MtopTranslator {
         translations.putAll(fetched)
         if (translations.isEmpty()) return null
 
-        replace(data, null, translations)
-        if (Utils.Debug) logLeftovers(api, data)
-        val out = root.toString().toByteArray(Charsets.UTF_8)
+        val out = scan(json, translations, null) ?: return null
         Utils.debugLog(
             "$TAG: $api ${texts.size} strings, ${translations.size - fetched.size} cached, ${fetched.size}/${missing.size} fetched " +
                 "in ${System.currentTimeMillis() - start}ms"
         )
-        return out
+        return out.toByteArray(Charsets.UTF_8)
     }
 
-    /** Debug: CJK strings still in the response and the key they sit under. */
-    private fun logLeftovers(api: String, data: Any) {
-        val left = LinkedHashMap<String, String>()
-        fun walk(node: Any?, key: String?) {
-            when (node) {
-                is JSONObject -> node.keys().forEach { k -> walk(node.opt(k), k) }
-                is JSONArray -> for (i in 0 until node.length()) walk(node.opt(i), key)
-                is String -> if (CJK.containsMatchIn(node) && left.size < 40) left[node.take(60)] = key ?: "-"
+    private class Ctx(val isObject: Boolean, val parentKey: String?) {
+        var key: String? = null
+        var expectKey = isObject
+    }
+
+    /**
+     * Walks the raw JSON text. With [collect], records candidate values; with
+     * [map], returns the text with candidate values replaced and everything
+     * else copied verbatim. Returns null if the text is not valid JSON enough
+     * to walk safely.
+     */
+    internal fun scan(json: String, map: Map<String, String>?, collect: MutableSet<String>?): String? {
+        val out = if (map != null) StringBuilder(json.length + json.length / 8) else null
+        val stack = ArrayList<Ctx>()
+        var i = 0
+        val n = json.length
+        while (i < n) {
+            val c = json[i]
+            when (c) {
+                '{', '[' -> {
+                    val top = stack.lastOrNull()
+                    val parentKey = when {
+                        top == null -> null
+                        top.isObject -> top.key
+                        else -> top.parentKey
+                    }
+                    stack.add(Ctx(c == '{', parentKey))
+                    out?.append(c); i++
+                }
+                '}', ']' -> {
+                    if (stack.isEmpty()) return null
+                    stack.removeAt(stack.size - 1)
+                    out?.append(c); i++
+                }
+                ',' -> {
+                    stack.lastOrNull()?.let { if (it.isObject) it.expectKey = true }
+                    out?.append(c); i++
+                }
+                ':' -> {
+                    stack.lastOrNull()?.expectKey = false
+                    out?.append(c); i++
+                }
+                '"' -> {
+                    val end = stringEnd(json, i) ?: return null
+                    val raw = json.substring(i, end + 1)
+                    val top = stack.lastOrNull()
+                    if (top != null && top.isObject && top.expectKey) {
+                        top.key = decode(raw) ?: return null
+                        out?.append(raw)
+                    } else {
+                        val key = if (top == null) null else if (top.isObject) top.key else top.parentKey
+                        val value = if (raw.indexOf('\\') < 0) raw.substring(1, raw.length - 1) else decode(raw) ?: return null
+                        if (isCandidate(key, value)) {
+                            val trimmed = value.trim()
+                            collect?.add(trimmed)
+                            val tr = map?.get(trimmed)
+                            if (tr != null) out?.append(JSONObject.quote(value.replace(trimmed, tr))) else out?.append(raw)
+                        } else out?.append(raw)
+                    }
+                    i = end + 1
+                }
+                else -> { out?.append(c); i++ }
             }
         }
-        walk(data, null)
-        left.forEach { (v, k) -> Utils.debugLog("$TAG: left in $api [$k] '$v'") }
+        if (stack.isNotEmpty()) return null
+        return out?.toString() ?: ""
     }
 
-    private fun isCandidate(key: String?, value: String): Boolean {
-        if (key != null && SKIP_KEY.containsMatchIn(key)) return false
-        val v = value.trim()
-        if (v.isEmpty() || v.length > 300 || !CJK.containsMatchIn(v)) return false
-        if (v.startsWith("{") || v.startsWith("[") || v.startsWith("http") || v.startsWith("//") || v.contains("://")) return false
-        if (v.contains('\n')) return false
-        return true
-    }
-
-    private fun collect(node: Any?, key: String?, out: MutableSet<String>) {
-        when (node) {
-            is JSONObject -> node.keys().forEach { k -> collect(node.opt(k), k, out) }
-            is JSONArray -> for (i in 0 until node.length()) collect(node.opt(i), key, out)
-            is String -> if (isCandidate(key, node)) out.add(node.trim())
-        }
-    }
-
-    private fun replace(node: Any?, key: String?, map: Map<String, String>) {
-        when (node) {
-            is JSONObject -> node.keys().asSequence().toList().forEach { k ->
-                val v = node.opt(k)
-                if (v is String) {
-                    if (isCandidate(k, v)) map[v.trim()]?.let { node.put(k, it) }
-                } else replace(v, k, map)
-            }
-            is JSONArray -> for (i in 0 until node.length()) {
-                val v = node.opt(i)
-                if (v is String) {
-                    if (isCandidate(key, v)) map[v.trim()]?.let { node.put(i, it) }
-                } else replace(v, key, map)
+    /** Index of the closing quote of the string literal starting at [start]. */
+    private fun stringEnd(s: String, start: Int): Int? {
+        var i = start + 1
+        while (i < s.length) {
+            when (s[i]) {
+                '\\' -> i += 2
+                '"' -> return i
+                else -> i++
             }
         }
+        return null
     }
 
-    /** Translates [texts] in newline-joined chunks, in parallel, within the deadline. */
+    private fun decode(raw: String): String? =
+        try { org.json.JSONTokener(raw).nextValue() as? String } catch (_: Throwable) { null }
+
+    /** Translates [texts] in chunks of one <p> per string, in parallel, within the deadline. */
     private fun fetch(texts: List<String>, deadline: Long): Map<String, String> {
         if (texts.isEmpty()) return emptyMap()
         val chunks = ArrayList<List<String>>()
@@ -166,7 +209,7 @@ internal object MtopTranslator {
         val futures = chunks.map { chunk ->
             pool.submit(Callable {
                 // The Google provider uses the translateHtml endpoint: one <p>
-                // per string survives translation (plain newlines/<br> get
+                // per string survives translation (newline/<br> separators get
                 // merged), and the provider turns each </p> into a newline.
                 val joined = chunk.joinToString("") { "<p>${escapeHtml(it)}</p>" }
                 val result = GetTranslateToken.translateBlocking(joined) ?: return@Callable emptyMap<String, String>()
@@ -175,8 +218,7 @@ internal object MtopTranslator {
                     Utils.debugLog("$TAG: chunk line mismatch ${chunk.size} -> ${lines.size}, skipped")
                     return@Callable emptyMap<String, String>()
                 }
-                chunk.indices.associate { chunk[it] to lines[it] }
-                    .filter { (k, v) -> v.isNotEmpty() && v != k }
+                chunk.indices.associate { chunk[it] to lines[it] }.filter { (k, v) -> v.isNotEmpty() && v != k }
             })
         }
         val result = HashMap<String, String>()

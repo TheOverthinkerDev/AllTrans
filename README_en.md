@@ -92,8 +92,18 @@ Default settings:
 | Use Caching | Stores translations for reuse |
 | Delay | Wait time before replacing text with the translation |
 | Delay WebView | Wait time before starting WebView translation |
-| Scroll Long Translated Text | Scrolls automatically when a translation is too long |
+| Scroll Long Translated Text | Translations that do not fit slide back and forth instead of being cut with "…" (single-line TextViews, DinamicX text, UC WebView pages). Does not change the app's focus, clicks or scrolling |
 | Debug Mode | Writes detailed logs to `logcat` |
+
+### Alibaba apps (Taobao, Tmall, Xianyu…)
+
+Per-app settings, used when the app ships the matching components (DinamicX, UC WebView, MTOP). Force-stop the app after changing them.
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| Optimize for Alibaba apps | On | Translates DinamicX text (drawn from its own `StaticLayout`), Taobao's tab bar (text-free `_i18n` icons plus the translated title) and UC/U4 WebView pages. Display only |
+| Safe mode (display only) | On | AllTrans never touches the app's data |
+| Translate network data (MTOP, experimental) | Off | Only available with safe mode off. Translates text in read-only API responses (cart, item page) before the app reads them, only under display keys, editing the raw JSON in place. Needed for screens drawn purely from data such as Taobao's cart (Weex 2). May affect app features |
 
 ## Translation providers
 
