@@ -89,6 +89,18 @@ class ViewTextMethodHookHandler : SafeHook(), OriginalCallable {
         val call = userData as? ViewMethodCall ?: return
         val translated = translatedString?.toString().orEmpty().ifEmpty { call.originalText }
 
+        // Recycled list items: if the view no longer carries the text this
+        // request was for (e.g. getContentDescription() changed), do not write
+        // the old item's translation onto the new item.
+        if (call.method.name.startsWith("set")) {
+            try {
+                val getter = call.target.javaClass.getMethod("get" + call.method.name.removePrefix("set"))
+                val current = getter.invoke(call.target)?.toString()
+                if (current != null && current != call.originalText) return
+            } catch (_: Throwable) {
+            }
+        }
+
         try {
             val updatedArgs = call.originalArgs.copyOf()
             updatedArgs[0] = adaptArgumentType(translated, call.argType)

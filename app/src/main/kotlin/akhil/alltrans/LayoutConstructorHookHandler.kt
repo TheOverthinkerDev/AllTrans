@@ -11,6 +11,9 @@ class LayoutConstructorHookHandler : SafeHook() {
 
     @Throws(Throwable::class)
     override fun beforeHookedMethod(param: HookParam) {
+        // Same as the StaticLayout.Builder hook: off where an app-specific hook
+        // renders the translation (swapping text here breaks measured layouts).
+        if (TaobaoHooks.isBuildingLayout()) return
         if (param.args.isEmpty() || param.args[0] !is CharSequence) return
 
         val sourceText = param.args[0] as CharSequence

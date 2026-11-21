@@ -286,6 +286,9 @@ internal class AttachBaseContextHookHandler : SafeHook() {
 
                 // Legacy layout constructors still used by many custom View implementations
                 applyLegacyLayoutHooks(context)
+
+                // App-specific renderers that bypass the generic hooks
+                TaobaoHooks.install(context)
             } else {
                 Utils.debugLog("Extended view translation hooks disabled for $packageName")
             }
