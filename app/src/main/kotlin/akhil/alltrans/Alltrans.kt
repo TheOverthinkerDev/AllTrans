@@ -365,6 +365,11 @@ class Alltrans : XposedModule() {
             }
 
             private fun handleProxyCall(param: HookParam, method: String?, extras: Bundle?) {
+                if (AppLocaleBridge.METHOD == method) {
+                    // Per-app language request from the AllTrans app (caller is checked inside).
+                    param.setResult(AppLocaleBridge.handleInSystem(param.thisObject, extras))
+                    return
+                }
                 if ("alltransProxyCall" == method) {
                     if (extras == null) {
                         HookRuntime.log("Proxy call: extras is null!")

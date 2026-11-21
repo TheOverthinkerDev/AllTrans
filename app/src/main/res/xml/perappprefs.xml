@@ -28,6 +28,21 @@
         android:layout="@layout/preference_material_item" />
 
     <PreferenceCategory
+        app:title="@string/pref_cat_app_language"
+        app:iconSpaceReserved="false"
+        app:allowDividerAbove="true">
+
+        <ListPreference
+            app:iconSpaceReserved="false"
+            app:key="AppLanguage"
+            app:persistent="false"
+            app:title="@string/app_language"
+            app:summary="@string/app_language_loading"
+            android:layout="@layout/preference_material_item" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
         app:title="@string/pref_cat_translate_settings"
         app:iconSpaceReserved="false"
         app:allowDividerAbove="true">

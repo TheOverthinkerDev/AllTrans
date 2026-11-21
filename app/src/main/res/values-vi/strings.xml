@@ -243,4 +243,12 @@
     <string name="safe_mode_summary_on">"AllTrans chỉ thay đổi phần được vẽ lên màn hình, không bao giờ đụng vào dữ liệu của ứng dụng. Khuyên dùng."</string>
     <string name="alibaba_optimize_summary_off">"Chỉ dùng các hook chung."</string>
     <string name="mtop_translate_summary_on">"Dịch chữ trong dữ liệu giỏ hàng và trang sản phẩm trước khi ứng dụng đọc. Việc này thay đổi dữ liệu của ứng dụng và có thể ảnh hưởng tính năng; hãy tắt nếu có gì bất thường."</string>
+    <string name="app_language_applied">"Đã đặt ngôn ngữ ứng dụng: %1$s. Mở lại ứng dụng nếu chưa đổi."</string>
+    <string name="app_language">"Ngôn ngữ của ứng dụng"</string>
+    <string name="pref_cat_app_language">"Ngôn ngữ của ứng dụng (có sẵn)"</string>
+    <string name="app_language_unsupported">"Cần Android 13 trở lên."</string>
+    <string name="app_language_unavailable">"Không khả dụng: %1$s. Hãy bật phạm vi System Framework trong LSPosed/Vector rồi khởi động lại, hoặc cấp quyền root."</string>
+    <string name="app_language_system_default">"Theo hệ thống"</string>
+    <string name="app_language_no_list">"%1$s. Ứng dụng không khai báo danh sách ngôn ngữ; đang hiển thị các ngôn ngữ có trong tài nguyên (có thể trống)."</string>
+    <string name="app_language_loading">"Đang tải…"</string>
 </resources>

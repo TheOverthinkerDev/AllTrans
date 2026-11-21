@@ -220,4 +220,12 @@
     <string name="safe_mode_summary_on">"AllTrans 只改变屏幕上绘制的内容，从不修改应用数据。推荐。"</string>
     <string name="alibaba_optimize_summary_off">"仅使用通用钩子。"</string>
     <string name="mtop_translate_summary_on">"在应用读取前翻译购物车和商品页数据中的文本。这会修改应用数据，可能影响应用功能；如有异常请关闭。"</string>
+    <string name="app_language_applied">"已将应用语言设为 %1$s。如未生效请重新打开应用。"</string>
+    <string name="app_language">"应用语言"</string>
+    <string name="pref_cat_app_language">"应用语言（应用自带）"</string>
+    <string name="app_language_unsupported">"需要 Android 13 或更高版本。"</string>
+    <string name="app_language_unavailable">"不可用：%1$s。请在 LSPosed/Vector 中启用“系统框架”作用域并重启，或授予 root。"</string>
+    <string name="app_language_system_default">"跟随系统"</string>
+    <string name="app_language_no_list">"%1$s。该应用未声明支持的语言；显示其资源中包含的语言（可能为空）。"</string>
+    <string name="app_language_loading">"加载中…"</string>
 </resources>

@@ -295,4 +295,12 @@
     <string name="safe_mode_summary_on">"AllTrans only changes what is drawn on screen and never touches the app\'s data. Recommended."</string>
     <string name="alibaba_optimize_summary_off">"Only the generic hooks are used."</string>
     <string name="mtop_translate_summary_on">"Translates text in the cart and item page responses before the app reads them. This changes the app\'s data and could affect app features; turn off if anything misbehaves."</string>
+    <string name="app_language_applied">"App language set to %1$s. Reopen the app if it does not update."</string>
+    <string name="app_language">"App language"</string>
+    <string name="pref_cat_app_language">"App language (built-in)"</string>
+    <string name="app_language_unsupported">"Requires Android 13 or later."</string>
+    <string name="app_language_unavailable">"Not available: %1$s. Enable the System Framework scope in LSPosed/Vector and reboot, or grant root."</string>
+    <string name="app_language_system_default">"System default"</string>
+    <string name="app_language_no_list">"%1$s. The app does not declare its languages; showing what its resources contain (may be empty)."</string>
+    <string name="app_language_loading">"Loading…"</string>
 </resources>
