@@ -109,11 +109,17 @@ class AppListFragment : Fragment(), SearchableFragment {
                 Utils.debugLog("AppListFragment: Loading packages in IO thread...")
                 val pm = appContext.packageManager
                 val packages = getInstalledApplications(appContext)
-                // Apps set up in AllTrans (translation on, a built-in language, or
-                // any per-app settings) stay on top even when translation is off.
+                // Apps set up in AllTrans (translation, built-in language or own
+                // settings) are ticked and stay on top.
                 AppConfig.refreshScope()
-                val configured = packages.filter { AppConfig.isConfigured(appContext, it.packageName) }
-                    .map { it.packageName }.toHashSet()
+                val configured = packages.map { it.packageName }.filter { pkg ->
+                    // Built-in language changed elsewhere (system settings)? Follow it.
+                    if (AppConfig.mode(appContext, pkg) == AppConfig.Mode.BUILT_IN) {
+                        val actual = SystemBridge.getLocales(appContext, pkg)
+                        if (actual.ok && actual.value.isNullOrEmpty()) AppConfig.setBuiltInLanguage(appContext, pkg, null)
+                    }
+                    AppConfig.mode(appContext, pkg) != AppConfig.Mode.NONE
+                }.toHashSet()
                 packages.sortWith(Comparator { a, b ->
                     val aEnabled = a.packageName in configured
                     val bEnabled = b.packageName in configured
@@ -214,6 +220,20 @@ class AppListFragment : Fragment(), SearchableFragment {
                 }
             }
         }
+        private fun tintFor(mode: AppConfig.Mode): Int {
+            if (mode == AppConfig.Mode.BUILT_IN) {
+                // Clearly different from the translation tick: amber, tuned to the theme.
+                return com.google.android.material.color.MaterialColors.harmonizeWithPrimary(context, 0xFFFFA000.toInt())
+            }
+            val attr = when (mode) {
+                AppConfig.Mode.BUILT_IN -> com.google.android.material.R.attr.colorTertiary
+                AppConfig.Mode.CONFIGURED -> com.google.android.material.R.attr.colorOutline
+                AppConfig.Mode.TRANSLATION -> androidx.appcompat.R.attr.colorPrimary
+                AppConfig.Mode.NONE -> com.google.android.material.R.attr.colorOnSurfaceVariant
+            }
+            return com.google.android.material.color.MaterialColors.getColor(context, attr, android.graphics.Color.GRAY)
+        }
+
         /** Package name, plus the built-in language or a missing-scope warning. */
         private fun statusLine(pkg: String): String {
             val parts = mutableListOf<String>()
@@ -258,32 +278,38 @@ class AppListFragment : Fragment(), SearchableFragment {
                 viewHolder.imageView?.setImageDrawable(icon)
 
                 viewHolder.checkBox?.tag = currentAppInfo // Store app info for the click listener
-                viewHolder.checkBox?.isChecked = settings?.contains(packageName) == true
+                val mode = AppConfig.mode(context, packageName)
+                viewHolder.checkBox?.isChecked = mode != AppConfig.Mode.NONE
+                viewHolder.checkBox?.buttonTintList = android.content.res.ColorStateList.valueOf(tintFor(mode))
                 viewHolder.checkBox?.setOnClickListener { v ->
                     val checkBox = v as CheckBox
                     val appInfoFromTag = checkBox.tag as? ApplicationInfo ?: return@setOnClickListener
                     val pkgName = appInfoFromTag.packageName ?: return@setOnClickListener
-                    Utils.debugLog("CheckBox clicked! $pkgName")
                     // Use the row's context instead of requireActivity(); the
                     // fragment may already be detached when a late click lands.
-                    AppConfig.setTranslation(v.context, pkgName, checkBox.isChecked)
+                    val ctx = v.context
                     if (checkBox.isChecked) {
-                        if (AppConfig.builtInLanguage(v.context, pkgName) != null) {
-                            // Built-in language and translation would overlap: reset it.
-                            val appContext = v.context.applicationContext
-                            Thread {
-                                if (SystemBridge.setLocales(appContext, pkgName, "").ok) {
-                                    AppConfig.setBuiltInLanguage(appContext, pkgName, null)
-                                    android.os.Handler(android.os.Looper.getMainLooper()).post {
-                                        android.widget.Toast.makeText(appContext, R.string.app_language_reset_for_translation, android.widget.Toast.LENGTH_LONG).show()
-                                        notifyDataSetChanged()
-                                    }
-                                }
-                            }.start()
-                        }
-                        AppConfig.requestScopeIfNeeded(v.context, pkgName)
+                        // Tick: start translating this app.
+                        AppConfig.setTranslation(ctx, pkgName, true)
+                        AppConfig.requestScopeIfNeeded(ctx, pkgName)
+                        notifyDataSetChanged()
+                    } else {
+                        // Untick: forget the app (asks first, settings are deleted).
+                        checkBox.isChecked = true
+                        val label = pm.getApplicationLabel(appInfoFromTag)
+                        com.google.android.material.dialog.MaterialAlertDialogBuilder(ctx)
+                            .setTitle(label)
+                            .setMessage(R.string.list_clear_confirm)
+                            .setNegativeButton(android.R.string.cancel, null)
+                            .setPositiveButton(android.R.string.ok) { _, _ ->
+                                val appContext = ctx.applicationContext
+                                Thread {
+                                    AppConfig.clear(appContext, pkgName)
+                                    android.os.Handler(android.os.Looper.getMainLooper()).post { notifyDataSetChanged() }
+                                }.start()
+                            }
+                            .show()
                     }
-                    notifyDataSetChanged()
                 }
             } else {
                 // Clear views if currentAppInfo is null (e.g. during filtering)

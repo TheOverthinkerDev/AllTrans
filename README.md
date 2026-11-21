@@ -80,7 +80,9 @@ Cài đặt mặc định:
 
 **Phạm vi LSPosed là bắt buộc.** Với libxposed API 102, framework chỉ nạp module vào những ứng dụng nằm trong phạm vi của nó, mà việc dịch chạy ngay trong ứng dụng đích, nên chỉ tick trong AllTrans là chưa đủ. Khi tick một ứng dụng chưa có phạm vi, AllTrans tự gửi yêu cầu thêm phạm vi (libxposed service); LSPosed hiện thông báo **Scope Request** để bạn duyệt. Danh sách và màn cài đặt riêng ghi rõ ứng dụng nào chưa có phạm vi.
 
-**Ngôn ngữ có sẵn của ứng dụng.** Mục **Ngôn ngữ ứng dụng** dùng Android 13+ per-app language (`LocaleManager`). Chỉ chọn được khi ứng dụng khai báo `localeConfig` với Android (cùng điều kiện để Android liệt kê ứng dụng trong Cài đặt → Ngôn ngữ ứng dụng), và chỉ hiện đúng các ngôn ngữ ứng dụng khai báo. Đặt một ngôn ngữ có sẵn sẽ tự tắt dịch AllTrans cho ứng dụng đó; bật dịch lại sẽ tự đưa ngôn ngữ về theo hệ thống. Ứng dụng đã cấu hình vẫn nằm ở nhóm đầu danh sách dù đã tắt dịch.
+**Ngôn ngữ có sẵn của ứng dụng.** Mục **Ngôn ngữ ứng dụng** dùng Android 13+ per-app language (`LocaleManager`). Chỉ chọn được khi ứng dụng khai báo `localeConfig` với Android (cùng điều kiện để Android liệt kê ứng dụng trong Cài đặt → Ngôn ngữ ứng dụng), và chỉ hiện đúng các ngôn ngữ ứng dụng khai báo. Dịch AllTrans và ngôn ngữ có sẵn loại trừ nhau: khi đang dùng một bên, bên kia chuyển xám và chạm vào sẽ báo cần tắt bên đang dùng trước. Đặt ngôn ngữ có sẵn sẽ gỡ ứng dụng khỏi phạm vi LSPosed (không cần hook nữa); bật dịch sẽ yêu cầu thêm lại.
+
+**Danh sách ứng dụng.** Mọi ứng dụng đã cấu hình (đang dịch, dùng ngôn ngữ có sẵn, hoặc có cài đặt riêng) đều được tick và nằm ở đầu danh sách; ứng dụng dùng ngôn ngữ có sẵn có ô tick màu cam. Bỏ tick sẽ hỏi xác nhận rồi tắt dịch, xoá cài đặt riêng, đưa ngôn ngữ về theo hệ thống và gỡ khỏi phạm vi LSPosed.
 
 ### Các cài đặt chính
 
@@ -103,7 +105,7 @@ Cài đặt mặc định:
 
 ### Ứng dụng Alibaba (Taobao, Tmall, Xianyu…)
 
-Cài đặt riêng cho từng ứng dụng, áp dụng khi ứng dụng có các thành phần tương ứng (DinamicX, UC WebView, MTOP). Cần buộc dừng ứng dụng sau khi đổi.
+Cài đặt riêng cho từng ứng dụng, áp dụng khi ứng dụng có các thành phần tương ứng (DinamicX, UC WebView, MTOP). Cần buộc dừng ứng dụng sau khi đổi. Mặc định "Bật" chỉ áp dụng cho ứng dụng Alibaba (Taobao, Taobao Lite, Tmall, Xianyu, 1688, AliExpress, Fliggy, Ele.me, eTao); với ứng dụng khác, tối ưu Alibaba mặc định tắt trừ khi bạn tự bật.
 
 | Cài đặt | Mặc định | Mô tả |
 | --- | --- | --- |

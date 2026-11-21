@@ -80,7 +80,9 @@ Default settings:
 
 **The LSPosed scope is required.** With libxposed API 102 the framework only loads a module into apps in its scope, and translation runs inside the target app, so ticking an app in AllTrans is not enough on its own. When you tick an app that is not in scope, AllTrans requests it through libxposed service and LSPosed shows a **Scope Request** notification to approve. The list and the per-app screen show which apps are missing the scope.
 
-**Built-in app language.** **App language** uses Android 13+ per-app languages (`LocaleManager`). It can only be changed when the app declares a `localeConfig` to Android (the same rule Android uses for Settings → App languages), and only the languages the app declares are offered. Setting a built-in language turns AllTrans translation off for that app; turning translation back on resets the language to the system default. Configured apps stay in the top group of the list even with translation off.
+**Built-in app language.** **App language** uses Android 13+ per-app languages (`LocaleManager`). It can only be changed when the app declares a `localeConfig` to Android (the same rule Android uses for Settings → App languages), and only the languages the app declares are offered. AllTrans translation and the built-in language exclude each other: while one is in use the other is greyed out, and tapping it explains which one to turn off first. Setting a built-in language removes the app from the LSPosed scope (no hooks needed); turning translation on requests it again.
+
+**App list.** Every configured app (translating, using a built-in language, or with its own settings) is ticked and listed first; apps using a built-in language get an amber tick. Unticking asks for confirmation, then turns translation off, deletes the app's own settings, resets its language to the system default and removes it from the LSPosed scope.
 
 ### Main settings
 
@@ -103,7 +105,7 @@ Default settings:
 
 ### Alibaba apps (Taobao, Tmall, Xianyu…)
 
-Per-app settings, used when the app ships the matching components (DinamicX, UC WebView, MTOP). Force-stop the app after changing them.
+Per-app settings, used when the app ships the matching components (DinamicX, UC WebView, MTOP). Force-stop the app after changing them. The "On" default only applies to Alibaba apps (Taobao, Taobao Lite, Tmall, Xianyu, 1688, AliExpress, Fliggy, Ele.me, eTao); for any other app the Alibaba optimisation is off unless you turn it on.
 
 | Setting | Default | Description |
 | --- | --- | --- |

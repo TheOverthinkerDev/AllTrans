@@ -306,12 +306,9 @@
     <string name="about_source">"Mã nguồn"</string>
     <string name="about_license">"Giấy phép"</string>
     <string name="app_language_current">"Đang dùng: %1$s"</string>
-    <string name="app_language_available">"Ngôn ngữ có sẵn (%1$d): %2$s"</string>
     <string name="app_language_not_declared">"Ứng dụng này không khai báo ngôn ngữ với Android (không có localeConfig), nên Android không cho đổi ngôn ngữ riêng."</string>
     <string name="app_language_parse_failed">"Danh sách ngôn ngữ (localeConfig) của ứng dụng bị lỗi, nên Android không cho đổi ngôn ngữ riêng."</string>
     <string name="app_language_check_failed">"Không kiểm tra được ngôn ngữ của ứng dụng: %1$s"</string>
-    <string name="app_language_translation_off">"Đã đặt ngôn ngữ %1$s. Đã tắt dịch AllTrans cho ứng dụng này để hai chức năng không đè lên nhau."</string>
-    <string name="app_language_reset_for_translation">"Đã đưa ngôn ngữ có sẵn của ứng dụng về theo hệ thống để AllTrans dịch."</string>
     <string name="scope_title">"Phạm vi LSPosed"</string>
     <string name="scope_in">"Ứng dụng đã nằm trong phạm vi của AllTrans."</string>
     <string name="scope_not_in">"Chưa nằm trong phạm vi của AllTrans: không dịch được. Chạm để yêu cầu thêm."</string>
@@ -327,4 +324,9 @@
     <string name="credits_vietphrase_summary">"Bộ dịch VietPhrase, bản port libxposed API 102 và nhiều tính năng của Chanhnh — github.com/Chanhnh/AllTrans"</string>
     <string name="credits_libxposed">"libxposed"</string>
     <string name="credits_libxposed_summary">"libxposed API và service (Apache-2.0) — github.com/libxposed"</string>
+    <string name="app_language_available">"Hỗ trợ %1$d ngôn ngữ."</string>
+    <string name="list_clear_confirm">"Bỏ ứng dụng này khỏi AllTrans? Dịch sẽ tắt, cài đặt riêng bị xoá, ngôn ngữ có sẵn về theo hệ thống và ứng dụng được gỡ khỏi phạm vi LSPosed."</string>
+    <string name="scope_removed">"Đã gỡ %1$s khỏi phạm vi LSPosed (không cần khi dùng ngôn ngữ có sẵn)."</string>
+    <string name="lock_translation_built_in">"Đang dùng ngôn ngữ có sẵn. Hãy đặt về Theo hệ thống trước."</string>
+    <string name="lock_built_in_translation">"Đang bật dịch. Hãy tắt dịch trước."</string>
 </resources>

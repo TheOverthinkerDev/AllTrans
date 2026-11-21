@@ -358,12 +358,9 @@
     <string name="about_source">"Source code"</string>
     <string name="about_license">"License"</string>
     <string name="app_language_current">"Current: %1$s"</string>
-    <string name="app_language_available">"Built-in languages (%1$d): %2$s"</string>
     <string name="app_language_not_declared">"This app does not declare its languages to Android (no localeConfig), so Android does not allow changing its language."</string>
     <string name="app_language_parse_failed">"This app&apos;s language list (localeConfig) is invalid, so Android does not allow changing its language."</string>
     <string name="app_language_check_failed">"Could not check the app&apos;s languages: %1$s"</string>
-    <string name="app_language_translation_off">"Language set to %1$s. AllTrans translation is turned off for this app so the two do not overlap."</string>
-    <string name="app_language_reset_for_translation">"The app&apos;s built-in language was reset to the system language so AllTrans translation can apply."</string>
     <string name="scope_title">"LSPosed scope"</string>
     <string name="scope_in">"This app is in AllTrans&apos; scope."</string>
     <string name="scope_not_in">"Not in AllTrans&apos; scope: translation cannot run here. Tap to request it."</string>
@@ -379,4 +376,9 @@
     <string name="credits_vietphrase_summary">"VietPhrase engine, libxposed API 102 port and more by Chanhnh — github.com/Chanhnh/AllTrans"</string>
     <string name="credits_libxposed">"libxposed"</string>
     <string name="credits_libxposed_summary">"libxposed API and service (Apache-2.0) — github.com/libxposed"</string>
+    <string name="app_language_available">"Supports %1$d languages."</string>
+    <string name="list_clear_confirm">"Remove this app from AllTrans? Translation is turned off, its own settings are deleted, a built-in language goes back to the system language and the app leaves the LSPosed scope."</string>
+    <string name="scope_removed">"%1$s removed from the LSPosed scope (not needed with its built-in language)."</string>
+    <string name="lock_translation_built_in">"Using built-in language. Set it to System default first."</string>
+    <string name="lock_built_in_translation">"Translation is on. Turn it off first."</string>
 </resources>

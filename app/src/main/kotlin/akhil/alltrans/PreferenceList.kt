@@ -43,6 +43,19 @@ internal object PreferenceList {
 
     var TranslatorProvider: String? = "g"
 
+    /** Apps built on Alibaba's DinamicX / UC WebView / MTOP stack. */
+    val ALIBABA_PACKAGES = setOf(
+        "com.taobao.taobao",          // Taobao
+        "com.taobao.litetao",         // Taobao Lite
+        "com.tmall.wireless",         // Tmall
+        "com.taobao.idlefish",        // Xianyu
+        "com.alibaba.wireless",       // 1688
+        "com.alibaba.aliexpresshd",   // AliExpress
+        "com.taobao.trip",            // Fliggy
+        "me.ele",                     // Ele.me
+        "com.taobao.etao"             // eTao
+    )
+
     fun isVietPhraseLanguagePair(fromLanguage: String?, toLanguage: String?): Boolean {
         return (fromLanguage == DEFAULT_SOURCE_LANGUAGE || fromLanguage == VIETPHRASE_SOURCE_LANGUAGE) &&
             toLanguage == VIETPHRASE_TARGET_LANGUAGE
@@ -80,7 +93,12 @@ internal object PreferenceList {
 
         // Per-app value if the user set one for this app, else the global default
         // (independent of "override global settings").
-        AlibabaOptimize = getValue(lPref, "AlibabaOptimize", getValue(gPref, "AlibabaOptimize", true)) as Boolean
+        // Only Alibaba apps follow the global default; other apps keep it off
+        // unless the user turned it on for that app.
+        AlibabaOptimize = getValue(
+            lPref, "AlibabaOptimize",
+            packageName in ALIBABA_PACKAGES && getValue(gPref, "AlibabaOptimize", true) as Boolean
+        ) as Boolean
         SafeMode = getValue(lPref, "SafeMode", getValue(gPref, "SafeMode", true)) as Boolean
         MtopTranslate = getValue(lPref, "MtopTranslate", getValue(gPref, "MtopTranslate", false)) as Boolean
 

@@ -2,7 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <SwitchPreference
+    <akhil.alltrans.LockableSwitchPreference
         app:iconSpaceReserved="false"
         app:defaultValue="false"
         app:key="LocalEnabled"
@@ -48,7 +48,7 @@
         app:iconSpaceReserved="false"
         app:allowDividerAbove="true">
 
-        <ListPreference
+        <akhil.alltrans.LockableListPreference
             app:iconSpaceReserved="false"
             app:key="AppLanguage"
             app:persistent="false"
@@ -107,6 +107,7 @@
             app:iconSpaceReserved="false"
             app:defaultValue="true"
             app:key="AlibabaOptimize"
+            app:persistent="false"
             app:summaryOff="@string/alibaba_optimize_summary_off"
             app:summaryOn="@string/alibaba_optimize_summary_on"
             app:title="@string/alibaba_optimize" />
@@ -115,6 +116,7 @@
             app:iconSpaceReserved="false"
             app:defaultValue="true"
             app:key="SafeMode"
+            app:persistent="false"
             app:dependency="AlibabaOptimize"
             app:disableDependentsState="true"
             app:summaryOff="@string/safe_mode_summary_off"
@@ -125,6 +127,7 @@
             app:iconSpaceReserved="false"
             app:defaultValue="false"
             app:key="MtopTranslate"
+            app:persistent="false"
             app:dependency="SafeMode"
             app:summaryOff="@string/mtop_translate_summary_off"
             app:summaryOn="@string/mtop_translate_summary_on"

@@ -116,6 +116,20 @@ object RemotePrefs {
         Log.i(TAG, "Synced $ok/${files.size} settings groups")
     }
 
+    /** Drop remote group [name] (its local file was deleted). */
+    fun delete(name: String) {
+        watched.remove(name)?.let {
+            appContext.getSharedPreferences(name, Context.MODE_PRIVATE).unregisterOnSharedPreferenceChangeListener(it)
+        }
+        val s = service ?: return
+        if (!remoteSupported) return
+        try {
+            s.deleteRemotePreferences(name)
+        } catch (t: Throwable) {
+            Log.e(TAG, "Failed to delete $name", t)
+        }
+    }
+
     /** Replace remote group [name] with the content of the local file. */
     @Synchronized
     fun sync(name: String): Boolean {

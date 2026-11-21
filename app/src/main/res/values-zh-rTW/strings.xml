@@ -283,12 +283,9 @@
     <string name="about_source">"原始碼"</string>
     <string name="about_license">"授權"</string>
     <string name="app_language_current">"目前：%1$s"</string>
-    <string name="app_language_available">"內建語言（%1$d）：%2$s"</string>
     <string name="app_language_not_declared">"此應用程式未向 Android 宣告語言（沒有 localeConfig），Android 不允許單獨變更其語言。"</string>
     <string name="app_language_parse_failed">"此應用程式的語言清單（localeConfig）無效，Android 不允許單獨變更其語言。"</string>
     <string name="app_language_check_failed">"無法檢查應用程式語言：%1$s"</string>
-    <string name="app_language_translation_off">"已設為 %1$s。已為此應用程式關閉 AllTrans 翻譯，避免兩者重疊。"</string>
-    <string name="app_language_reset_for_translation">"已將應用程式內建語言恢復為跟隨系統，以便 AllTrans 翻譯。"</string>
     <string name="scope_title">"LSPosed 作用範圍"</string>
     <string name="scope_in">"此應用程式已在 AllTrans 作用範圍中。"</string>
     <string name="scope_not_in">"不在 AllTrans 作用範圍中：無法翻譯。點選以請求加入。"</string>
@@ -304,4 +301,9 @@
     <string name="credits_vietphrase_summary">"VietPhrase 引擎、libxposed API 102 移植等由 Chanhnh 完成 — github.com/Chanhnh/AllTrans"</string>
     <string name="credits_libxposed">"libxposed"</string>
     <string name="credits_libxposed_summary">"libxposed API 與 service（Apache-2.0）— github.com/libxposed"</string>
+    <string name="app_language_available">"支援 %1$d 種語言。"</string>
+    <string name="list_clear_confirm">"將此應用程式從 AllTrans 移除？翻譯將關閉、刪除其單獨設定、內建語言恢復為跟隨系統，並從 LSPosed 作用範圍中移除。"</string>
+    <string name="scope_removed">"已將 %1$s 從 LSPosed 作用範圍移除（使用內建語言時不需要）。"</string>
+    <string name="lock_translation_built_in">"正在使用內建語言。請先設為跟隨系統。"</string>
+    <string name="lock_built_in_translation">"翻譯已開啟。請先關閉翻譯。"</string>
 </resources>
