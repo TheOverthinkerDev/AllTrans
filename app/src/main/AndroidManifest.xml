@@ -47,23 +47,23 @@
             </intent-filter>
         </activity>
         <provider
-            android:authorities="chanhnh.alltrans.SharedPrefProvider"
-            android:name="chanhnh.alltrans.SharedPrefProvider"
+            android:authorities="akhil.alltrans.SharedPrefProvider"
+            android:name="akhil.alltrans.SharedPrefProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
         <provider
-            android:authorities="chanhnh.alltrans.GtransProvider"
-            android:name="chanhnh.alltrans.GtransProvider"
+            android:authorities="akhil.alltrans.GtransProvider"
+            android:name="akhil.alltrans.GtransProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
         <provider
-            android:authorities="chanhnh.alltrans.EdgeProvider"
-            android:name="chanhnh.alltrans.EdgeProvider"
+            android:authorities="akhil.alltrans.EdgeProvider"
+            android:name="akhil.alltrans.EdgeProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
         <provider
-            android:authorities="chanhnh.alltrans.VietPhraseProvider"
-            android:name="chanhnh.alltrans.VietPhraseProvider"
+            android:authorities="akhil.alltrans.VietPhraseProvider"
+            android:name="akhil.alltrans.VietPhraseProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
     </application>

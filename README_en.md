@@ -6,7 +6,7 @@ AllTrans is an Xposed/LSPosed module that translates Android app interfaces at r
 
 ## Overview
 
-- **Package name:** `chanhnh.alltrans`
+- **Package name:** `akhil.alltrans`
 - **Version:** `3.0.0` (`versionCode` 300)
 - **Minimum Android:** Android 10 (API 29)
 - **Compile/target SDK:** 36
@@ -149,9 +149,9 @@ The translation language list depends on the selected provider. VietPhrase only 
 - Hooks text rendering points such as `TextView.setText`, `setHint`, `StaticLayout.Builder.build()`, layout constructors, framework View methods, and custom View setters.
 - Adds support for notifications and `WebView` content.
 - Each provider is queried through an internal `ContentProvider`:
-  - `content://chanhnh.alltrans.GtransProvider`
-  - `content://chanhnh.alltrans.EdgeProvider`
-  - `content://chanhnh.alltrans.VietPhraseProvider`
+  - `content://akhil.alltrans.GtransProvider`
+  - `content://akhil.alltrans.EdgeProvider`
+  - `content://akhil.alltrans.VietPhraseProvider`
 - The selected provider is used explicitly. If the provider is unavailable or returns an empty result, AllTrans keeps the original text.
 - Provider queries try the proxy path first, then fall back to a direct query.
 

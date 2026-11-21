@@ -4,7 +4,7 @@ AllTrans is an Xposed/LSPosed module that translates Android app interfaces at r
 
 ## Overview
 
-- **Package name:** `chanhnh.alltrans`
+- **Package name:** `akhil.alltrans`
 - **Version:** `3.0.0` (`versionCode` 300)
 - **Minimum Android:** Android 10 (API 29)
 - **Compile/target SDK:** 36
@@ -100,9 +100,9 @@ Microsoft Translate uses the Edge endpoint and Edge-native language codes. If th
 - Hooks text rendering points such as `TextView.setText`, `setHint`, `StaticLayout.Builder.build()`, layout constructors, framework View methods, and custom View setters.
 - Supports notifications and `WebView` content.
 - Providers are queried through internal `ContentProvider` endpoints:
-  - `content://chanhnh.alltrans.GtransProvider`
-  - `content://chanhnh.alltrans.EdgeProvider`
-  - `content://chanhnh.alltrans.VietPhraseProvider`
+  - `content://akhil.alltrans.GtransProvider`
+  - `content://akhil.alltrans.EdgeProvider`
+  - `content://akhil.alltrans.VietPhraseProvider`
 - The selected provider is used explicitly. If it is unavailable or returns an empty result, the original text is kept.
 - Provider queries try the proxy path first, then fall back to a direct query.
 

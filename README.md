@@ -6,7 +6,7 @@ AllTrans là một module Xposed/LSPosed giúp dịch giao diện ứng dụng A
 
 ## Tổng quan
 
-- **Tên gói:** `chanhnh.alltrans`
+- **Tên gói:** `akhil.alltrans`
 - **Phiên bản:** `3.0.0` (`versionCode` 300)
 - **Android tối thiểu:** Android 10 (API 29)
 - **Compile/target SDK:** 36
@@ -149,9 +149,9 @@ Danh sách ngôn ngữ dịch phụ thuộc vào dịch vụ đang chọn. Riên
 - Hook các điểm hiển thị văn bản như `TextView.setText`, `setHint`, `StaticLayout.Builder.build()`, hàm khởi tạo layout, phương thức View của framework và setter của View tùy chỉnh.
 - Hỗ trợ dịch thông báo và nội dung `WebView`.
 - Mỗi provider được gọi qua `ContentProvider` nội bộ:
-  - `content://chanhnh.alltrans.GtransProvider`
-  - `content://chanhnh.alltrans.EdgeProvider`
-  - `content://chanhnh.alltrans.VietPhraseProvider`
+  - `content://akhil.alltrans.GtransProvider`
+  - `content://akhil.alltrans.EdgeProvider`
+  - `content://akhil.alltrans.VietPhraseProvider`
 - Provider được chọn sẽ được dùng cố định. Nếu provider không khả dụng hoặc trả kết quả rỗng, AllTrans giữ nguyên văn bản gốc.
 - Query provider ưu tiên đi qua proxy, sau đó fallback sang query trực tiếp.
 

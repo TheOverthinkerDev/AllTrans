@@ -8,8 +8,8 @@
 }
 
 # Keep AllTrans package and all its classes/members for reflection-based hooks.
--keep class chanhnh.alltrans.** { *; }
--keep interface chanhnh.alltrans.** { *; }
+-keep class akhil.alltrans.** { *; }
+-keep interface akhil.alltrans.** { *; }
 
 # ML Kit rules
 -keep class com.google.mlkit.** { *; }
