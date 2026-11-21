@@ -74,7 +74,7 @@ class InstructionsFragment : Fragment() {
             }
         }
 
-        webView.loadUrl("https://github.com/Chanhnh/AllTrans/tree/next")
+        webView.loadUrl("https://github.com/TheOverthinkerDev/AllTrans/tree/android14-17")
         return rootLayout
     }
 }

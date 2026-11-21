@@ -2,6 +2,8 @@
 
 [Tiếng Việt](README.md)
 
+> **About this fork:** forked from [akhilkedia/AllTrans](https://github.com/akhilkedia/AllTrans) (the original only works up to Android 13), with the libxposed API 102 port and features from [Chanhnh/AllTrans](https://github.com/Chanhnh/AllTrans) merged in, keeping the original `akhil.alltrans` package name. The goal is Android 14–17 support. Tested on a Redmi K40s running HyperOS 4 (Android 17) with the Wukong framework.
+
 AllTrans is an Xposed/LSPosed module that translates Android app interfaces at runtime. You do not need to modify APKs or copy text into another app — supported text on screen is replaced with a translation in the language you choose.
 
 ## Overview

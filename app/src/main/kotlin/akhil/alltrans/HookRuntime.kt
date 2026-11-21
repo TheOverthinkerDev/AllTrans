@@ -33,22 +33,16 @@ object HookRuntime {
     private fun requireModule(): XposedModule =
         module ?: throw IllegalStateException("HookRuntime has not been attached to XposedModule")
 
+    // Modern frameworks keep module logs inside their manager app. Mirror them to
+    // logcat as well, like XposedBridge.log() did, so `adb logcat -s AllTrans` works.
     fun log(message: String) {
-        val current = module
-        if (current != null) {
-            current.log(Log.INFO, TAG, message)
-        } else {
-            Log.i(TAG, message)
-        }
+        module?.log(Log.INFO, TAG, message)
+        Log.i(TAG, message)
     }
 
     fun log(message: String, throwable: Throwable) {
-        val current = module
-        if (current != null) {
-            current.log(Log.ERROR, TAG, message, throwable)
-        } else {
-            Log.e(TAG, message, throwable)
-        }
+        module?.log(Log.ERROR, TAG, message, throwable)
+        Log.e(TAG, message, throwable)
     }
 
     fun log(throwable: Throwable) {
