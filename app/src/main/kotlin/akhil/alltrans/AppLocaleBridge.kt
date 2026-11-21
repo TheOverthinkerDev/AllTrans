@@ -100,8 +100,10 @@ internal object AppLocaleBridge {
             }
             val reply = context.contentResolver.call(Uri.parse("content://settings"), METHOD, null, extras)
             if (reply != null && reply.containsKey(KEY_OK)) {
+                Utils.debugLog("AppLocaleBridge: $op $pkg via system -> ok=${reply.getBoolean(KEY_OK)} ${reply.getString(KEY_LOCALES)} ${reply.getString(KEY_ERROR) ?: ""}")
                 return Result(reply.getBoolean(KEY_OK), reply.getString(KEY_LOCALES), "system", reply.getString(KEY_ERROR))
             }
+            Utils.debugLog("AppLocaleBridge: system path unavailable, trying root")
         } catch (t: Throwable) {
             Utils.debugLog("AppLocaleBridge: system call failed: ${t.message}")
         }
