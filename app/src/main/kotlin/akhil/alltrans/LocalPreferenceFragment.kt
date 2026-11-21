@@ -289,12 +289,20 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
 
         setupScope(pkgName)
 
-        findPreference<SwitchPreference>("LocalEnabled")?.setOnPreferenceChangeListener { _, newValue ->
+        findPreference<SwitchPreference>("LocalEnabled")?.setOnPreferenceChangeListener { pref, newValue ->
             val enabled = newValue as Boolean
-            AppConfig.setTranslation(requireContext(), pkgName, enabled)
             if (enabled) {
-                AppConfig.requestScopeIfNeeded(requireContext(), pkgName)
-                refreshScope(pkgName)
+                // On only once the app is in the LSPosed scope; the switch flips
+                // back if the scope request is denied or not answered in time.
+                AppConfig.enableTranslation(requireContext(), pkgName) { ok ->
+                    if (!isAdded) return@enableTranslation
+                    (pref as SwitchPreference).isChecked = ok
+                    translationOn = ok
+                    refreshScope(pkgName)
+                    updateLocks()
+                }
+            } else {
+                AppConfig.setTranslation(requireContext(), pkgName, false)
             }
             // Translation and the built-in language exclude each other.
             translationOn = enabled
@@ -323,6 +331,7 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
     private var currentAppLocale: String? = null
     private var translationOn = false
     private var appLanguageSupported = false
+    private var appDeclaresLocales = false
     private var appLanguagePref: LockableListPreference? = null
     private var appLanguageSummary: ((String?) -> Unit)? = null
 
@@ -332,7 +341,7 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
      */
     private fun updateLocks() {
         if (!isAdded) return
-        val builtIn = !currentAppLocale.isNullOrEmpty()
+        val builtIn = appDeclaresLocales && !currentAppLocale.isNullOrEmpty()
         findPreference<LockableSwitchPreference>("LocalEnabled")?.lockedMessage =
             if (builtIn && !translationOn) getString(R.string.lock_translation_built_in) else null
         appLanguagePref?.lockedMessage =
@@ -441,8 +450,10 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
                 pref.value = currentTag
                 pref.isEnabled = current.ok && (supported || currentTag.isNotEmpty())
                 appLanguageSupported = supported || currentTag.isNotEmpty()
-                // Recorded built-in language changed elsewhere (system settings)? Follow it.
-                if (current.ok) AppConfig.setBuiltInLanguage(appContext, pkg, currentTag.ifEmpty { null })
+                appDeclaresLocales = supported
+                // Follow a language changed elsewhere (system settings). A locale on an
+                // app that declares no languages is a leftover, not a built-in language.
+                if (current.ok) AppConfig.setBuiltInLanguage(appContext, pkg, currentTag.takeIf { supported && it.isNotEmpty() })
                 updateLocks()
 
                 val reason = when (locales.support) {

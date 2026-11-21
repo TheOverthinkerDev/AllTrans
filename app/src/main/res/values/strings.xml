@@ -381,4 +381,7 @@
     <string name="scope_removed">"%1$s removed from the LSPosed scope (not needed with its built-in language)."</string>
     <string name="lock_translation_built_in">"Using built-in language. Set it to System default first."</string>
     <string name="lock_built_in_translation">"Translation is on. Turn it off first."</string>
+    <string name="scope_timeout">"Scope not approved in time: translation stays off."</string>
+    <string name="scope_denied">"%1$s was not added to the scope: translation stays off."</string>
+    <string name="list_waiting_scope">"Waiting for scope approval…"</string>
 </resources>

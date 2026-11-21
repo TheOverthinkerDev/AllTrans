@@ -306,4 +306,7 @@
     <string name="scope_removed">"已將 %1$s 從 LSPosed 作用範圍移除（使用內建語言時不需要）。"</string>
     <string name="lock_translation_built_in">"正在使用內建語言。請先設為跟隨系統。"</string>
     <string name="lock_built_in_translation">"翻譯已開啟。請先關閉翻譯。"</string>
+    <string name="scope_timeout">"未及時核准作用範圍：翻譯保持關閉。"</string>
+    <string name="scope_denied">"%1$s 未加入作用範圍：翻譯保持關閉。"</string>
+    <string name="list_waiting_scope">"等待核准作用範圍…"</string>
 </resources>

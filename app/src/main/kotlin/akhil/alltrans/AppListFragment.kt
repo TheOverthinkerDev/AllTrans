@@ -116,7 +116,11 @@ class AppListFragment : Fragment(), SearchableFragment {
                     // Built-in language changed elsewhere (system settings)? Follow it.
                     if (AppConfig.mode(appContext, pkg) == AppConfig.Mode.BUILT_IN) {
                         val actual = SystemBridge.getLocales(appContext, pkg)
-                        if (actual.ok && actual.value.isNullOrEmpty()) AppConfig.setBuiltInLanguage(appContext, pkg, null)
+                        val declares = SystemBridge.appLocales(appContext, pkg).support == SystemBridge.LocaleSupport.SUPPORTED
+                        // Reset elsewhere, or the app declares no languages at all.
+                        if ((actual.ok && actual.value.isNullOrEmpty()) || !declares) {
+                            AppConfig.setBuiltInLanguage(appContext, pkg, null)
+                        }
                     }
                     AppConfig.mode(appContext, pkg) != AppConfig.Mode.NONE
                 }.toHashSet()
@@ -240,7 +244,9 @@ class AppListFragment : Fragment(), SearchableFragment {
             AppConfig.builtInLanguage(context, pkg)?.let {
                 parts += context.getString(R.string.list_built_in_language, SystemBridge.shortName(it))
             }
-            if (settings?.contains(pkg) == true && AppConfig.isInScope(pkg) == false) {
+            if (AppConfig.isWaitingForScope(pkg)) {
+                parts += context.getString(R.string.list_waiting_scope)
+            } else if (settings?.contains(pkg) == true && AppConfig.isInScope(pkg) == false) {
                 parts += context.getString(R.string.list_not_in_scope)
             }
             parts += pkg
@@ -279,7 +285,7 @@ class AppListFragment : Fragment(), SearchableFragment {
 
                 viewHolder.checkBox?.tag = currentAppInfo // Store app info for the click listener
                 val mode = AppConfig.mode(context, packageName)
-                viewHolder.checkBox?.isChecked = mode != AppConfig.Mode.NONE
+                viewHolder.checkBox?.isChecked = mode != AppConfig.Mode.NONE || AppConfig.isWaitingForScope(packageName)
                 viewHolder.checkBox?.buttonTintList = android.content.res.ColorStateList.valueOf(tintFor(mode))
                 viewHolder.checkBox?.setOnClickListener { v ->
                     val checkBox = v as CheckBox
@@ -289,9 +295,10 @@ class AppListFragment : Fragment(), SearchableFragment {
                     // fragment may already be detached when a late click lands.
                     val ctx = v.context
                     if (checkBox.isChecked) {
-                        // Tick: start translating this app.
-                        AppConfig.setTranslation(ctx, pkgName, true)
-                        AppConfig.requestScopeIfNeeded(ctx, pkgName)
+                        // Tick: translate this app once it is in the LSPosed scope. The
+                        // row stays ticked ("waiting for approval") until the user
+                        // approves; otherwise it unticks itself.
+                        AppConfig.enableTranslation(ctx, pkgName) { notifyDataSetChanged() }
                         notifyDataSetChanged()
                     } else {
                         // Untick: forget the app (asks first, settings are deleted).

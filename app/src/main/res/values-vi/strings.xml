@@ -329,4 +329,7 @@
     <string name="scope_removed">"Đã gỡ %1$s khỏi phạm vi LSPosed (không cần khi dùng ngôn ngữ có sẵn)."</string>
     <string name="lock_translation_built_in">"Đang dùng ngôn ngữ có sẵn. Hãy đặt về Theo hệ thống trước."</string>
     <string name="lock_built_in_translation">"Đang bật dịch. Hãy tắt dịch trước."</string>
+    <string name="scope_timeout">"Chưa duyệt phạm vi kịp: dịch vẫn tắt."</string>
+    <string name="scope_denied">"%1$s chưa được thêm vào phạm vi: dịch vẫn tắt."</string>
+    <string name="list_waiting_scope">"Đang chờ duyệt phạm vi…"</string>
 </resources>

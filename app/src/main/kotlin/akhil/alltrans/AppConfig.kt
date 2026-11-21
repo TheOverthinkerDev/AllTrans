@@ -116,6 +116,71 @@ internal object AppConfig {
         }
     }
 
+    /** How long a tick waits for the user to approve the scope request. */
+    private const val SCOPE_WAIT_MS = 20_000L
+
+    /** Apps waiting for the scope approval (shown ticked, "waiting for approval"). */
+    private val pendingScope = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+
+    fun isWaitingForScope(pkg: String) = pkg in pendingScope
+
+    /**
+     * Turn translation on for [pkg] once it is in the LSPosed scope. If it is
+     * not, ask the framework and wait: approval turns translation on; denial,
+     * an error or no answer within [SCOPE_WAIT_MS] leaves it off. [onDone]
+     * runs on the main thread with the final state. A late approval (after the
+     * timeout) still turns translation on, and calls [onDone] again.
+     */
+    fun enableTranslation(context: Context, pkg: String, onDone: (Boolean) -> Unit) {
+        val appContext = context.applicationContext
+        val main = Handler(Looper.getMainLooper())
+        val service = RemotePrefs.service
+        if (service == null || isInScope(pkg) == true) {
+            // In scope already, or no framework service to ask (cannot check).
+            if (service == null) toast(appContext, appContext.getString(R.string.scope_no_service))
+            setTranslation(appContext, pkg, true)
+            onDone(true)
+            return
+        }
+        pendingScope += pkg
+        var finished = false
+        fun finish(approved: Boolean, late: Boolean = false) = main.post {
+            if (finished && !late) return@post
+            finished = true
+            pendingScope -= pkg
+            if (approved) setTranslation(appContext, pkg, true)
+            onDone(approved)
+        }
+        val timeout = Runnable {
+            if (!finished) {
+                toast(appContext, appContext.getString(R.string.scope_timeout))
+                finish(false)
+            }
+        }
+        try {
+            service.requestScope(listOf(pkg), object : XposedService.OnScopeEventListener {
+                override fun onScopeRequestApproved(approved: List<String>) {
+                    refreshScope()
+                    val ok = pkg in approved || isInScope(pkg) == true
+                    toast(appContext, appContext.getString(if (ok) R.string.scope_approved else R.string.scope_denied, pkg))
+                    main.removeCallbacks(timeout)
+                    finish(ok, late = ok)
+                }
+
+                override fun onScopeRequestFailed(message: String) {
+                    toast(appContext, appContext.getString(R.string.scope_failed, message))
+                    main.removeCallbacks(timeout)
+                    finish(false)
+                }
+            })
+            toast(appContext, appContext.getString(R.string.scope_requested))
+            main.postDelayed(timeout, SCOPE_WAIT_MS)
+        } catch (t: Throwable) {
+            toast(appContext, appContext.getString(R.string.scope_failed, t.message ?: ""))
+            finish(false)
+        }
+    }
+
     /** An app using its built-in language (or unticked) needs no hooks: drop it from the scope. */
     fun removeScope(context: Context, pkg: String) {
         val service = RemotePrefs.service ?: return
