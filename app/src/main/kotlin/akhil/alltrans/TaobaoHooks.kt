@@ -7,7 +7,9 @@ import android.text.Spanned
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.text.TextUtils
+import android.util.TypedValue
 import android.view.View
+import android.widget.TextView
 import java.util.Collections
 import java.util.WeakHashMap
 
@@ -27,6 +29,7 @@ internal object TaobaoHooks {
     const val PACKAGE = "com.taobao.taobao"
     private const val TAG = "AllTrans:Taobao"
     private const val DX_FAST_TEXT = "com.taobao.android.dinamicx.view.DXNativeFastText"
+    private const val NAV_TAB = "com.taobao.tao.navigation.NavigationTabIndicatorView"
     private const val MIN_TEXT_SCALE = 0.75f
 
     @Volatile
@@ -53,6 +56,103 @@ internal object TaobaoHooks {
         genericStaticLayoutDisabled = true
         val loader = context.classLoader
         hookDxFastText(loader)
+        hookNavigationTab(loader)
+    }
+
+    // ------------------------------------------------------------- Tab bar
+
+    /**
+     * The bottom tab bar shows bundled icons with the Chinese label drawn into
+     * the bitmap (uik_nav_cart_normal.png = cart + "购物车") and hides its title
+     * TextView (mShowTitle = false). Taobao also ships text-free "_i18n" icons
+     * meant to be paired with that TextView. Switch to those and show the title,
+     * whose text then goes through the normal setText() translation.
+     */
+    private fun hookNavigationTab(loader: ClassLoader) {
+        try {
+            val cls = Class.forName(NAV_TAB, false, loader)
+            HookRuntime.hook(cls.getDeclaredMethod("loadImage"), object : SafeHook() {
+                override fun beforeHookedMethod(param: HookParam) {
+                    val tab = param.thisObject as? View ?: return
+                    if (Reflect.getObjectField(tab, "mIconSourceType")?.toString() != "DRAWABLE") return
+                    for (field in arrayOf("mContentSelected", "mContentUnSelected")) {
+                        val id = Reflect.getObjectField(tab, field) as? Int ?: continue
+                        val textFree = textFreeIcon(tab, id)
+                        if (textFree != 0) Reflect.setObjectField(tab, field, textFree)
+                    }
+                }
+            })
+            HookRuntime.hook(cls.getDeclaredMethod("updateTitleView"), object : SafeHook() {
+                override fun beforeHookedMethod(param: HookParam) {
+                    val tab = param.thisObject as? View ?: return
+                    val id = Reflect.getObjectField(tab, "mContentUnSelected") as? Int ?: return
+                    val icon = Reflect.getObjectField(tab, "mIconView") as? View
+                    when {
+                        isTextFreeIcon(tab, id) -> icon?.let { clipLabel(it, false) }
+                        // No "_i18n" variant (e.g. uik_nav_message_*): hide the
+                        // label row of the bitmap instead, so it is not shown twice.
+                        hasBakedLabel(tab, id) -> icon?.let { clipLabel(it, true) }
+                        else -> return
+                    }
+                    Reflect.setObjectField(tab, "mShowTitle", true)
+                }
+
+                override fun afterHookedMethod(param: HookParam) {
+                    val title = Reflect.getObjectField(param.thisObject ?: return, "mTitleView") as? TextView ?: return
+                    if (title.maxLines != 1) {
+                        title.maxLines = 1
+                        title.ellipsize = TextUtils.TruncateAt.END
+                        // Translations are longer than 2-4 Chinese characters.
+                        val max = title.textSize.toInt().coerceAtLeast(2)
+                        title.setAutoSizeTextTypeUniformWithConfiguration(
+                            (max * MIN_TEXT_SCALE * 0.8f).toInt().coerceAtLeast(1), max, 1, TypedValue.COMPLEX_UNIT_PX
+                        )
+                    }
+                }
+            })
+            Utils.debugLog("$TAG: hooked $NAV_TAB#loadImage/updateTitleView")
+        } catch (t: Throwable) {
+            Utils.debugLog("$TAG: NavigationTabIndicatorView not hooked: ${t.message}")
+        }
+    }
+
+    private val ICON_SUFFIX = Regex("_(ch|en|elder|ti|ru|thai|malay)$")
+
+    /** Resource id of the "_i18n" (text-free) variant of a tab icon, or 0. */
+    private fun textFreeIcon(view: View, id: Int): Int {
+        return try {
+            val res = view.resources
+            val name = res.getResourceEntryName(id)
+            if (name.endsWith("_i18n")) return 0
+            res.getIdentifier(name.replace(ICON_SUFFIX, "") + "_i18n", "drawable", res.getResourcePackageName(id))
+        } catch (_: Throwable) {
+            0
+        }
+    }
+
+    private fun isTextFreeIcon(view: View, id: Int): Boolean =
+        try { view.resources.getResourceEntryName(id).endsWith("_i18n") } catch (_: Throwable) { false }
+
+    /** Bundled tab icons (uik_nav_*) draw the label in the lower part of the bitmap. */
+    private fun hasBakedLabel(view: View, id: Int): Boolean =
+        try { view.resources.getResourceEntryName(id).startsWith("uik_nav_") } catch (_: Throwable) { false }
+
+    /** Fraction of the icon height above the baked-in label (220px icons: label starts ~140px). */
+    private const val ICON_FRACTION_ABOVE_LABEL = 0.62f
+
+    private val clipListeners = Collections.synchronizedMap(WeakHashMap<View, View.OnLayoutChangeListener>())
+
+    private fun clipLabel(icon: View, clip: Boolean) {
+        clipListeners.remove(icon)?.let { icon.removeOnLayoutChangeListener(it) }
+        if (!clip) {
+            icon.clipBounds = null
+            return
+        }
+        val apply = { icon.clipBounds = android.graphics.Rect(0, 0, icon.width, (icon.height * ICON_FRACTION_ABOVE_LABEL).toInt()) }
+        val listener = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> apply() }
+        clipListeners[icon] = listener
+        icon.addOnLayoutChangeListener(listener)
+        if (icon.width > 0) apply()
     }
 
     // ---------------------------------------------------------------- DinamicX

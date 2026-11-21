@@ -23,21 +23,29 @@ internal object ViewTreeDumper {
 
     private val handler = Handler(Looper.getMainLooper())
 
+    private const val REPEAT_MS = 15000L
+    private val RENDER_HOSTS = Regex("(?i)webview|weex|unicorn|\\bmus|surfaceview|textureview|flutter|lottie|canvas")
+
     fun scheduleDump(activity: Activity) {
         if (!Utils.Debug) return
         android.util.Log.i(TAG, "resumed ${activity.javaClass.name}, dumping in ${DELAY_MS}ms")
+        scheduleRepeating(activity, DELAY_MS)
+    }
+
+    // Tab switches inside one Activity do not resume it, so keep dumping while
+    // it stays in front (Debug mode only).
+    private fun scheduleRepeating(activity: Activity, delay: Long) {
         handler.postDelayed({
-            if (activity.isFinishing || activity.isDestroyed) {
-                android.util.Log.i(TAG, "skip ${activity.javaClass.name}: finishing")
-                return@postDelayed
-            }
-            val decor = activity.window?.peekDecorView() ?: run {
-                android.util.Log.i(TAG, "skip ${activity.javaClass.name}: no decor")
-                return@postDelayed
-            }
-            android.util.Log.i(TAG, "=== ${activity.javaClass.name} ===")
-            dump(decor, 0, intArrayOf(0))
-        }, DELAY_MS)
+            if (activity.isFinishing || activity.isDestroyed || !activity.hasWindowFocus()) return@postDelayed
+            dumpNow(activity)
+            scheduleRepeating(activity, REPEAT_MS)
+        }, delay)
+    }
+
+    private fun dumpNow(activity: Activity) {
+        val decor = activity.window?.peekDecorView() ?: return
+        android.util.Log.i(TAG, "=== ${activity.javaClass.name} ===")
+        dump(decor, 0, intArrayOf(0))
     }
 
     private fun dump(view: View, depth: Int, counter: IntArray, verbose: Boolean = false) {
@@ -46,6 +54,11 @@ internal object ViewTreeDumper {
         // Inside views that hold text but render it elsewhere, log every child.
         val verboseChildren = verbose || (texts.isNotEmpty() && view is ViewGroup && view !is TextView &&
             view.javaClass.name.contains("Navigation"))
+        // Rendering surfaces whose text never reaches Android views.
+        if (texts.isEmpty() && RENDER_HOSTS.containsMatchIn(classChain(view.javaClass))) {
+            val loc = IntArray(2).also { view.getLocationOnScreen(it) }
+            android.util.Log.i(TAG, "d=$depth HOST ${classChain(view.javaClass)} @${loc[0]},${loc[1]} ${view.width}x${view.height}")
+        }
         if (verbose && texts.isEmpty()) {
             android.util.Log.i(TAG, "d=$depth ${classChain(view.javaClass)} ${view.width}x${view.height} (child)")
         }

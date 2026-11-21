@@ -295,6 +295,8 @@ internal class AttachBaseContextHookHandler : SafeHook() {
 
             // WebView hooks
             applyWebViewHooks(packageName)
+            // UC/U4 WebView (Alibaba apps); no-op when the app does not ship it
+            if (PreferenceList.LoadURL) UcWebViewTranslator.install(context.classLoader)
 
             // Notification hooks
             applyNotificationHooks()
