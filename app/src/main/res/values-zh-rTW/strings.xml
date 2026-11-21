@@ -248,7 +248,12 @@
     <string name="pref_cat_status">"模組狀態"</string>
     <string name="status_framework">"框架"</string>
     <string name="status_framework_active">"執行中：%1$s。「系統框架」作用範圍正常。"</string>
-    <string name="status_framework_inactive">"未偵測到系統掛鉤。請在 LSPosed/Vector 中啟用 AllTrans 與「系統框架」作用範圍並重新開機。應用程式內翻譯可能仍可使用。"</string>
+    <string name="status_framework_inactive">"未連線 Xposed 服務。請在 LSPosed/Vector 中啟用 AllTrans 模組（及「系統框架」作用範圍），然後重新開啟 AllTrans。"</string>
+    <string name="status_scope">"作用範圍：%1$d 個應用程式 — %2$s"</string>
+    <string name="status_sync">"設定傳遞"</string>
+    <string name="status_sync_remote">"libxposed 遠端偏好：目標應用程式直接從框架讀取設定。"</string>
+    <string name="status_sync_provider">"框架不支援遠端偏好；目標應用程式透過 AllTrans 提供者讀取設定。"</string>
+    <string name="status_sync_none">"未連線框架；目標應用程式使用 AllTrans 提供者。"</string>
     <string name="status_apps">"應用程式"</string>
     <string name="status_apps_on">"翻譯已開啟，已選擇 %1$d 個應用程式。"</string>
     <string name="status_apps_off">"總開關已關閉（已選擇 %1$d 個應用程式）。"</string>

@@ -271,7 +271,12 @@
     <string name="pref_cat_status">"Trạng thái module"</string>
     <string name="status_framework">"Framework"</string>
     <string name="status_framework_active">"Đang hoạt động: %1$s. Phạm vi System Framework đang chạy."</string>
-    <string name="status_framework_inactive">"Không phát hiện hook hệ thống. Hãy bật AllTrans và phạm vi System Framework trong LSPosed/Vector rồi khởi động lại máy. Việc dịch trong ứng dụng có thể vẫn hoạt động."</string>
+    <string name="status_framework_inactive">"Chưa kết nối được dịch vụ Xposed. Hãy bật module AllTrans trong LSPosed/Vector (kèm phạm vi System Framework) rồi mở lại AllTrans."</string>
+    <string name="status_scope">"Phạm vi: %1$d ứng dụng — %2$s"</string>
+    <string name="status_sync">"Truyền cài đặt"</string>
+    <string name="status_sync_remote">"libxposed remote preferences: ứng dụng đích đọc cài đặt trực tiếp từ framework."</string>
+    <string name="status_sync_provider">"Framework không hỗ trợ remote preferences; ứng dụng đích đọc cài đặt qua provider của AllTrans."</string>
+    <string name="status_sync_none">"Chưa kết nối framework; ứng dụng đích dùng provider của AllTrans."</string>
     <string name="status_apps">"Ứng dụng"</string>
     <string name="status_apps_on">"Đang bật dịch, %1$d ứng dụng được chọn."</string>
     <string name="status_apps_off">"Công tắc chính đang tắt (%1$d ứng dụng được chọn)."</string>

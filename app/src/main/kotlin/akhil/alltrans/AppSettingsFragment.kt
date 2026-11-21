@@ -26,6 +26,12 @@ import java.util.Locale
 class AppSettingsFragment : PreferenceFragmentCompat() {
 
     private val main = Handler(Looper.getMainLooper())
+    private var serviceObserver: ((io.github.libxposed.service.XposedService?) -> Unit)? = null
+
+    override fun onDestroy() {
+        serviceObserver?.let { RemotePrefs.removeObserver(it) }
+        super.onDestroy()
+    }
 
     private val exportLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         uri?.let { exportTo(it) }
@@ -81,17 +87,24 @@ class AppSettingsFragment : PreferenceFragmentCompat() {
     private fun setupStatus() {
         val appContext = requireContext().applicationContext
         val framework = findPreference<Preference>("StatusFramework")
-        Thread {
-            val ping = SystemBridge.ping(appContext)
-            main.post {
-                if (!isAdded) return@post
-                framework?.summary = if (ping != null && ping.ok) {
-                    getString(R.string.status_framework_active, ping.value ?: "?")
+        val settingsSync = findPreference<Preference>("StatusSettingsSync")
+        serviceObserver = { service ->
+            if (isAdded) {
+                if (service != null) {
+                    // libxposed/service: framework identity and this module's scope.
+                    val scope = runCatching { service.scope }.getOrNull().orEmpty()
+                    framework?.summary = getString(R.string.status_framework_active, RemotePrefs.describe(service)) +
+                        "\n" + getString(R.string.status_scope, scope.size, scope.joinToString())
+                    settingsSync?.summary = getString(
+                        if (RemotePrefs.remoteSupported) R.string.status_sync_remote else R.string.status_sync_provider
+                    )
                 } else {
-                    getString(R.string.status_framework_inactive)
+                    framework?.summary = getString(R.string.status_framework_inactive)
+                    settingsSync?.summary = getString(R.string.status_sync_none)
                 }
             }
-        }.start()
+        }
+        RemotePrefs.observe(serviceObserver!!)
 
         val global = requireContext().getSharedPreferences("AllTransPref", Context.MODE_PRIVATE)
         val enabledApps = enabledPackages(global).size
@@ -125,6 +138,7 @@ class AppSettingsFragment : PreferenceFragmentCompat() {
                 PreferenceManager.clearCache(pkg)
             }
             PreferenceManager.clearCache()
+            Thread { RemotePrefs.syncAll() }.start()
             Toast.makeText(context, getString(R.string.clear_all_cache_done, packages.size), Toast.LENGTH_LONG).show()
             true
         }
@@ -214,6 +228,7 @@ class AppSettingsFragment : PreferenceFragmentCompat() {
                 editor.commit()
             }
             PreferenceManager.clearCache()
+            Thread { RemotePrefs.syncAll() }.start()
             Toast.makeText(context, getString(R.string.backup_import_done, files.length()), Toast.LENGTH_LONG).show()
             activity?.recreate()
         } catch (t: Throwable) {

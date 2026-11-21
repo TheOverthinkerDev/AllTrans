@@ -323,7 +323,12 @@
     <string name="pref_cat_status">"Module status"</string>
     <string name="status_framework">"Framework"</string>
     <string name="status_framework_active">"Active: %1$s. System Framework scope is working."</string>
-    <string name="status_framework_inactive">"System hook not detected. Enable AllTrans and the System Framework scope in LSPosed/Vector, then reboot. Translation inside apps may still work."</string>
+    <string name="status_framework_inactive">"Xposed service not connected. Enable the AllTrans module in LSPosed/Vector (and the System Framework scope), then reopen AllTrans."</string>
+    <string name="status_scope">"Scope: %1$d app(s) — %2$s"</string>
+    <string name="status_sync">"Settings delivery"</string>
+    <string name="status_sync_remote">"libxposed remote preferences: target apps read settings from the framework."</string>
+    <string name="status_sync_provider">"The framework has no remote preferences; target apps read settings through the AllTrans provider."</string>
+    <string name="status_sync_none">"Not connected to the framework; target apps use the AllTrans provider."</string>
     <string name="status_apps">"Apps"</string>
     <string name="status_apps_on">"Translation on, %1$d app(s) enabled."</string>
     <string name="status_apps_off">"Master switch is off (%1$d app(s) enabled)."</string>

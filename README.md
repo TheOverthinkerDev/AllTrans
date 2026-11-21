@@ -56,6 +56,8 @@ Cài đặt mặc định:
 6. Mở AllTrans và cấu hình dịch vụ dịch, ngôn ngữ nguồn/đích.
 
 > Nếu ứng dụng đích không truy vấn được provider trực tiếp, có thể chọn thêm **System Framework** trong phạm vi module để dùng cơ chế proxy.
+>
+> **Cài đặt** được truyền tới ứng dụng đích qua **libxposed remote preferences**: app AllTrans dùng [libxposed/service](https://github.com/libxposed/service) 102 để sao chép từng tệp cài đặt (`AllTransPref` và mỗi ứng dụng một nhóm) lên framework, còn module đọc bằng `getRemotePreferences()` của [libxposed/api](https://github.com/libxposed/api). Chỉ khi framework không hỗ trợ remote preferences mới dùng lại `SharedPrefProvider`. Mục **AllTrans → Trạng thái module → Truyền cài đặt** cho biết đang dùng đường nào.
 
 ## Sử dụng
 

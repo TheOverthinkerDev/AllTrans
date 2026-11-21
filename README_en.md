@@ -56,6 +56,8 @@ Default settings:
 6. Open AllTrans and configure the provider and languages.
 
 > If a target app cannot query providers directly, you can also add **System Framework** to the module scope to use the proxy path.
+>
+> **Settings** reach target apps through **libxposed remote preferences**: the AllTrans app uses [libxposed/service](https://github.com/libxposed/service) 102 to mirror each settings file (`AllTransPref` plus one group per app) into the framework, and the module reads them with `getRemotePreferences()` from [libxposed/api](https://github.com/libxposed/api). `SharedPrefProvider` is only used when the framework has no remote preferences. **AllTrans → Module status → Settings delivery** shows which path is in use.
 
 ## Usage
 

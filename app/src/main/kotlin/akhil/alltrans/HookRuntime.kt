@@ -40,6 +40,27 @@ object HookRuntime {
         }
     }
 
+    /**
+     * Global and per-app settings as JSON, read from libxposed remote preferences
+     * (written by the AllTrans app through libxposed/service, see RemotePrefs).
+     * Returns null when the framework has no remote capability or AllTrans has
+     * not synced yet, so the caller can fall back to the ContentProvider.
+     */
+    fun readRemoteSettings(packageName: String): Pair<String, String>? {
+        val m = module ?: return null
+        return try {
+            if (m.frameworkProperties and XposedInterface.PROP_CAP_REMOTE == 0L) return null
+            val global = m.getRemotePreferences("AllTransPref").all
+            if (global.isEmpty()) return null
+            val local = if (global[packageName] == true) m.getRemotePreferences(packageName).all else emptyMap()
+            val gson = com.google.gson.Gson()
+            Pair(gson.toJson(global), gson.toJson(local))
+        } catch (t: Throwable) {
+            Log.w(TAG, "Remote preferences unavailable: ${t.message}")
+            null
+        }
+    }
+
     private fun requireModule(): XposedModule =
         module ?: throw IllegalStateException("HookRuntime has not been attached to XposedModule")
 

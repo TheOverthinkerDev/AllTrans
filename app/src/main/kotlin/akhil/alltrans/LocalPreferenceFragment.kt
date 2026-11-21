@@ -195,6 +195,8 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
 
         val prefManager = preferenceManager
         prefManager.sharedPreferencesName = applicationInfo!!.packageName
+        // Mirror this app's settings to libxposed remote preferences on change.
+        RemotePrefs.watch(applicationInfo!!.packageName)
         val localPrefs = prefManager.sharedPreferences
 
         addPreferencesFromResource(R.xml.perappprefs)

@@ -248,7 +248,12 @@
     <string name="pref_cat_status">"模块状态"</string>
     <string name="status_framework">"框架"</string>
     <string name="status_framework_active">"运行中：%1$s。“系统框架”作用域正常。"</string>
-    <string name="status_framework_inactive">"未检测到系统钩子。请在 LSPosed/Vector 中启用 AllTrans 和“系统框架”作用域并重启。应用内翻译可能仍可使用。"</string>
+    <string name="status_framework_inactive">"未连接 Xposed 服务。请在 LSPosed/Vector 中启用 AllTrans 模块（及“系统框架”作用域），然后重新打开 AllTrans。"</string>
+    <string name="status_scope">"作用域：%1$d 个应用 — %2$s"</string>
+    <string name="status_sync">"设置传递"</string>
+    <string name="status_sync_remote">"libxposed 远程偏好：目标应用直接从框架读取设置。"</string>
+    <string name="status_sync_provider">"框架不支持远程偏好；目标应用通过 AllTrans 提供器读取设置。"</string>
+    <string name="status_sync_none">"未连接框架；目标应用使用 AllTrans 提供器。"</string>
     <string name="status_apps">"应用"</string>
     <string name="status_apps_on">"翻译已开启，已选择 %1$d 个应用。"</string>
     <string name="status_apps_off">"总开关已关闭（已选择 %1$d 个应用）。"</string>

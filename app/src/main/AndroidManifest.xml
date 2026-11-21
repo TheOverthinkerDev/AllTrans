@@ -26,6 +26,7 @@
         tools:ignore="QueryAllPackagesPermission" />
 
     <application
+        android:name=".AllTransApp"
         android:forceQueryable="true"
         android:allowBackup="false"
         android:description="@string/app_description"

@@ -139,6 +139,14 @@ internal class AttachBaseContextHookHandler : SafeHook() {
         private fun getPreferencesViaProviders(context: Context?, packageName: String?): Bundle? {
             if (context == null || packageName == null) return null
             val resultBundle = Bundle()
+            // Preferred: libxposed remote preferences (no provider / proxy round trip).
+            HookRuntime.readRemoteSettings(packageName)?.let { (global, local) ->
+                HookRuntime.log("Settings for $packageName read from libxposed remote preferences")
+                resultBundle.putString("globalPref", global)
+                resultBundle.putString("localPref", local)
+                return resultBundle
+            }
+            HookRuntime.log("Remote preferences unavailable for $packageName, falling back to the provider")
             var globalPref: String? = null
             var localPref: String? = null
             var cursor: Cursor? = null

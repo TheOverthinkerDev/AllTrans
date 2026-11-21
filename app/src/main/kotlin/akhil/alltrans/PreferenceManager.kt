@@ -154,6 +154,11 @@ object PreferenceManager {
     private fun getPreferencesViaProviders(context: Context?, packageName: String?): Bundle? {
         if (context == null || packageName == null) return null
         val resultBundle = Bundle()
+        HookRuntime.readRemoteSettings(packageName)?.let { (global, local) ->
+            resultBundle.putString("globalPref", global)
+            resultBundle.putString("localPref", local)
+            return resultBundle
+        }
         var globalPref: String? = null
         var localPref: String? = null
         var cursor: Cursor? = null

@@ -23,7 +23,8 @@ android {
             }
         }
     }
-    compileSdk = 36
+    // libxposed service/interface 102 require compileSdk 37 (targetSdk stays 36)
+    compileSdkVersion "android-37.0"
     namespace 'akhil.alltrans'
 
     defaultConfig {
@@ -89,6 +90,8 @@ dependencies {
 
     // Modern Xposed API (provided by LSPosed 2.1+)
     compileOnly 'io.github.libxposed:api:102.0.0'
+    // Module app <-> framework service (remote preferences, scope, status)
+    implementation 'io.github.libxposed:service:102.0.0'
 
     // Networking & JSON
     implementation 'com.google.code.gson:gson:2.13.1'

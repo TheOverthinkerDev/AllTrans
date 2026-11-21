@@ -50,6 +50,14 @@
 
         <Preference
             app:iconSpaceReserved="false"
+            app:key="StatusSettingsSync"
+            app:persistent="false"
+            app:title="@string/status_sync"
+            app:summary="@string/app_language_loading"
+            android:layout="@layout/preference_material_item" />
+
+        <Preference
+            app:iconSpaceReserved="false"
             app:key="StatusApps"
             app:persistent="false"
             app:title="@string/status_apps"
