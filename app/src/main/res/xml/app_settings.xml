@@ -133,11 +133,26 @@
 
         <Preference
             app:iconSpaceReserved="false"
-            app:key="Credits"
+            app:key="CreditsOriginal"
             app:persistent="false"
-            app:selectable="false"
-            app:title="@string/about_credits"
-            app:summary="@string/about_credits_summary"
+            app:title="@string/credits_original"
+            app:summary="@string/credits_original_summary"
+            android:layout="@layout/preference_material_item" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="CreditsVietPhrase"
+            app:persistent="false"
+            app:title="@string/credits_vietphrase"
+            app:summary="@string/credits_vietphrase_summary"
+            android:layout="@layout/preference_material_item" />
+
+        <Preference
+            app:iconSpaceReserved="false"
+            app:key="CreditsLibxposed"
+            app:persistent="false"
+            app:title="@string/credits_libxposed"
+            app:summary="@string/credits_libxposed_summary"
             android:layout="@layout/preference_material_item" />
 
         <Preference

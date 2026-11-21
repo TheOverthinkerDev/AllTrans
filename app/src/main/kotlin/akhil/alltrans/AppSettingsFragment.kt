@@ -307,9 +307,17 @@ class AppSettingsFragment : PreferenceFragmentCompat() {
         val context = requireContext()
         val info = context.packageManager.getPackageInfo(context.packageName, 0)
         findPreference<Preference>("Version")?.summary = "${info.versionName} (${info.longVersionCode})"
-        findPreference<Preference>("Source")?.setOnPreferenceClickListener {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/TheOverthinkerDev/AllTrans")))
-            true
+        val links = mapOf(
+            "Source" to "https://github.com/TheOverthinkerDev/AllTrans",
+            "CreditsOriginal" to "https://github.com/akhilkedia/AllTrans",
+            "CreditsVietPhrase" to "https://github.com/Chanhnh/AllTrans",
+            "CreditsLibxposed" to "https://github.com/libxposed"
+        )
+        for ((key, url) in links) {
+            findPreference<Preference>(key)?.setOnPreferenceClickListener {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                true
+            }
         }
     }
 

@@ -184,42 +184,55 @@ internal object SystemBridge {
 
     // ------------------------------------------------------------------ helpers
 
+    enum class LocaleSupport { SUPPORTED, NOT_DECLARED, PARSE_FAILED, OS_TOO_OLD, ERROR }
+
+    /** Whether Android lets [pkg] use per-app languages, and which ones. */
+    class AppLocales(val support: LocaleSupport, val tags: List<String>, val error: String? = null)
+
     /**
-     * Languages [pkg] can show: its declared localeConfig, or else the
-     * locales its resources contain. Returns BCP-47 tags, sorted by name.
+     * Same rule Android uses to list an app under Settings → App languages
+     * (LocaleManager.setApplicationLocales/getApplicationLocales): the app must
+     * declare a LocaleConfig (android:localeConfig, or an override it set at
+     * runtime on Android 14+). Only those declared locales are offered; locales
+     * merely present in its resources are not, since the app never claimed them.
      */
-    fun supportedLocales(context: Context, pkg: String): List<String> {
-        val tags = LinkedHashSet<String>()
-        try {
+    fun appLocales(context: Context, pkg: String): AppLocales {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return AppLocales(LocaleSupport.OS_TOO_OLD, emptyList())
+        return try {
             val pkgContext = context.createPackageContext(pkg, 0)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                val config = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    LocaleConfig.fromContextIgnoringOverride(pkgContext)
-                } else {
-                    LocaleConfig(pkgContext)
-                }
-                val list = config.supportedLocales
-                if (config.status == LocaleConfig.STATUS_SUCCESS && list != null) {
-                    for (i in 0 until list.size()) tags.add(list[i].toLanguageTag())
-                }
+            val config = try {
+                // On 14+ this includes an override set by the app itself.
+                LocaleConfig(pkgContext)
+            } catch (_: Throwable) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) LocaleConfig.fromContextIgnoringOverride(pkgContext)
+                else throw IllegalStateException("cannot read LocaleConfig")
             }
-            if (tags.isEmpty()) {
-                // No localeConfig: fall back to the locales in its resources.
-                val assets = pkgContext.resources.assets
-                @Suppress("UNCHECKED_CAST")
-                val locales = assets.javaClass.getMethod("getLocales").invoke(assets) as? Array<String>
-                locales?.filter { it.isNotBlank() }?.forEach { tags.add(Locale.forLanguageTag(it).toLanguageTag()) }
+            val list = config.supportedLocales
+            when {
+                config.status == LocaleConfig.STATUS_PARSING_FAILED -> AppLocales(LocaleSupport.PARSE_FAILED, emptyList())
+                config.status != LocaleConfig.STATUS_SUCCESS || list == null || list.isEmpty ->
+                    AppLocales(LocaleSupport.NOT_DECLARED, emptyList())
+                else -> {
+                    val display = Locale.getDefault()
+                    val tags = (0 until list.size()).map { list[it].toLanguageTag() }.filter { it != "und" }.distinct()
+                        .sortedBy { Locale.forLanguageTag(it).getDisplayName(display).lowercase() }
+                    AppLocales(LocaleSupport.SUPPORTED, tags)
+                }
             }
         } catch (t: Throwable) {
-            Utils.debugLog("SystemBridge: supportedLocales($pkg) failed: ${t.message}")
+            AppLocales(LocaleSupport.ERROR, emptyList(), t.message)
         }
-        val display = Locale.getDefault()
-        return tags.filter { it != "und" }.sortedBy { Locale.forLanguageTag(it).getDisplayName(display).lowercase() }
     }
 
     fun displayName(tag: String): String {
         val locale = Locale.forLanguageTag(tag)
         val name = locale.getDisplayName(locale).replaceFirstChar { it.titlecase(locale) }
         return "$name ($tag)"
+    }
+
+    /** Short name in the UI language, e.g. "Tiếng Việt". */
+    fun shortName(tag: String): String {
+        val locale = Locale.forLanguageTag(tag)
+        return locale.getDisplayName(locale).replaceFirstChar { it.titlecase(locale) }
     }
 }

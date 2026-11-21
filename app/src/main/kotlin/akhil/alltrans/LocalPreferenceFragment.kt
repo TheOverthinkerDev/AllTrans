@@ -280,19 +280,78 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
             }
         }
 
+        setupScope(applicationInfo!!.packageName)
+
         findPreference<SwitchPreference>("LocalEnabled")?.setOnPreferenceChangeListener { _, newValue ->
             val enabled = newValue as Boolean
-            globalSettings?.edit()?.apply {
-                if (enabled) {
-                    putBoolean(applicationInfo!!.packageName, true)
-                    Utils.debugLog("LocalPref: Added ${applicationInfo!!.packageName} to global list.")
-                } else {
-                    remove(applicationInfo!!.packageName)
-                    Utils.debugLog("LocalPref: Removed ${applicationInfo!!.packageName} from global list.")
+            val pkg = applicationInfo!!.packageName
+            AppConfig.setTranslation(requireContext(), pkg, enabled)
+            if (enabled) {
+                // Translation and a built-in app language would fight over the
+                // same text: go back to the system language before translating.
+                if (!currentAppLocale.isNullOrEmpty() || AppConfig.builtInLanguage(requireContext(), pkg) != null) {
+                    resetAppLanguageForTranslation(pkg)
                 }
-                apply()
+                AppConfig.requestScopeIfNeeded(requireContext(), pkg)
+                refreshScope(pkg)
             }
             true
+        }
+    }
+
+    /** Current per-app language of the app ("" = system default, null = unknown). */
+    private var currentAppLocale: String? = null
+    private var appLanguagePref: ListPreference? = null
+    private var appLanguageSummary: ((String?) -> Unit)? = null
+
+    private fun resetAppLanguageForTranslation(pkg: String) {
+        val appContext = requireContext().applicationContext
+        Thread {
+            val result = SystemBridge.setLocales(appContext, pkg, "")
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                if (result.ok) {
+                    AppConfig.setBuiltInLanguage(appContext, pkg, null)
+                    currentAppLocale = ""
+                    appLanguagePref?.value = ""
+                    appLanguageSummary?.invoke("")
+                    Toast.makeText(appContext, R.string.app_language_reset_for_translation, Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(appContext, appContext.getString(R.string.app_language_unavailable, result.error ?: ""), Toast.LENGTH_LONG).show()
+                }
+            }
+        }.start()
+    }
+
+    // ------------------------------------------------------------------ scope
+
+    private fun setupScope(pkg: String) {
+        val pref = findPreference<Preference>("Scope") ?: return
+        pref.setOnPreferenceClickListener {
+            AppConfig.requestScopeIfNeeded(requireContext(), pkg)
+            true
+        }
+        refreshScope(pkg)
+    }
+
+    private fun refreshScope(pkg: String) {
+        val pref = findPreference<Preference>("Scope") ?: return
+        pref.summary = getString(
+            when (AppConfig.isInScope(pkg)) {
+                true -> R.string.scope_in
+                false -> R.string.scope_not_in
+                null -> R.string.scope_no_service
+            }
+        )
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // The user may have approved the scope request in the framework meanwhile.
+        applicationInfo?.packageName?.let { pkg ->
+            Thread {
+                AppConfig.refreshScope()
+                android.os.Handler(android.os.Looper.getMainLooper()).post { if (isAdded) refreshScope(pkg) }
+            }.start()
         }
     }
 
@@ -330,6 +389,7 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
      */
     private fun setupAppLanguage(pkg: String) {
         val pref = findPreference<ListPreference>("AppLanguage") ?: return
+        appLanguagePref = pref
         if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
             pref.isEnabled = false
             pref.summary = getString(R.string.app_language_unsupported)
@@ -344,21 +404,47 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
             else tags.split(',').joinToString(", ") { SystemBridge.displayName(it) }
 
         Thread {
-            val supported = SystemBridge.supportedLocales(appContext, pkg)
+            val locales = SystemBridge.appLocales(appContext, pkg)
             val current = SystemBridge.getLocales(appContext, pkg)
             main.post {
                 if (!isAdded) return@post
-                pref.entries = (listOf(getString(R.string.app_language_system_default)) +
-                    supported.map { SystemBridge.displayName(it) }).toTypedArray()
-                pref.entryValues = (listOf("") + supported).toTypedArray()
                 val currentTag = current.value.orEmpty().substringBefore(',')
-                pref.value = currentTag
-                pref.isEnabled = current.ok
-                pref.summary = when {
-                    !current.ok -> getString(R.string.app_language_unavailable, current.error ?: "")
-                    supported.isEmpty() -> getString(R.string.app_language_no_list, describe(current.value))
-                    else -> describe(current.value)
+                currentAppLocale = if (current.ok) currentTag else null
+                val supported = locales.support == SystemBridge.LocaleSupport.SUPPORTED
+                // Offer only what the app declares. If the app is not eligible but a
+                // language is set anyway, still allow going back to the system language.
+                val tags = when {
+                    supported -> locales.tags
+                    currentTag.isNotEmpty() -> listOf(currentTag)
+                    else -> emptyList()
                 }
+                pref.entries = (listOf(getString(R.string.app_language_system_default)) +
+                    tags.map { SystemBridge.displayName(it) }).toTypedArray()
+                pref.entryValues = (listOf("") + tags).toTypedArray()
+                pref.value = currentTag
+                pref.isEnabled = current.ok && (supported || currentTag.isNotEmpty())
+
+                val reason = when (locales.support) {
+                    SystemBridge.LocaleSupport.SUPPORTED -> null
+                    SystemBridge.LocaleSupport.NOT_DECLARED -> getString(R.string.app_language_not_declared)
+                    SystemBridge.LocaleSupport.PARSE_FAILED -> getString(R.string.app_language_parse_failed)
+                    SystemBridge.LocaleSupport.OS_TOO_OLD -> getString(R.string.app_language_unsupported)
+                    SystemBridge.LocaleSupport.ERROR -> getString(R.string.app_language_check_failed, locales.error ?: "")
+                }
+                val available = if (supported) {
+                    val names = locales.tags.map { SystemBridge.shortName(it) }
+                    val shown = names.take(12).joinToString(", ") + if (names.size > 12) ", …" else ""
+                    getString(R.string.app_language_available, locales.tags.size, shown)
+                } else null
+                appLanguageSummary = { tag ->
+                    pref.summary = listOfNotNull(
+                        if (!current.ok) getString(R.string.app_language_unavailable, current.error ?: "")
+                        else getString(R.string.app_language_current, describe(tag)),
+                        reason,
+                        available
+                    ).joinToString("\n")
+                }
+                appLanguageSummary?.invoke(currentTag)
             }
         }.start()
 
@@ -371,9 +457,19 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
                     if (!isAdded) return@post
                     pref.isEnabled = true
                     if (result.ok) {
-                        pref.value = result.value.orEmpty().substringBefore(',')
-                        pref.summary = describe(result.value)
-                        Toast.makeText(appContext, getString(R.string.app_language_applied, describe(result.value)), Toast.LENGTH_SHORT).show()
+                        val applied = result.value.orEmpty().substringBefore(',')
+                        currentAppLocale = applied
+                        pref.value = applied
+                        appLanguageSummary?.invoke(applied)
+                        AppConfig.setBuiltInLanguage(appContext, pkg, applied)
+                        if (applied.isNotEmpty() && AppConfig.isTranslationOn(appContext, pkg)) {
+                            // Built-in language replaces machine translation for this app.
+                            AppConfig.setTranslation(appContext, pkg, false)
+                            findPreference<SwitchPreference>("LocalEnabled")?.isChecked = false
+                            Toast.makeText(appContext, getString(R.string.app_language_translation_off, describe(result.value)), Toast.LENGTH_LONG).show()
+                        } else {
+                            Toast.makeText(appContext, getString(R.string.app_language_applied, describe(result.value)), Toast.LENGTH_SHORT).show()
+                        }
                     } else {
                         Toast.makeText(appContext, getString(R.string.app_language_unavailable, result.error ?: ""), Toast.LENGTH_LONG).show()
                     }

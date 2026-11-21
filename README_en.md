@@ -78,6 +78,10 @@ Default settings:
 4. Choose the provider, languages, and advanced options.
 5. Force-stop the target app to apply the changes.
 
+**The LSPosed scope is required.** With libxposed API 102 the framework only loads a module into apps in its scope, and translation runs inside the target app, so ticking an app in AllTrans is not enough on its own. When you tick an app that is not in scope, AllTrans requests it through libxposed service and LSPosed shows a **Scope Request** notification to approve. The list and the per-app screen show which apps are missing the scope.
+
+**Built-in app language.** **App language** uses Android 13+ per-app languages (`LocaleManager`). It can only be changed when the app declares a `localeConfig` to Android (the same rule Android uses for Settings → App languages), and only the languages the app declares are offered. Setting a built-in language turns AllTrans translation off for that app; turning translation back on resets the language to the system default. Configured apps stay in the top group of the list even with translation off.
+
 ### Main settings
 
 | Setting | Description |
@@ -255,7 +259,9 @@ RELEASE_KEY_PASSWORD=...
 
 ## Credits
 
-- Original project: [akhilkedia/AllTrans](https://github.com/akhilkedia/AllTrans)
+- **Original:** [akhilkedia/AllTrans](https://github.com/akhilkedia/AllTrans) by Akhil Kedia
+- **VietPhrase from Chanhnh:** VietPhrase engine, the libxposed API 102 port and more from [Chanhnh/AllTrans](https://github.com/Chanhnh/AllTrans)
+- **libxposed:** [libxposed/api](https://github.com/libxposed/api) and [libxposed/service](https://github.com/libxposed/service) (Apache-2.0)
 - VietPhrase rules and data adapted from [duongden/script-vietphrase-translator](https://github.com/duongden/script-vietphrase-translator)
 
 ## License

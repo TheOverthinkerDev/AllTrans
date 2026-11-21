@@ -78,6 +78,10 @@ Cài đặt mặc định:
 4. Chọn dịch vụ dịch, ngôn ngữ và các tuỳ chọn nâng cao.
 5. Buộc dừng ứng dụng đích để áp dụng.
 
+**Phạm vi LSPosed là bắt buộc.** Với libxposed API 102, framework chỉ nạp module vào những ứng dụng nằm trong phạm vi của nó, mà việc dịch chạy ngay trong ứng dụng đích, nên chỉ tick trong AllTrans là chưa đủ. Khi tick một ứng dụng chưa có phạm vi, AllTrans tự gửi yêu cầu thêm phạm vi (libxposed service); LSPosed hiện thông báo **Scope Request** để bạn duyệt. Danh sách và màn cài đặt riêng ghi rõ ứng dụng nào chưa có phạm vi.
+
+**Ngôn ngữ có sẵn của ứng dụng.** Mục **Ngôn ngữ ứng dụng** dùng Android 13+ per-app language (`LocaleManager`). Chỉ chọn được khi ứng dụng khai báo `localeConfig` với Android (cùng điều kiện để Android liệt kê ứng dụng trong Cài đặt → Ngôn ngữ ứng dụng), và chỉ hiện đúng các ngôn ngữ ứng dụng khai báo. Đặt một ngôn ngữ có sẵn sẽ tự tắt dịch AllTrans cho ứng dụng đó; bật dịch lại sẽ tự đưa ngôn ngữ về theo hệ thống. Ứng dụng đã cấu hình vẫn nằm ở nhóm đầu danh sách dù đã tắt dịch.
+
 ### Các cài đặt chính
 
 | Cài đặt | Mô tả |
@@ -255,7 +259,9 @@ RELEASE_KEY_PASSWORD=...
 
 ## Ghi công
 
-- Dự án gốc: [akhilkedia/AllTrans](https://github.com/akhilkedia/AllTrans)
+- **Bản gốc:** [akhilkedia/AllTrans](https://github.com/akhilkedia/AllTrans) của Akhil Kedia
+- **VietPhrase từ Chanhnh:** bộ dịch VietPhrase, bản port libxposed API 102 và nhiều tính năng từ [Chanhnh/AllTrans](https://github.com/Chanhnh/AllTrans)
+- **libxposed:** [libxposed/api](https://github.com/libxposed/api) và [libxposed/service](https://github.com/libxposed/service) (Apache-2.0)
 - Bộ quy tắc và dữ liệu VietPhrase tham khảo từ [duongden/script-vietphrase-translator](https://github.com/duongden/script-vietphrase-translator)
 
 ## Giấy phép

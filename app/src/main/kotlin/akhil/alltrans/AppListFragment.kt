@@ -109,9 +109,14 @@ class AppListFragment : Fragment(), SearchableFragment {
                 Utils.debugLog("AppListFragment: Loading packages in IO thread...")
                 val pm = appContext.packageManager
                 val packages = getInstalledApplications(appContext)
+                // Apps set up in AllTrans (translation on, a built-in language, or
+                // any per-app settings) stay on top even when translation is off.
+                AppConfig.refreshScope()
+                val configured = packages.filter { AppConfig.isConfigured(appContext, it.packageName) }
+                    .map { it.packageName }.toHashSet()
                 packages.sortWith(Comparator { a, b ->
-                    val aEnabled = settings?.contains(a.packageName) == true
-                    val bEnabled = settings?.contains(b.packageName) == true
+                    val aEnabled = a.packageName in configured
+                    val bEnabled = b.packageName in configured
                     if (aEnabled && !bEnabled) return@Comparator -1
                     if (!aEnabled && bEnabled) return@Comparator 1
                     val labelA = pm.getApplicationLabel(a).toString().lowercase(Locale.getDefault())
@@ -209,6 +214,19 @@ class AppListFragment : Fragment(), SearchableFragment {
                 }
             }
         }
+        /** Package name, plus the built-in language or a missing-scope warning. */
+        private fun statusLine(pkg: String): String {
+            val parts = mutableListOf<String>()
+            AppConfig.builtInLanguage(context, pkg)?.let {
+                parts += context.getString(R.string.list_built_in_language, SystemBridge.shortName(it))
+            }
+            if (settings?.contains(pkg) == true && AppConfig.isInScope(pkg) == false) {
+                parts += context.getString(R.string.list_not_in_scope)
+            }
+            parts += pkg
+            return parts.joinToString(" · ")
+        }
+
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val currentView: View // Use val for the final assigned view
             val viewHolder: ViewHolder
@@ -235,7 +253,7 @@ class AppListFragment : Fragment(), SearchableFragment {
 
                 viewHolder.textView?.text = label
                 viewHolder.textView?.isSelected = true // for marquee
-                viewHolder.textView2?.text = packageName
+                viewHolder.textView2?.text = statusLine(packageName)
                 viewHolder.textView2?.isSelected = true // for marquee
                 viewHolder.imageView?.setImageDrawable(icon)
 
@@ -246,26 +264,26 @@ class AppListFragment : Fragment(), SearchableFragment {
                     val appInfoFromTag = checkBox.tag as? ApplicationInfo ?: return@setOnClickListener
                     val pkgName = appInfoFromTag.packageName ?: return@setOnClickListener
                     Utils.debugLog("CheckBox clicked! $pkgName")
-
-                    val globalEditor = settings?.edit()
                     // Use the row's context instead of requireActivity(); the
                     // fragment may already be detached when a late click lands.
-                    val localSettings = v.context.getSharedPreferences(pkgName, Context.MODE_PRIVATE)
-                    val localEditor = localSettings.edit()
-
+                    AppConfig.setTranslation(v.context, pkgName, checkBox.isChecked)
                     if (checkBox.isChecked) {
-                        globalEditor?.putBoolean(pkgName, true)
-                        localEditor?.putBoolean("LocalEnabled", true)
-                    } else {
-                        globalEditor?.remove(pkgName)
-                        localEditor?.putBoolean("LocalEnabled", false)
+                        if (AppConfig.builtInLanguage(v.context, pkgName) != null) {
+                            // Built-in language and translation would overlap: reset it.
+                            val appContext = v.context.applicationContext
+                            Thread {
+                                if (SystemBridge.setLocales(appContext, pkgName, "").ok) {
+                                    AppConfig.setBuiltInLanguage(appContext, pkgName, null)
+                                    android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                        android.widget.Toast.makeText(appContext, R.string.app_language_reset_for_translation, android.widget.Toast.LENGTH_LONG).show()
+                                        notifyDataSetChanged()
+                                    }
+                                }
+                            }.start()
+                        }
+                        AppConfig.requestScopeIfNeeded(v.context, pkgName)
                     }
-                    globalEditor?.apply()
-                    localEditor?.apply()
-
-                    // Limpar cache de preferências para forçar recarregamento
-                    PreferenceManager.clearCache(pkgName)
-                    Utils.debugLog("Cleared preference cache for $pkgName due to setting change")
+                    notifyDataSetChanged()
                 }
             } else {
                 // Clear views if currentAppInfo is null (e.g. during filtering)

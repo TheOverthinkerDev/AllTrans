@@ -11,6 +11,14 @@
         app:summaryOn="@string/local_on_off_summary_on"
         app:title="@string/local_on_off" />
 
+    <Preference
+        app:iconSpaceReserved="false"
+        app:key="Scope"
+        app:persistent="false"
+        app:title="@string/scope_title"
+        app:summary="@string/app_language_loading"
+        android:layout="@layout/preference_material_item" />
+
     <SwitchPreference
         app:iconSpaceReserved="false"
         app:defaultValue="false"
