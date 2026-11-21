@@ -22,34 +22,22 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
 
     <application
         android:forceQueryable="true"
-        android:allowBackup="true"
+        android:allowBackup="false"
+        android:description="@string/app_description"
         android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning"
         tools:targetApi="r">
-        <meta-data
-            android:name="xposedmodule"
-            android:value="true" />
-        <meta-data
-            android:name="xposeddescription"
-            android:value="In-app translations anywhere" />
-        <meta-data
-            android:name="xposedminversion"
-            android:value="82" />
         <meta-data android:name="android.max_aspect"
             android:value="5.0"/>
-        <meta-data
-            android:name="xposedscope"
-            android:resource="@array/scopes" />
 
         <activity android:name=".MainActivity"
             android:exported="true">
@@ -59,13 +47,23 @@
             </intent-filter>
         </activity>
         <provider
-            android:authorities="akhil.alltrans.sharedPrefProvider"
-            android:name="akhil.alltrans.sharedPrefProvider"
+            android:authorities="akhil.alltrans.SharedPrefProvider"
+            android:name="akhil.alltrans.SharedPrefProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
         <provider
-            android:authorities="akhil.alltrans.gtransProvider"
-            android:name="akhil.alltrans.gtransProvider"
+            android:authorities="akhil.alltrans.GtransProvider"
+            android:name="akhil.alltrans.GtransProvider"
+            android:exported="true"
+            tools:ignore="ExportedContentProvider" />
+        <provider
+            android:authorities="akhil.alltrans.EdgeProvider"
+            android:name="akhil.alltrans.EdgeProvider"
+            android:exported="true"
+            tools:ignore="ExportedContentProvider" />
+        <provider
+            android:authorities="akhil.alltrans.VietPhraseProvider"
+            android:name="akhil.alltrans.VietPhraseProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
     </application>

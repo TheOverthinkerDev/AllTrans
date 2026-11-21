@@ -1,209 +1,251 @@
-<!-- omit in toc -->
-# ![AllTrans](https://raw.githubusercontent.com/akhilkedia/AllTrans/master/app/src/main/res/mipmap-hdpi/ic_launcher.png)AllTrans™ - Completely Translate Apps
+# AllTrans
+
+[English](README_en.md)
+
+> **Về bản fork này:** fork từ [akhilkedia/AllTrans](https://github.com/akhilkedia/AllTrans) (bản gốc chỉ chạy tới Android 13), gộp thêm phần port libxposed API 102 và các tính năng của [Chanhnh/AllTrans](https://github.com/Chanhnh/AllTrans), đồng thời giữ lại tên gói gốc `akhil.alltrans`. Mục tiêu là chạy được trên Android 14–17. Đã thử trên Redmi K40s chạy HyperOS 4 (Android 17) với framework Wukong.
+
+AllTrans là một module Xposed/LSPosed giúp dịch giao diện ứng dụng Android ngay khi ứng dụng đang chạy. Bạn không cần chỉnh sửa APK, không cần sao chép văn bản sang ứng dụng khác — văn bản trên màn hình sẽ được thay bằng bản dịch theo ngôn ngữ bạn chọn.
+
+## Tổng quan
+
+- **Tên gói:** `akhil.alltrans`
+- **Phiên bản:** `3.0.0` (`versionCode` 300)
+- **Android tối thiểu:** Android 10 (API 29)
+- **Compile/target SDK:** 36
+- **Nền tảng:** LSPosed 2.1+ hoặc môi trường Xposed tương thích libxposed API
+- **Giao diện:** Material 3, hỗ trợ sáng/tối
+- **Ngôn ngữ giao diện:** English, Tiếng Việt, 简体中文, 繁體中文 (Đài Loan)
+- **Dịch vụ dịch:** Google Translate, Microsoft Translate, VietPhrase
+
+Cài đặt mặc định:
+
+- Dịch vụ dịch: `Google Translate`
+- Ngôn ngữ nguồn: `Tự nhận diện`
+- Ngôn ngữ đích: `Tiếng Việt`
 
-Like Chrome's translation of webpages, but for Android apps. It replaces **ALL TEXT IN AN APP** from one language to another at runtime.
+## Tính năng
+
+- Dịch văn bản trong ứng dụng theo thời gian thực, không cần sửa APK
+- Dịch văn bản thường, gợi ý trong ô nhập (`setHint`), thông báo và nội dung `WebView`
+- Dịch mở rộng cho View tùy chỉnh và nội dung được vẽ ngoài `TextView`
+- Cài đặt toàn cục và ghi đè riêng cho từng ứng dụng
+- Chọn ngôn ngữ nguồn/đích linh hoạt; hỗ trợ tự nhận diện ngôn ngữ
+- Bộ nhớ đệm bản dịch giúp giảm yêu cầu lặp lại và tăng tốc hiển thị
+- Tự động đánh dấu xoá bộ nhớ đệm khi đổi dịch vụ dịch, đổi ngôn ngữ hoặc thay đổi engine dịch
+- `VietPhrase` dịch offline từ tiếng Trung sang tiếng Việt bằng từ điển cục bộ
+- Bộ quy tắc `VietPhrase` xử lý tên riêng, đại từ, số/ngày, nhãn chương và định dạng câu
+- Chế độ gỡ lỗi ghi log ra `logcat` để thuận tiện báo lỗi
+
+## Yêu cầu
 
-Say for example an app is in German. A user selects the app name, and the required language conversion (say German to English).
-Then whenever the user uses the required app, all the text, **ANYWHERE** in the app, are replaced by their English equivalents.
-This is something similar to the way Google Translate works in Chrome.
+| Thành phần | Yêu cầu |
+| --- | --- |
+| Thiết bị | Android 10 trở lên (API 29+) |
+| Module | LSPosed 2.1+ hoặc môi trường Xposed tương thích libxposed API |
+| Quyền hệ thống | Thiết bị đã cài LSPosed (thường cần root/Magisk, KernelSU hoặc APatch) |
+| Internet | Cần cho Google Translate và Microsoft Translate; không cần cho VietPhrase |
+| Build | JDK 17, Android SDK 36 |
 
-Works with Android 13!
+## Cài đặt
 
-[![LicenseGPLv3](https://img.shields.io/badge/License-GPL%20v3-green.svg)](http://www.gnu.org/licenses/gpl-3.0) [![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UY6TVJXST724J) ![GitHub All Releases](https://img.shields.io/github/downloads/akhilkedia/AllTrans/total?style=social) [![Play](https://img.shields.io/endpoint?color=green&logo=google-play&logoColor=green&url=https%3A%2F%2Fplayshields.herokuapp.com%2Fplay%3Fi%3Dakhil.alltrans%26l%3DInstalls%26m%3D%24installs)](https://play.google.com/store/apps/details?id=akhil.alltrans)
+1. Build hoặc tải APK của AllTrans.
+2. Cài APK trên thiết bị.
+3. Mở LSPosed, bật module **AllTrans**.
+4. Chọn phạm vi ứng dụng cần dịch trong mục **Scope**.
+5. Khởi động lại thiết bị hoặc buộc dừng các ứng dụng đích.
+6. Mở AllTrans và cấu hình dịch vụ dịch, ngôn ngữ nguồn/đích.
 
-Download the latest release from github releases or from LSPosed modules!
-<!-- [![Get it on Google Play](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=akhil.alltrans&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1) -->
+> Nếu ứng dụng đích không truy vấn được provider trực tiếp, có thể chọn thêm **System Framework** trong phạm vi module để dùng cơ chế proxy.
+
+## Sử dụng
 
-## Table of Contents
+### Cài đặt toàn cục
 
-- [Table of Contents](#table-of-contents)
-- [What AllTrans does](#what-alltrans-does)
-- [ScreenShots and Videos](#screenshots-and-videos)
-  - [Below are some screenshots of AllTrans translating apps from Korean to English](#below-are-some-screenshots-of-alltrans-translating-apps-from-korean-to-english)
-  - [Below are some of the screenshots of AllTrans app](#below-are-some-of-the-screenshots-of-alltrans-app)
-  - [Videos](#videos)
-- [How to install AllTrans](#how-to-install-alltrans)
-- [How to use AllTrans](#how-to-use-alltrans)
-  - [Note - If you are using VirtualXposed or Taichi](#note---if-you-are-using-virtualxposed-or-taichi)
-- [How to get Microsoft Azure Translate Key](#how-to-get-microsoft-azure-translate-key)
-- [Note - No New Yandex Translate Keys](#note---no-new-yandex-translate-keys)
-- [TroubleShooting](#troubleshooting)
-  - [No app is being translated in any app](#no-app-is-being-translated-in-any-app)
-  - [Translated app is stuck in opening screen](#translated-app-is-stuck-in-opening-screen)
-  - [The Translated app is "Force Close"](#the-translated-app-is-force-close)
-  - [Other apps are being translated, but some particular app is not](#other-apps-are-being-translated-but-some-particular-app-is-not)
-  - [A game app is not being translated](#a-game-app-is-not-being-translated)
-  - [The app "Telegram" is not being translated](#the-app-telegram-is-not-being-translated)
-  - [If you still have problems like "Force Close" or parts of an app not being translated](#if-you-still-have-problems-like-force-close-or-parts-of-an-app-not-being-translated)
-- [Featured In](#featured-in)
-- [Donations](#donations)
-- [License](#license)
+1. Mở tab **Toàn cục**.
+2. Chọn **Dịch vụ dịch**.
+3. Chọn **Ngôn ngữ nguồn** và **Ngôn ngữ đích**.
+4. Bật **Công tắc chính**.
+5. Mở tab **Ứng dụng**, bật dịch cho các ứng dụng mong muốn.
+6. Buộc dừng và mở lại ứng dụng đích.
 
-## What AllTrans does
+### Cài đặt riêng cho từng ứng dụng
 
-It replaces **all text in an app** in a language from one language to another at runtime.
+1. Mở ứng dụng cần cấu hình trong tab **Ứng dụng**.
+2. Bật **Dịch ứng dụng này**.
+3. Bật **Ghi đè cài đặt toàn cục** nếu muốn dùng cấu hình riêng.
+4. Chọn dịch vụ dịch, ngôn ngữ và các tuỳ chọn nâng cao.
+5. Buộc dừng ứng dụng đích để áp dụng.
 
-Say for example an app is in German. A user selects the app name, and the required language conversion (say German to English).
+### Các cài đặt chính
 
-Then whenever the user uses the required app, all the text, **ANYWHERE** in the app, are replaced by their English equivalents.
+| Cài đặt | Mô tả |
+| --- | --- |
+| Công tắc chính | Bật/tắt toàn bộ module |
+| Dịch vụ dịch | Chọn Google Translate, Microsoft Translate hoặc VietPhrase |
+| Ngôn ngữ nguồn | Ngôn ngữ hiện tại của ứng dụng; có thể tự nhận diện |
+| Ngôn ngữ đích | Ngôn ngữ bạn muốn dịch sang |
+| Dịch văn bản thường | Dịch văn bản được đặt bằng `setText` |
+| Dịch gợi ý văn bản | Dịch văn bản được đặt bằng `setHint` |
+| Dịch mở rộng cho View | Bật thêm hook cho View tùy chỉnh, hàm khởi tạo layout và phương thức View của framework |
+| Dịch WebView | Dịch nội dung bên trong `WebView` |
+| Dịch thông báo | Dịch văn bản trong thông báo |
+| Bật bộ nhớ đệm | Lưu bản dịch để tái sử dụng |
+| Độ trễ | Thời gian chờ trước khi thay thế văn bản bằng bản dịch |
+| Độ trễ WebView | Thời gian chờ trước khi bắt đầu dịch WebView |
+| Tự cuộn bản dịch dài | Tự cuộn nếu bản dịch dài hơn vùng hiển thị |
+| Chế độ gỡ lỗi | Ghi log chi tiết ra `logcat` |
+
+## Dịch vụ dịch
+
+| Dịch vụ | ID | Internet | Ghi chú |
+| --- | --- | --- | --- |
+| Google Translate | `g` | Có | Dùng danh sách mã ngôn ngữ của Google |
+| Microsoft Translate | `edge` | Có | Dùng endpoint Edge và mã ngôn ngữ native của Microsoft/Edge |
+| VietPhrase | `vietphrase` | Không | Chỉ hỗ trợ `zh → vi`, dùng từ điển cục bộ trong `assets/vietphrase` |
 
-This is something similar to the way Google Translate works in Chrome.
+### Google Translate
 
-**Note** - Due to a technical limitation, this won't work with many games. Nothing can be done about this.
+Phù hợp cho nhu cầu dịch tổng quát với danh sách ngôn ngữ rộng. Cần kết nối Internet.
 
-## ScreenShots and Videos
+### Microsoft Translate
 
-### Below are some screenshots of AllTrans translating apps from Korean to English
+Dùng endpoint Edge và mã ngôn ngữ native của Edge. Khi đổi giữa Google Translate và Microsoft Translate, danh sách ngôn ngữ sẽ được cập nhật tương ứng. Nếu ngôn ngữ đang chọn không có trong danh sách mới, AllTrans sẽ đặt lại về ngôn ngữ mặc định thay vì gửi mã không hợp lệ.
 
-![](https://raw.githubusercontent.com/akhilkedia/AllTrans/master/screenshots/Joint1S.png)
+### VietPhrase
 
-![](https://raw.githubusercontent.com/akhilkedia/AllTrans/master/screenshots/Joint2S.png)
+- Chỉ dịch từ tiếng Trung (`zh`) sang tiếng Việt (`vi`)
+- Dùng từ điển cục bộ, không cần Internet
+- Bộ quy tắc xử lý tên riêng, đại từ, số/ngày, nhãn chương và định dạng câu
+- Phù hợp khi cần dịch nhanh, ổn định và hoạt động ngoại tuyến
+- Bộ quy tắc và một số dữ liệu đại từ được chuyển từ dự án `vietphrase-translator` của duongden (GPL-3.0)
 
-![](https://raw.githubusercontent.com/akhilkedia/AllTrans/master/screenshots/Joint3S.png)
+## Bộ nhớ đệm
 
-### Below are some of the screenshots of AllTrans app
+- Bộ nhớ đệm lưu bản dịch theo văn bản để tránh gọi lại dịch vụ nhiều lần
+- Có thể xoá thủ công trong cài đặt toàn cục hoặc cài đặt riêng của ứng dụng
+- AllTrans tự đánh dấu xoá bộ nhớ đệm khi đổi dịch vụ dịch hoặc ngôn ngữ
+- Bộ nhớ đệm cũng được làm mới khi phiên bản engine dịch thay đổi
+- Sau khi xoá bộ nhớ đệm, cần buộc dừng ứng dụng đích để áp dụng
 
-![](https://raw.githubusercontent.com/akhilkedia/AllTrans/master/screenshots/Screen1S.png)
+## Ngôn ngữ
 
-![](https://raw.githubusercontent.com/akhilkedia/AllTrans/master/screenshots/Screen2S.png)
+Giao diện AllTrans có 4 ngôn ngữ:
 
-![](https://raw.githubusercontent.com/akhilkedia/AllTrans/master/screenshots/Screen3S.png)
+- English
+- Tiếng Việt
+- 简体中文
+- 繁體中文 (Đài Loan)
 
-### Videos
+Danh sách ngôn ngữ dịch phụ thuộc vào dịch vụ đang chọn. Riêng VietPhrase chỉ hỗ trợ cặp `zh → vi`.
 
-A video (in English) showing how to use AllTrans by Gadget Hacks on Youtube [https://www.youtube.com/watch?v=sKDtkmISi6k](https://www.youtube.com/watch?v=sKDtkmISi6k). This video is for an older version of the app, you no longer need API keys.
+## Quyền riêng tư
 
-[![Alt text](https://img.youtube.com/vi/sKDtkmISi6k/0.jpg)](https://www.youtube.com/watch?v=sKDtkmISi6k)
+- AllTrans không có máy chủ trung gian riêng và không thu thập dữ liệu phân tích.
+- Khi dùng Google Translate hoặc Microsoft Translate, văn bản cần dịch được gửi tới dịch vụ tương ứng.
+- VietPhrase xử lý hoàn toàn cục bộ trên thiết bị.
+- Quyền `QUERY_ALL_PACKAGES` được dùng để hiển thị danh sách ứng dụng cho bạn chọn.
+- Quyền `INTERNET` được dùng cho các dịch vụ dịch trực tuyến.
 
-## How to install AllTrans
+## Cơ chế hoạt động
 
-1. This application requires android version 4.4 or later. You probably already have it. (Android KitKat or later - so far Kitkat, Lollipop, MarshMallow, Nougat, Oreo, Pie, Q, R.).
-1. Make sure you have [Xposed Framework](https://forum.xda-developers.com/showthread.php?t=3034811) installed and running.
-   - [LSPosed](https://github.com/LSPosed/LSPosed) and [EdXposed](https://forum.xda-developers.com/xposed/development/official-edxposed-successor-xposed-t4070199) are recommended.
-   - **If you do not have an unlocked bootloader or Magisk, AllTrans is now fully compatible with [VirtualXposed](https://virtualxposed.com/) and [Taichi](https://github.com/taichi-framework/TaiChi/releases), so AllTrans can now be used on all devices!!! No need of unlocked bootloader, no need of Magisk, etc.!**
-1. Install the latest version of AllTrans from [Google Play Store](https://play.google.com/store/apps/details?id=akhil.alltrans). You can alternatively download the apk from [Xposed Module Repository](http://repo.xposed.info/module/akhil.alltrans) or from LSPosed Repository inside LSPosed app.
-1. Reboot your phone.
+- Hook các điểm hiển thị văn bản như `TextView.setText`, `setHint`, `StaticLayout.Builder.build()`, hàm khởi tạo layout, phương thức View của framework và setter của View tùy chỉnh.
+- Hỗ trợ dịch thông báo và nội dung `WebView`.
+- Mỗi provider được gọi qua `ContentProvider` nội bộ:
+  - `content://akhil.alltrans.GtransProvider`
+  - `content://akhil.alltrans.EdgeProvider`
+  - `content://akhil.alltrans.VietPhraseProvider`
+- Provider được chọn sẽ được dùng cố định. Nếu provider không khả dụng hoặc trả kết quả rỗng, AllTrans giữ nguyên văn bản gốc.
+- Query provider ưu tiên đi qua proxy, sau đó fallback sang query trực tiếp.
 
-## How to use AllTrans
+## Build
 
-1. Make sure "AllTrans" app is enabled in "Xposed Installer -> Modules".
-1. Launch "AllTrans" app.
-1. Choose the "Translate from Language" and "Translate to Language".
-1. In the "Apps to Translate" tab, find the app you want to translate, click the checkbox next to it.
-1. Close and restart the app you want translated - it should be translated!
+Dự án dùng Gradle Android application module, Kotlin và Java 17.
 
-### Note - If you are using VirtualXposed or Taichi
+```bash
+./gradlew :app:testDebugUnitTest
+./gradlew :app:assembleDebug
+./gradlew :app:assembleRelease
+```
 
-- This application will only work for apps installed inside Taichi or VirtualXposed, not for other apps. This means it will not work for any system apps.
-**- Sometimes some apps will fail to install/run inside Taichi/VirtualXposed. This is not a problem of AllTrans, just some limitations of Taichi/VirtualXposed.**
-- Some apps work on Taichi, some work on VirtualXposed, some on neither. I recommend you try using both if some app does not install/open inside VirtualXposed/Taichi.
+APK đầu ra:
 
-## How to get Microsoft Azure Translate Key
+- `app/build/outputs/apk/debug/AllTrans-v3.0.0-debug.apk`
+- `app/build/outputs/apk/release/AllTrans-v3.0.0-release.apk`
 
-If you use Microsoft Translate instead of Google, you **need** you to sign up for **free** a key from Microsoft Translate. See instructions below on how to get the keys.
-Microsoft Translate requires a credit card to sign up. (But don't worry, nothing will be charged.)
+Để ký bản release, cấu hình các thuộc tính sau trong `gradle.properties`:
 
-1. Sign up for a Microsoft Azure account.
-If you don't already have an Azure account, sign up for a [Microsoft Azure account](http://azure.com).
-1. After you have an account, sign into the [Azure Portal](http://portal.azure.com). Sign up for a subcription by following the steps below.
-   1. Click "Subscriptions". It has a key icon.
-   1. Click the "+ Add" at the top
-   1. Choose a "pay-as-you-go" subscription. Will require a credit card, but don't worry, nothing will be charged.
-   1. Verify your identity, add in the credit card information. You will not be charged.
-   1. In "Add Technical Support", select "No technical support". **You will have to pay if you select any other**. Accept the "Agreement", and click "Sign up".
-   1. Click "Home" at the top after you finish signing up.
-1. Add a translate API resource by following the steps below.
-   1. Select the "+ Create a resource" option.
-   1. In the search box saying "Search the Marketplace" type "translator" on the left, and select "Translator" from the search results.
-   1. Click the blue "Create" button.
-   1. Under the "Resource group" field, click "Create new", then type in any name, it does not matter.
-   1. **In the "Resource group region" field, select any region, it does not matter**
-   1. In the "Resource group" field, type in any name, it does not matter.
-   1. **In the "Region" Section, select "Global"**
-   1. Type in any name in "Name" field, type in any name, it does not matter.
-   1. In the "Pricing Tier" section, select the "F0 (2M Up to 2M characters translated per month)". **You will have to pay if you select any other**.
-   1. Click "Next: Tags", then click "Next: Review + Create", then click "Create".
-   1. Wait 1 minute for Microsoft to process your request, then go to "Home".
-1. Copy your key from Microsoft and add it to AllTrans by following the steps below.
-   1. Under the "Recent Resource" section, click the name of the resource you just created.
-   1. Click "Keys and Endpoint" on the left. It has a key icon.
-   1. Copy "KEY 1". This is the key you need to add to AllTrans.
+```properties
+RELEASE_STORE_FILE=/duong/dan/den/keystore.jks
+RELEASE_STORE_PASSWORD=...
+RELEASE_KEY_ALIAS=...
+RELEASE_KEY_PASSWORD=...
+```
 
-The subscription key is something like "3d2c..." (some english numbers and alphabets).
+## Cấu trúc dự án
 
-## Note - No New Yandex Translate Keys
+| Thành phần | Vai trò |
+| --- | --- |
+| `Alltrans.kt` | Entry point của module, hook proxy SettingsProvider |
+| `AttachBaseContextHookHandler.kt` | Đọc preference, quản lý cache và áp dụng hook |
+| `GetTranslateToken.kt` | Điều phối provider, xử lý cache và fallback |
+| `EdgeProvider.kt` | Microsoft Translate |
+| `GtransProvider.kt` | Google Translate |
+| `VietPhraseProvider.kt` | ContentProvider cho VietPhrase |
+| `VietPhraseTranslator.kt` | Nạp từ điển và engine VietPhrase |
+| `VietPhraseTranslationEngine.kt` | Pipeline dịch và rule engine |
+| `PreferenceList.kt` | Đọc preference toàn cục/riêng ứng dụng |
+| `GlobalPreferencesFragment.kt` | Giao diện cài đặt toàn cục |
+| `LocalPreferenceFragment.kt` | Giao diện cài đặt theo ứng dụng |
+| `app/src/main/assets/vietphrase/` | Từ điển và dữ liệu VietPhrase |
 
-A previous version of this application encouraged use of Yandex API keys. Yandex has stopped giving free translate API keys. If you already have a key, it may continue to work, it may not. It is recommended to shift to using a Microsoft API key.
+## Khắc phục sự cố
 
-## TroubleShooting
+**Ứng dụng không được dịch**
 
-### No app is being translated in any app
+- Kiểm tra module AllTrans đã bật trong LSPosed chưa.
+- Kiểm tra ứng dụng đích đã nằm trong Scope chưa.
+- Kiểm tra **Công tắc chính** và **Dịch ứng dụng này** đã bật chưa.
+- Buộc dừng rồi mở lại ứng dụng đích.
+- Thử bật **Chế độ gỡ lỗi** và xem log `logcat`.
 
-- If no app is being translated, check if "AllTrans" is enabled in "Xposed Installer -> Modules"
-  - If you are using "LSPosed", make sure "System Framework" and "Settings Storage", and the to-be-translated-app is enabled in LSPosed for AllTrans.
-  - If you are using "Taichi", check "AllTrans" is enabled in "+ -> Manage Modules".
-  - If you are using "Taichi"/"VirtualXposed", also make sure the app to be translated in installed using "Taichi"/"VirtualXposed".
-- If you are using "Google" to translate (the default), make sure you have set "Translate From Langauge" and "Translate To Language" and downloaded the translation files.
-- If you are using "Microsoft" to translate, make sure "Microsoft Subscription Key" is correct, and the "Resource Region" setting is "Global" when you made the key.
+**Google Translate hoặc Microsoft Translate không hoạt động**
 
-### Translated app is stuck in opening screen
+- Kiểm tra kết nối Internet.
+- Thử đổi giữa Google Translate và Microsoft Translate.
+- Nếu dùng proxy, kiểm tra cấu hình proxy của hệ thống.
 
-- If this is the first time you started translating this app, click on the app's name in "Apps to Translate" tab, and in "Other Settings" fill in "Delay Before Replcaing With Translated Text" to "2000".
+**VietPhrase không dịch**
 
-### The Translated app is "Force Close"
+- VietPhrase chỉ hỗ trợ `zh → vi`.
+- Kiểm tra từ điển trong `assets/vietphrase` có đầy đủ không.
 
-- Click on the app's name in "Apps to Translate" tab, and in "Other Settings" fill in "Delay Before Replcaing With Translated Text" to "2000".
-- Click on the app's name in "Apps to translate" tab, and in "Other Settings" fill in "Delay Before Starting to Translate WebViews" to "2000".
+**Một số nội dung vẫn không dịch**
 
-### Other apps are being translated, but some particular app is not
+- Game hoặc ứng dụng vẽ văn bản trực tiếp bằng canvas thường không hook được.
+- Thử bật **Dịch mở rộng cho View**.
+- Thử tăng **Độ trễ** hoặc **Độ trễ WebView**.
 
-- Click on the app's name in "Apps to translate" tab, and in "Other Settings" fill in "Delay Before Starting to Translate WebViews" to "2000".
-- If some parts of the app are still not being translated, click on the app's name in "Apps to translate" tab, and enable "Aggressive Mode".
+**Ứng dụng đích bị lỗi sau khi dịch**
 
-### A game app is not being translated
+- Tắt **Tự cuộn bản dịch dài**.
+- Tắt **Dịch thông báo** hoặc **Dịch WebView** nếu không cần.
+- Xoá bộ nhớ đệm và buộc dừng ứng dụng đích.
 
-- Due to technical limitations, "AllTrans" will not work with many games. Nothing can be done about this.
+## Đóng góp
 
-### The app "Telegram" is not being translated
+- Fork repository, tạo nhánh mới và gửi pull request.
+- Khi báo lỗi, kèm theo:
+  - Phiên bản Android
+  - Phiên bản LSPosed
+  - Tên và phiên bản ứng dụng đích
+  - Log `logcat` với tag `AllTrans`
+  - Các bước tái hiện lỗi
 
-- In "Apps to Translate", click on "Telegram", click "OverRide Global Settings", set "Translate From Langauge" and "Translate To Language", and **Enable "Aggresive Mode"**
+## Ghi công
 
-### If you still have problems like "Force Close" or parts of an app not being translated
+- Dự án gốc: [akhilkedia/AllTrans](https://github.com/akhilkedia/AllTrans)
+- Bộ quy tắc và dữ liệu VietPhrase tham khảo từ [duongden/script-vietphrase-translator](https://github.com/duongden/script-vietphrase-translator)
 
-Contact me for support. When you do, I will need atleast the following information -
+## Giấy phép
 
-1. The name of the app, along with a **link to download the app** from some APK store like "Google Play Store", "CoolApk", etc.
-1. Your phone's Android version.
-1. A "logcat" of you trying to open the app which gives you problems. You can use apps freely available on the Play Store for this, such as [This one](https://play.google.com/store/apps/details?id=com.nolanlawson.logcat)
-
-Once you have the above, contact me on the  [XDA support thread](https://forum.xda-developers.com/xposed/modules/xposed-alltrans-completely-translate-t3539878).
-You can also report issues on the  [Project's "Github"](https://github.com/akhilkedia/AllTrans).
-
-## Featured In
-
-AllTrans has been featured by many outlets, in many languages. AllTrans has been covered in English by -
-
-- [XDA Developers](https://www.xda-developers.com/alltrans-is-an-xposed-module-that-completely-translates-apps/)
-- [Android Police](https://www.youtube.com/watch?v=LFTH5PCZygs)
-- [Gadget Hacks](https://android.gadgethacks.com/how-to/automatically-translate-any-android-app-into-any-language-0176033/)
-- [DroidViews](https://www.droidviews.com/auto-translate-apps-on-your-android-into-any-language/)
-- [Mi News](http://in.c.mi.com/thread-259647-1-0.html?mobile=no)
-- [GetDroidTips](https://www.getdroidtips.com/translating-android-apps-language/)
-- [steemit](https://steemit.com/alltrans/@vishalsingh4997/alltrans-module-that-changes-languages-in-real-time-12c241bfd79f7est)
-
-## Donations
-
-If you like this project, buy me a cup of coffee! :)
-
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UY6TVJXST724J)
-
-## License
-
-This program is AllTrans
-Copyright (C) 2017  Akhil Kedia
-
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
+GPL-3.0-or-later. Xem file `LICENSE.GPL` để biết chi tiết.

@@ -1,134 +1,141 @@
-[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UY6TVJXST724J)
+# AllTrans
 
-## Table of Contents
+AllTrans is an Xposed/LSPosed module that translates Android app interfaces at runtime. You do not need to modify APKs or copy text into another app — supported text on screen is replaced with a translation in the language you choose.
 
- * [What AllTrans does](#what-alltrans-does)
- * [ScreenShots and Videos](#screenshots-and-videos)
-   + [Below are some screenshots of AllTrans translating apps from Korean to English](#below-are-some-screenshots-of-alltrans-translating-apps-from-korean-to-english)
-   + [Videos](#videos)
- * [How to use AllTrans](#how-to-use-alltrans)
- * [How to get Yandex Translate Key](#how-to-get-yandex-translate-key)
- * [How to get Microsoft Azure Translate Key](#how-to-get-microsoft-azure-translate-key)
- * [TroubleShooting](#troubleshooting)
-   + [No app is being translated in any app](#no-app-is-being-translated-in-any-app)
-   + [Translated app is stuck in opening screen](#translated-app-is-stuck-in-opening-screen)
-   + [The Translated app is Force Close](#the-translated-app-is-force-close)
-   + [A particular app is not being translated](#a-particular-app-is-not-being-translated)
-   + [A game app is not being translated](#a-game-app-is-not-being-translated)
-   + [If you still have problems like Force Close or parts of an app not being translated](#if-you-still-have-problems-like-force-close-or-parts-of-an-app-not-being-translated)
- * [Donations](#donations)
- 
-## What AllTrans does
+## Overview
 
-It replaces **all text in an app** in a language from one language to another at runtime.
+- **Package name:** `akhil.alltrans`
+- **Version:** `3.0.0` (`versionCode` 300)
+- **Minimum Android:** Android 10 (API 29)
+- **Compile/target SDK:** 36
+- **Platform:** LSPosed 2.1+ or an Xposed environment compatible with the libxposed API
+- **UI:** Material 3, light and dark themes
+- **App UI locales:** English, Vietnamese, Simplified Chinese, Traditional Chinese (Taiwan)
+- **Translation providers:** Google Translate, Microsoft Translate, VietPhrase
 
-Say for example an app is in German. A user selects the app name, and the required language conversion (say German to English).
+Default settings:
 
-Then whenever the user uses the required app, all the text, **ANYWHERE** in the app, are replaced by their English equivalents.
+- Translation provider: `Google Translate`
+- Translate from: `Auto Detect`
+- Translate to: `Vietnamese`
 
-This is something similar to the way Google Translate works in Chrome.
+## Features
 
-**Note** - Due to a technical limitation, this won't work with many games. Nothing can be done about this.
+- Real-time in-app translation without modifying APKs
+- Translates normal text, text hints (`setHint`), notifications, and `WebView` content
+- Extended translation for custom views and content drawn outside the normal `TextView` path
+- Global settings plus per-app overrides
+- Flexible source/target language selection with automatic language detection
+- Translation cache with automatic invalidation when the provider, language, or engine changes
+- `VietPhrase` offline Chinese-to-Vietnamese translation using local dictionaries
+- `VietPhrase` rule engine for names, pronouns, numbers/dates, chapter labels, and sentence formatting
+- Debug mode with `logcat` output
 
-## ScreenShots and Videos
+## Requirements
 
-### Below are some screenshots of AllTrans translating apps from Korean to English
+| Component | Requirement |
+| --- | --- |
+| Device | Android 10 or newer (API 29+) |
+| Module | LSPosed 2.1+ or an Xposed environment compatible with the libxposed API |
+| System access | A device with LSPosed installed (usually requires root/Magisk, KernelSU, or APatch) |
+| Internet | Required for Google Translate and Microsoft Translate; not required for VietPhrase |
+| Build | JDK 17, Android SDK 36 |
 
-![](https://raw.githubusercontent.com/akhilkedia/AllTrans/master/screenshots/Joint1S.png)
+## Installation
 
-![](https://raw.githubusercontent.com/akhilkedia/AllTrans/master/screenshots/Joint2S.png)
+1. Build or download the AllTrans APK.
+2. Install the APK on your device.
+3. Open LSPosed and enable the **AllTrans** module.
+4. Select the apps you want to translate in **Scope**.
+5. Reboot the device or force-stop the target apps.
+6. Open AllTrans and configure the provider and languages.
 
-![](https://raw.githubusercontent.com/akhilkedia/AllTrans/master/screenshots/Joint3S.png)
+> If a target app cannot query providers directly, you can also add **System Framework** to the module scope to use the proxy path.
 
-### Videos
+## Usage
 
-A video (in English) showing how to use AllTrans by Gadget Hacks on Youtube [https://www.youtube.com/watch?v=sKDtkmISi6k](https://www.youtube.com/watch?v=sKDtkmISi6k)
+1. Open the **Global** tab and choose a translation service and languages.
+2. Turn on the **Master On/Off** switch.
+3. Open the **Apps** tab and enable translation for the apps you want.
+4. Force-stop and reopen the target app.
 
-[![Alt text](https://img.youtube.com/vi/sKDtkmISi6k/0.jpg)](https://www.youtube.com/watch?v=sKDtkmISi6k)
+For app-specific settings, open the app from the **Apps** tab, enable **OverRide Global Settings**, and adjust the provider, languages, and advanced options.
 
+## Translation providers
 
-## How to use AllTrans
+| Provider | ID | Internet | Notes |
+| --- | --- | --- | --- |
+| Google Translate | `g` | Yes | Uses Google language codes |
+| Microsoft Translate | `edge` | Yes | Uses the Edge endpoint and Microsoft/Edge native language codes |
+| VietPhrase | `vietphrase` | No | Only supports `zh → vi`; uses local dictionaries in `vietphrase/` |
 
-This application **requires** you to sign up for **free** a key from Microsoft or Yandex Translate. See instructions below on how to get the keys.
+### Microsoft Translate
 
-Yandex Translate supports more languages, has a much easier signup process, and requires **NO CREDIT CARD**.
+Microsoft Translate uses the Edge endpoint and Edge-native language codes. If the selected language is not available after switching providers, AllTrans resets it to the default language instead of sending an invalid code.
 
-Microsoft Translate gives **better translations**, but requires a credit card to sign up. (But don't worry, nothing will be charged.)
+### VietPhrase
 
-1. Make sure AllTrans app is enabled in Xposed Installer -> Modules.
-1. Launch AllTrans app. In "Global Settings" tab, enable "Use Yandex instead of Microsoft" if you want to use Yandex. Disable to use Microsoft.
-2. Choose the "Translate from Language" and "Translate to Language".
-3. In the "Apps to Translate" tab, find the app you want to translate, click the checkbox next to it. If the checkbox is not visible, try rotating your phone sideways into LandScape mode.
-4. Close and restart the app you want translated - it should be translated!
+- Only translates from Chinese (`zh`) to Vietnamese (`vi`)
+- Uses local dictionaries and works without an Internet connection
+- The rule engine handles names, pronouns, numbers/dates, chapter labels, and sentence formatting
+- The rule engine and some pronoun data are adapted from duongden's `vietphrase-translator` project (GPL-3.0). See `vietphrase/README.txt`
 
-## How to get Yandex Translate Key
+## Translation cache
 
-1. Go to [Yandex Translate API Website](https://tech.yandex.com/keys/get/?service=trnsl)
-2. If you don't already have an account, click "register" and sign up for a new account.
-3. After signing up, agree to the User Agreement and click "Get API Key".
-4. You have successfully received your key!
+- Stores translations by text to avoid repeated provider calls
+- Can be cleared from global or per-app settings
+- Automatically invalidated when the provider, language, or translation engine changes
+- Force-stop the target app after clearing the cache
 
-The subscription key is something like "trnsl.1.1.201701......"
+## Privacy
 
-## How to get Microsoft Azure Translate Key
+- AllTrans has no proprietary backend server and does not collect analytics.
+- Google Translate and Microsoft Translate send the text to the corresponding service.
+- VietPhrase processes everything locally on the device.
+- `QUERY_ALL_PACKAGES` is used to show the app list.
+- `INTERNET` is used for online translation providers.
 
-1. Sign up for a Microsoft Azure account.
-If you don't already have an Azure account, sign up for a [Microsoft Azure account](http://azure.com).
-2. After you have an account, sign into the [Azure Portal](http://portal.azure.com).
-3. Add a "Microsoft Translator API Subscription" to your Azure account.
-  1. Choose a "pay-as-you-go" subscription. Will require a credit card, but don't worry, nothing will be charged.
-  2. Select the "+ New" option.
-  3. Select "Intelligence" from the list of services.
-  4. Select "Cognitive Services APIs".
-  5. Select the "API Type" option.
-  6. Select "Text Translation".
-  7. In the "Pricing Tier" section, select the "Free Tier (F0)".
-  8. Fill out the rest of the form, and press the "Create" button.
-4. Retrieve your "Authentication Key".
-  1. Go to "All Resources" and select the Microsoft Translator API you subscribed to.
-  2. Go to the "Keys" option and copy your subscription key to access the service.
-  
-The subscription key is something like "321dcba...."
+## How it works
 
-## TroubleShooting
+- Hooks text rendering points such as `TextView.setText`, `setHint`, `StaticLayout.Builder.build()`, layout constructors, framework View methods, and custom View setters.
+- Supports notifications and `WebView` content.
+- Providers are queried through internal `ContentProvider` endpoints:
+  - `content://akhil.alltrans.GtransProvider`
+  - `content://akhil.alltrans.EdgeProvider`
+  - `content://akhil.alltrans.VietPhraseProvider`
+- The selected provider is used explicitly. If it is unavailable or returns an empty result, the original text is kept.
+- Provider queries try the proxy path first, then fall back to a direct query.
 
-### No app is being translated in any app
+## Build
 
-* If no app is being translated, check is "AllTrans" is enabled in Xposed Installer -> Modules.
-* Also check if your "Microsoft/Yandex Subscription Key" is correct.
+This project uses a Gradle Android application module, Kotlin, and Java 17.
 
-### Translated app is stuck in opening screen
+```bash
+./gradlew :app:testDebugUnitTest
+./gradlew :app:assembleDebug
+./gradlew :app:assembleRelease
+```
 
-* Click on the app's name in "Apps to translate" tab, and click on "Click to Clear Translation Cache".
-* If this is the first time you started translating this app, click on the app's name in "Apps to Translate" tab, and in "Other Settings" fill in "Delay Before Replcaing With Translated Text" to 2000.
+APK outputs:
 
-### The Translated app is "Force Close"
+- `app/build/outputs/apk/debug/AllTrans-v3.0.0-debug.apk`
+- `app/build/outputs/apk/release/AllTrans-v3.0.0-release.apk`
 
-* Click on the app's name in "Apps to translate" tab, and click on "Click to Clear Translation Cache".
-* Click on the app's name in "Apps to Translate" tab, and in "Other Settings" fill in "Delay Before Replcaing With Translated Text" to 2000.
-* Click on the app's name in "Apps to translate" tab, and in "Other Settings" fill in "Delay Before Starting to Translate WebViews" to 2000.
+To sign a release build, configure `RELEASE_STORE_FILE`, `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, and `RELEASE_KEY_PASSWORD` in `gradle.properties`.
 
-### A particular app is not being translated
+## Troubleshooting
 
-* Click on the app's name in "Apps to translate" tab, and in "Other Settings" fill in "Delay Before Starting to Translate WebViews" to 2000.
-* If some parts of the app are still not being translated, click on the app's name in "Apps to translate" tab, and enable "Aggressive Mode".
+- If an app is not translated, check the module scope, the master switch, and the per-app switch, then force-stop the target app.
+- If Google Translate or Microsoft Translate fails, check the Internet connection and try the other provider.
+- VietPhrase only supports `zh → vi`.
+- Games and apps that draw text directly with canvas may not be hooked.
+- Enable **Debug Mode** and inspect `logcat` with the `AllTrans` tag when reporting bugs.
 
-### A game app is not being translated
+## Credits
 
-* Due to technical limitations, "AllTrans" will not work with many games. Nothing can be done about this.
+- Original project: [akhilkedia/AllTrans](https://github.com/akhilkedia/AllTrans)
+- VietPhrase rules and data adapted from [duongden/script-vietphrase-translator](https://github.com/duongden/script-vietphrase-translator)
 
-### If you still have problems like "Force Close" or parts of an app not being translated
+## License
 
-Contact me for support. When you do, I will need atleast the following information - 
-
-1. The name of the app, along with a **link to download the app** from some APK store like Google Play Store, CoolApk, etc.
-2. Your phone's Android version.
-3. A "logcat" of you trying to open the app which gives you problems. You can use apps freely available on the Play Store for this, such as [This one](https://play.google.com/store/apps/details?id=com.nolanlawson.logcat)
-
-Once you have the above, contact me on the  [XDA support thread](https://forum.xda-developers.com/xposed/modules/xposed-alltrans-completely-translate-t3539878).
-You can also report issues on the  [Project's Github](https://github.com/akhilkedia/AllTrans).
-
-## Donations
-If you like this project, buy me a cup of coffee! :) 
-
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UY6TVJXST724J)
+GPL-3.0-or-later. See the project's `LICENSE.GPL` for details.

@@ -1,17 +1,51 @@
-# Add project specific ProGuard rules here.
-# By default, the flags in this file are appended to flags specified
-# in /home/akhil/android-sdk/tools/proguard/proguard-android.txt
-# You can edit the include path and order by changing the proguardFiles
-# directive in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# AllTrans is built without R8/minification. These rules are kept so that a
+# future minified build still keeps the modern Xposed entry point discoverable.
 
-# Add any project specific keep options here:
+-dontwarn io.github.libxposed.annotation.**
+-adaptresourcefilecontents META-INF/xposed/java_init.list
+-keep,allowoptimization,allowobfuscation public class * extends io.github.libxposed.api.XposedModule {
+    public <init>();
+}
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep AllTrans package and all its classes/members for reflection-based hooks.
+-keep class akhil.alltrans.** { *; }
+-keep interface akhil.alltrans.** { *; }
+
+# ML Kit rules
+-keep class com.google.mlkit.** { *; }
+-keep class com.google.android.gms.internal.mlkit_translate.** { *; }
+-keep class com.google.android.gms.internal.mlkit_language_id.** { *; }
+# Keep a generic class that is used by ML Kit:
+-keep class com.google.android.gms.common.internal.safeparcel.SafeParcelable { *; }
+
+# OkHttp rules
+-dontwarn okio.**
+-dontwarn okhttp3.**
+-keep class okhttp3.** { *; }
+-keep interface okhttp3.** { *; }
+-keepattributes Signature
+-keepattributes InnerClasses
+
+# Gson rules
+-keep class com.google.gson.** { *; }
+-keepattributes Signature
+-keepattributes InnerClasses
+# For keeping field names for Gson serialization/deserialization
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# General Android rules (for reflection)
+-keepattributes EnclosingMethod, InnerClasses, Signature
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
+-keepclassmembers class * implements java.io.Serializable {
+    static final long serialVersionUID;
+    private static final java.io.ObjectStreamField[] serialPersistentFields;
+    private void writeObject(java.io.ObjectOutputStream);
+    private void readObject(java.io.ObjectInputStream);
+    java.lang.Object writeReplace();
+    java.lang.Object readResolve();
+}
