@@ -109,9 +109,24 @@ class AppListFragment : Fragment(), SearchableFragment {
                 Utils.debugLog("AppListFragment: Loading packages in IO thread...")
                 val pm = appContext.packageManager
                 val packages = getInstalledApplications(appContext)
+                // Apps set up in AllTrans (translation, built-in language or own
+                // settings) are ticked and stay on top.
+                AppConfig.refreshScope()
+                val configured = packages.map { it.packageName }.filter { pkg ->
+                    // Built-in language changed elsewhere (system settings)? Follow it.
+                    if (AppConfig.mode(appContext, pkg) == AppConfig.Mode.BUILT_IN) {
+                        val actual = SystemBridge.getLocales(appContext, pkg)
+                        val declares = SystemBridge.appLocales(appContext, pkg).support == SystemBridge.LocaleSupport.SUPPORTED
+                        // Reset elsewhere, or the app declares no languages at all.
+                        if ((actual.ok && actual.value.isNullOrEmpty()) || !declares) {
+                            AppConfig.setBuiltInLanguage(appContext, pkg, null)
+                        }
+                    }
+                    AppConfig.mode(appContext, pkg) != AppConfig.Mode.NONE
+                }.toHashSet()
                 packages.sortWith(Comparator { a, b ->
-                    val aEnabled = settings?.contains(a.packageName) == true
-                    val bEnabled = settings?.contains(b.packageName) == true
+                    val aEnabled = a.packageName in configured
+                    val bEnabled = b.packageName in configured
                     if (aEnabled && !bEnabled) return@Comparator -1
                     if (!aEnabled && bEnabled) return@Comparator 1
                     val labelA = pm.getApplicationLabel(a).toString().lowercase(Locale.getDefault())
@@ -209,6 +224,35 @@ class AppListFragment : Fragment(), SearchableFragment {
                 }
             }
         }
+        private fun tintFor(mode: AppConfig.Mode): Int {
+            if (mode == AppConfig.Mode.BUILT_IN) {
+                // Clearly different from the translation tick: amber, tuned to the theme.
+                return com.google.android.material.color.MaterialColors.harmonizeWithPrimary(context, 0xFFFFA000.toInt())
+            }
+            val attr = when (mode) {
+                AppConfig.Mode.BUILT_IN -> com.google.android.material.R.attr.colorTertiary
+                AppConfig.Mode.CONFIGURED -> com.google.android.material.R.attr.colorOutline
+                AppConfig.Mode.TRANSLATION -> androidx.appcompat.R.attr.colorPrimary
+                AppConfig.Mode.NONE -> com.google.android.material.R.attr.colorOnSurfaceVariant
+            }
+            return com.google.android.material.color.MaterialColors.getColor(context, attr, android.graphics.Color.GRAY)
+        }
+
+        /** Package name, plus the built-in language or a missing-scope warning. */
+        private fun statusLine(pkg: String): String {
+            val parts = mutableListOf<String>()
+            AppConfig.builtInLanguage(context, pkg)?.let {
+                parts += context.getString(R.string.list_built_in_language, SystemBridge.shortName(it))
+            }
+            if (AppConfig.isWaitingForScope(pkg)) {
+                parts += context.getString(R.string.list_waiting_scope)
+            } else if (settings?.contains(pkg) == true && AppConfig.isInScope(pkg) == false) {
+                parts += context.getString(R.string.list_not_in_scope)
+            }
+            parts += pkg
+            return parts.joinToString(" · ")
+        }
+
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             val currentView: View // Use val for the final assigned view
             val viewHolder: ViewHolder
@@ -235,37 +279,44 @@ class AppListFragment : Fragment(), SearchableFragment {
 
                 viewHolder.textView?.text = label
                 viewHolder.textView?.isSelected = true // for marquee
-                viewHolder.textView2?.text = packageName
+                viewHolder.textView2?.text = statusLine(packageName)
                 viewHolder.textView2?.isSelected = true // for marquee
                 viewHolder.imageView?.setImageDrawable(icon)
 
                 viewHolder.checkBox?.tag = currentAppInfo // Store app info for the click listener
-                viewHolder.checkBox?.isChecked = settings?.contains(packageName) == true
+                val mode = AppConfig.mode(context, packageName)
+                viewHolder.checkBox?.isChecked = mode != AppConfig.Mode.NONE || AppConfig.isWaitingForScope(packageName)
+                viewHolder.checkBox?.buttonTintList = android.content.res.ColorStateList.valueOf(tintFor(mode))
                 viewHolder.checkBox?.setOnClickListener { v ->
                     val checkBox = v as CheckBox
                     val appInfoFromTag = checkBox.tag as? ApplicationInfo ?: return@setOnClickListener
                     val pkgName = appInfoFromTag.packageName ?: return@setOnClickListener
-                    Utils.debugLog("CheckBox clicked! $pkgName")
-
-                    val globalEditor = settings?.edit()
                     // Use the row's context instead of requireActivity(); the
                     // fragment may already be detached when a late click lands.
-                    val localSettings = v.context.getSharedPreferences(pkgName, Context.MODE_PRIVATE)
-                    val localEditor = localSettings.edit()
-
+                    val ctx = v.context
                     if (checkBox.isChecked) {
-                        globalEditor?.putBoolean(pkgName, true)
-                        localEditor?.putBoolean("LocalEnabled", true)
+                        // Tick: translate this app once it is in the LSPosed scope. The
+                        // row stays ticked ("waiting for approval") until the user
+                        // approves; otherwise it unticks itself.
+                        AppConfig.enableTranslation(ctx, pkgName) { notifyDataSetChanged() }
+                        notifyDataSetChanged()
                     } else {
-                        globalEditor?.remove(pkgName)
-                        localEditor?.putBoolean("LocalEnabled", false)
+                        // Untick: forget the app (asks first, settings are deleted).
+                        checkBox.isChecked = true
+                        val label = pm.getApplicationLabel(appInfoFromTag)
+                        com.google.android.material.dialog.MaterialAlertDialogBuilder(ctx)
+                            .setTitle(label)
+                            .setMessage(R.string.list_clear_confirm)
+                            .setNegativeButton(android.R.string.cancel, null)
+                            .setPositiveButton(android.R.string.ok) { _, _ ->
+                                val appContext = ctx.applicationContext
+                                Thread {
+                                    AppConfig.clear(appContext, pkgName)
+                                    android.os.Handler(android.os.Looper.getMainLooper()).post { notifyDataSetChanged() }
+                                }.start()
+                            }
+                            .show()
                     }
-                    globalEditor?.apply()
-                    localEditor?.apply()
-
-                    // Limpar cache de preferências para forçar recarregamento
-                    PreferenceManager.clearCache(pkgName)
-                    Utils.debugLog("Cleared preference cache for $pkgName due to setting change")
                 }
             } else {
                 // Clear views if currentAppInfo is null (e.g. during filtering)

@@ -23,7 +23,7 @@
 
     <string name="search">Search</string>
 
-    <string name="app_name">"AllTrans"</string>
+    <string name="app_name">"ReAllTrans"</string>
     <string name="app_description">"In-app translation anywhere"</string>
     <string name="clear_cache_success">"Please force-close the translated app. Its translation cache will be cleared the next time the app starts."</string>
     <string name="wut_why_null">"Could not load the per-app settings page. Close and reopen the app."</string>
@@ -33,7 +33,7 @@
     <string name="description">"Description"</string>
 
     <string name="apps_to_translate">"Apps"</string>
-    <string name="global_settings">"Global"</string>
+    <string name="global_settings">"Translation settings"</string>
     <string name="instructions">"Instructions"</string>
 
 
@@ -111,8 +111,8 @@
 
     <!-- Scroll -->
     <string name="scroll">"Scroll Long Translated Text"</string>
-    <string name="scroll_summary_off">"Do not scroll translated text if it is too long. Text may be truncated, but this will not interfere with the app's scrolling/clicking. Turn on to scroll long translations."</string>
-    <string name="scroll_summary_on">"Scroll translated text if it is too long. This may interfere with the app's scrolling/clicking. Turn off to disable scrolling."</string>
+    <string name="scroll_summary_off">"Translations that do not fit are cut off with “…”."</string>
+    <string name="scroll_summary_on">"Translations that do not fit scroll back and forth. Does not change focus, clicks or scrolling of the app."</string>
 
     <!-- Anonymous Usage and Crash Data -->
     <string name="debug">"Advanced: Enable debug mode."</string>
@@ -285,4 +285,103 @@
     <string name="button_download">"Download"</string>
     <string name="button_delete">"Delete"</string>
     <string name="Uzbek_micro">"Uzbek"</string>
+    <string name="alibaba_optimize_summary_on">"Translates DinamicX text, the tab bar and UC WebView pages. Only changes what is shown on screen."</string>
+    <string name="pref_cat_alibaba">"Alibaba apps (Taobao, Tmall, Xianyu…)"</string>
+    <string name="alibaba_optimize">"Optimize for Alibaba apps"</string>
+    <string name="mtop_translate_summary_off">"Network data is not changed. Screens drawn only from data (e.g. Taobao cart) stay untranslated."</string>
+    <string name="safe_mode">"Safe mode (display only)"</string>
+    <string name="safe_mode_summary_off">"Data-level translation may be enabled below. Not recommended."</string>
+    <string name="mtop_translate">"Translate network data (MTOP, experimental)"</string>
+    <string name="safe_mode_summary_on">"ReAllTrans only changes what is drawn on screen and never touches the app\'s data. Recommended."</string>
+    <string name="alibaba_optimize_summary_off">"Only the generic hooks are used."</string>
+    <string name="mtop_translate_summary_on">"Translates text in the cart and item page responses before the app reads them. This changes the app\'s data and could affect app features; turn off if anything misbehaves."</string>
+    <string name="app_language_applied">"App language set to %1$s. Reopen the app if it does not update."</string>
+    <string name="app_language">"App language"</string>
+    <string name="pref_cat_app_language">"App language (built-in)"</string>
+    <string name="app_language_unsupported">"Requires Android 13 or later."</string>
+    <string name="app_language_unavailable">"Not available: %1$s. Enable the System Framework scope in LSPosed/Vector and reboot, or grant root."</string>
+    <string name="app_language_system_default">"System default"</string>
+    <string name="app_language_loading">"Loading…"</string>
+    <string name="nav_apps">"Apps"</string>
+    <string name="nav_translation">"Translation"</string>
+    <string name="nav_alltrans">"ReAllTrans"</string>
+    <string name="alltrans_settings">"ReAllTrans settings"</string>
+    <string name="pref_cat_alibaba_defaults">"Alibaba apps (default for all apps)"</string>
+    <string name="force_stop">"Force stop &amp; reopen"</string>
+    <string name="force_stop_summary">"Apply changed settings now: stops the app and opens it again."</string>
+    <string name="force_stop_done">"App restarted."</string>
+    <string name="force_stop_failed">"Could not stop the app: %1$s. Enable the System Framework scope and reboot, or grant root."</string>
+    <string name="pref_cat_appearance">"Appearance"</string>
+    <string name="ui_language">"ReAllTrans language"</string>
+    <string name="theme">"Theme"</string>
+    <string name="theme_system">"Follow system"</string>
+    <string name="theme_light">"Light"</string>
+    <string name="theme_dark">"Dark"</string>
+    <string name="dynamic_color">"Dynamic colours"</string>
+    <string name="dynamic_color_summary">"Use colours from the wallpaper (Android 12+)."</string>
+    <string name="pref_cat_status">"Module status"</string>
+    <string name="status_framework">"Framework"</string>
+    <string name="status_framework_active">"Active: %1$s. System Framework scope is working."</string>
+    <string name="status_framework_inactive">"Xposed service not connected. Enable the ReAllTrans module in LSPosed/Vector (and the System Framework scope), then reopen ReAllTrans."</string>
+    <string name="status_scope">"Scope: %1$d app(s) — %2$s"</string>
+    <string name="status_sync">"Settings delivery"</string>
+    <string name="status_sync_remote">"libxposed remote preferences: target apps read settings from the framework."</string>
+    <string name="status_sync_provider">"The framework has no remote preferences; target apps read settings through the ReAllTrans provider."</string>
+    <string name="status_sync_none">"Not connected to the framework; target apps use the ReAllTrans provider."</string>
+    <string name="status_apps">"Apps"</string>
+    <string name="status_apps_on">"Translation on, %1$d app(s) enabled."</string>
+    <string name="status_apps_off">"Master switch is off (%1$d app(s) enabled)."</string>
+    <string name="status_root">"Root"</string>
+    <string name="status_root_tap">"Tap to check (your root manager may ask for permission)."</string>
+    <string name="status_root_yes">"Root is granted to ReAllTrans."</string>
+    <string name="status_root_no">"Root is not available or not granted."</string>
+    <string name="pref_cat_data">"Data"</string>
+    <string name="clear_all_cache">"Clear all translation caches"</string>
+    <string name="clear_all_cache_summary">"Every app clears its saved translations the next time it starts."</string>
+    <string name="clear_all_cache_done">"Cache clear requested for %1$d app(s). Restart them to apply."</string>
+    <string name="backup_export">"Back up settings"</string>
+    <string name="backup_export_summary">"Save all ReAllTrans settings (global, per app, appearance) to a JSON file."</string>
+    <string name="backup_export_done">"Saved %1$d settings file(s)."</string>
+    <string name="backup_import">"Restore settings"</string>
+    <string name="backup_import_summary">"Load settings from a backup file. Current settings are replaced."</string>
+    <string name="backup_import_confirm">"Replace all current ReAllTrans settings with the ones in this file?"</string>
+    <string name="backup_import_done">"Restored %1$d settings file(s). Restart translated apps to apply."</string>
+    <string name="backup_failed">"Failed: %1$s"</string>
+    <string name="pref_cat_tools">"Tools"</string>
+    <string name="test_translate">"Test translation"</string>
+    <string name="test_translate_summary">"Translate a sample text with the global service and languages."</string>
+    <string name="test_translate_run">"Translate"</string>
+    <string name="test_translate_result">"%1$s\n\n(%2$s, %3$d ms)"</string>
+    <string name="test_translate_failed">"No result from %1$s. Check the connection or try another service."</string>
+    <string name="pref_cat_about">"About"</string>
+    <string name="about_version">"Version"</string>
+    <string name="about_source">"Source code"</string>
+    <string name="about_license">"License"</string>
+    <string name="app_language_current">"Current: %1$s"</string>
+    <string name="app_language_not_declared">"This app does not declare its languages to Android (no localeConfig), so Android does not allow changing its language."</string>
+    <string name="app_language_parse_failed">"This app&apos;s language list (localeConfig) is invalid, so Android does not allow changing its language."</string>
+    <string name="app_language_check_failed">"Could not check the app&apos;s languages: %1$s"</string>
+    <string name="scope_title">"LSPosed scope"</string>
+    <string name="scope_in">"This app is in ReAllTrans&apos; scope."</string>
+    <string name="scope_not_in">"Not in ReAllTrans&apos; scope: translation cannot run here. Tap to request it."</string>
+    <string name="scope_no_service">"Xposed service not connected; open LSPosed to check the scope."</string>
+    <string name="scope_requested">"Scope request sent. Confirm it in the framework&apos;s notification or dialog."</string>
+    <string name="scope_approved">"%1$s added to the scope. Restart the app to translate it."</string>
+    <string name="scope_failed">"Scope request failed: %1$s"</string>
+    <string name="list_built_in_language">"Built-in: %1$s"</string>
+    <string name="list_not_in_scope">"Not in scope"</string>
+    <string name="credits_original">"Original"</string>
+    <string name="credits_original_summary">"AllTrans by Akhil Kedia — github.com/akhilkedia/AllTrans"</string>
+    <string name="credits_vietphrase">"VietPhrase from Chanhnh"</string>
+    <string name="credits_vietphrase_summary">"VietPhrase engine, libxposed API 102 port and more by Chanhnh — github.com/Chanhnh/AllTrans"</string>
+    <string name="credits_libxposed">"libxposed"</string>
+    <string name="credits_libxposed_summary">"libxposed API and service (Apache-2.0) — github.com/libxposed"</string>
+    <string name="app_language_available">"Supports %1$d languages."</string>
+    <string name="list_clear_confirm">"Remove this app from ReAllTrans? Translation is turned off, its own settings are deleted, a built-in language goes back to the system language and the app leaves the LSPosed scope."</string>
+    <string name="scope_removed">"%1$s removed from the LSPosed scope (not needed with its built-in language)."</string>
+    <string name="lock_translation_built_in">"Using built-in language. Set it to System default first."</string>
+    <string name="lock_built_in_translation">"Translation is on. Turn it off first."</string>
+    <string name="scope_timeout">"Scope not approved in time: translation stays off."</string>
+    <string name="scope_denied">"%1$s was not added to the scope: translation stays off."</string>
+    <string name="list_waiting_scope">"Waiting for scope approval…"</string>
 </resources>

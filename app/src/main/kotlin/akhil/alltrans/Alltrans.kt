@@ -2,6 +2,7 @@ package akhil.alltrans
 
 import android.annotation.SuppressLint
 import android.app.Application
+import android.app.Instrumentation
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.ApplicationInfo
@@ -75,12 +76,18 @@ class Alltrans : XposedModule() {
 
         cache
 
-        Utils.tryHookMethod(Application::class.java, "onCreate", AppOnCreateHookHandler())
+        // Start once the app is fully created. Reading preferences and
+        // installing hooks from ContextWrapper.attachBaseContext ran in the
+        // middle of handleBindApplication, before content providers were
+        // installed; apps wrapped by packers that swap in the real Application
+        // later (e.g. Coolapk's NetEase shell) then crashed in installProvider.
+        // callApplicationOnCreate() returns after the real Application.onCreate
+        // has run, which is still before any Activity is created.
         Utils.tryHookMethod(
-            ContextWrapper::class.java,
-            "attachBaseContext",
-            Context::class.java,
-            AttachBaseContextHookHandler()
+            Instrumentation::class.java,
+            "callApplicationOnCreate",
+            Application::class.java,
+            AppOnCreateHookHandler()
         )
 
     }
@@ -358,6 +365,11 @@ class Alltrans : XposedModule() {
             }
 
             private fun handleProxyCall(param: HookParam, method: String?, extras: Bundle?) {
+                if (SystemBridge.METHOD == method) {
+                    // Privileged request from the AllTrans app (caller is checked inside).
+                    param.setResult(SystemBridge.handleInSystem(param.thisObject, extras))
+                    return
+                }
                 if ("alltransProxyCall" == method) {
                     if (extras == null) {
                         HookRuntime.log("Proxy call: extras is null!")
@@ -465,7 +477,8 @@ class Alltrans : XposedModule() {
         @SuppressLint("StaticFieldLeak")
         val notifyHook: NotificationHookHandler = NotificationHookHandler()
 
-        private const val CACHE_MAX_SIZE = 200
+        // Data-level translation (MTOP) adds hundreds of strings per screen.
+        private const val CACHE_MAX_SIZE = 2000
 
         @Volatile
         private var _cache: LruCache<String, String>? = null
@@ -504,6 +517,10 @@ class Alltrans : XposedModule() {
         const val ALLTRANS_PENDING_TRANSLATION_TAG_KEY: Int = 0x7A117AA7
         const val ALLTRANS_PENDING_SPAN_PAYLOAD_TAG_KEY: Int = 0x7A117AA8
         const val WEBVIEW_CLEANUP_TAG_KEY: Int = 0x7A117AA9
+        // setHint() translations are tracked apart from setText() so a hint
+        // and the text of the same view do not overwrite each other.
+        const val ALLTRANS_PENDING_HINT_TAG_KEY: Int = 0x7A117AAA
+        const val ALLTRANS_HINT_APPLIED_TAG_KEY: Int = 0x7A117AAB
 
         val webViewHookInstances: MutableMap<WebView?, VirtWebViewOnLoad?> =
             Collections.synchronizedMap(

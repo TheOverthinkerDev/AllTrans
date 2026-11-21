@@ -229,7 +229,11 @@ class GlobalPreferencesFragment : PreferenceFragmentCompat() {
             "Cache",
             "Scroll",
             "Delay",
-            "DelayWebView"
+            "DelayWebView",
+            "ExtendedViewTranslation",
+            "AlibabaOptimize",
+            "SafeMode",
+            "MtopTranslate"
         )
     }
 }

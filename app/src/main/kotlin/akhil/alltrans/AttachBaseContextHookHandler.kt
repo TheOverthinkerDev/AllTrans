@@ -139,6 +139,14 @@ internal class AttachBaseContextHookHandler : SafeHook() {
         private fun getPreferencesViaProviders(context: Context?, packageName: String?): Bundle? {
             if (context == null || packageName == null) return null
             val resultBundle = Bundle()
+            // Preferred: libxposed remote preferences (no provider / proxy round trip).
+            HookRuntime.readRemoteSettings(packageName)?.let { (global, local) ->
+                HookRuntime.log("Settings for $packageName read from libxposed remote preferences")
+                resultBundle.putString("globalPref", global)
+                resultBundle.putString("localPref", local)
+                return resultBundle
+            }
+            HookRuntime.log("Remote preferences unavailable for $packageName, falling back to the provider")
             var globalPref: String? = null
             var localPref: String? = null
             var cursor: Cursor? = null
@@ -148,7 +156,7 @@ internal class AttachBaseContextHookHandler : SafeHook() {
                 // Tentar primeiro via proxy
                 if (Alltrans.isProxyEnabled) {
                     try {
-                        val proxyUri = "content://settings/system/alltransProxyProviderURI/akhil.alltrans.SharedPrefProvider/$packageName".toUri()
+                        val proxyUri = "content://settings/system/alltransProxyProviderURI/${BuildConfig.APPLICATION_ID}.SharedPrefProvider/$packageName".toUri()
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             val queryArgs = Bundle().apply {
@@ -180,7 +188,7 @@ internal class AttachBaseContextHookHandler : SafeHook() {
                 // Fallback para conexão direta
                 if (globalPref == null) {
                     try {
-                        val directUri = "content://akhil.alltrans.SharedPrefProvider/$packageName".toUri()
+                        val directUri = "content://${BuildConfig.APPLICATION_ID}.SharedPrefProvider/$packageName".toUri()
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             val queryArgs = Bundle().apply {
@@ -250,7 +258,7 @@ internal class AttachBaseContextHookHandler : SafeHook() {
                 val appInfo = context.applicationInfo
                 if ((appInfo.flags and (ApplicationInfo.FLAG_SYSTEM or ApplicationInfo.FLAG_UPDATED_SYSTEM_APP)) != 0) {
                     // É um app do sistema mas não está na lista branca
-                    if (packageName != "akhil.alltrans" && packageName != "com.android.providers.settings") {
+                    if (packageName != BuildConfig.APPLICATION_ID && packageName != "com.android.providers.settings") {
                         return true
                     }
                 }
@@ -286,12 +294,19 @@ internal class AttachBaseContextHookHandler : SafeHook() {
 
                 // Legacy layout constructors still used by many custom View implementations
                 applyLegacyLayoutHooks(context)
+
+                // Renderers of Alibaba apps that bypass the generic hooks
+                if (PreferenceList.AlibabaOptimize) TaobaoHooks.install(context)
+                // Other self-drawing text views (display-only draw-time swap)
+                TaobaoHooks.installLayoutFieldViews(context)
             } else {
                 Utils.debugLog("Extended view translation hooks disabled for $packageName")
             }
 
             // WebView hooks
             applyWebViewHooks(packageName)
+            // UC/U4 WebView (Alibaba apps); no-op when the app does not ship it
+            if (PreferenceList.LoadURL && PreferenceList.AlibabaOptimize) UcWebViewTranslator.install(context.classLoader)
 
             // Notification hooks
             applyNotificationHooks()
@@ -443,16 +458,29 @@ internal class AttachBaseContextHookHandler : SafeHook() {
             val setTextHook = SetTextHookHandler()
 
             if (PreferenceList.SetText) {
-                // Todas as variantes de setText
-                Utils.tryHookMethod(TextView::class.java, "setText", CharSequence::class.java, setTextHook)
-                Utils.tryHookMethod(TextView::class.java, "setText", CharSequence::class.java, BufferType::class.java, setTextHook)
-                // TextView has no public 3-argument setText overload; the hidden
-                // implementation is setText(CharSequence, BufferType, boolean, int).
-                Utils.tryHookMethod(TextView::class.java, "setText", CharSequence::class.java, BufferType::class.java, Boolean::class.javaPrimitiveType, Int::class.javaPrimitiveType, setTextHook)
+                // Every public setText overload funnels into the private
+                // setText(CharSequence, BufferType, boolean, int). Hooking only
+                // that one avoids handling the same text three times in nested
+                // calls, which re-translated already translated text and let
+                // the nested calls fight over the pending-translation tag.
+                try {
+                    HookRuntime.findAndHookMethod(
+                        TextView::class.java, "setText",
+                        CharSequence::class.java, BufferType::class.java,
+                        Boolean::class.javaPrimitiveType, Int::class.javaPrimitiveType,
+                        setTextHook
+                    )
+                    Utils.debugLog("AllTrans: hooked TextView#setText(CharSequence, BufferType, boolean, int)")
+                } catch (t: Throwable) {
+                    Utils.debugLog("AllTrans: private setText overload unavailable, hooking public overloads: ${t.message}")
+                    Utils.tryHookMethod(TextView::class.java, "setText", CharSequence::class.java, setTextHook)
+                    Utils.tryHookMethod(TextView::class.java, "setText", CharSequence::class.java, BufferType::class.java, setTextHook)
+                }
 
-                // Hook append()
+                // Only the one-argument append(): append(text, start, end) uses
+                // indices into the original text, so swapping in a translation
+                // of a different length would make it throw or cut the text.
                 Utils.tryHookMethod(TextView::class.java, "append", CharSequence::class.java, setTextHook)
-                Utils.tryHookMethod(TextView::class.java, "append", CharSequence::class.java, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType, setTextHook)
             }
 
             if (PreferenceList.SetHint) {
@@ -770,7 +798,7 @@ internal class AttachBaseContextHookHandler : SafeHook() {
             }
 
             // Evitar chamar readPrefAndHook para o próprio pacote AllTrans
-            if (packageName != "akhil.alltrans") {
+            if (packageName != BuildConfig.APPLICATION_ID) {
                 try {
                     readPrefAndHook(usableContext)
                 } catch (e: Throwable) {

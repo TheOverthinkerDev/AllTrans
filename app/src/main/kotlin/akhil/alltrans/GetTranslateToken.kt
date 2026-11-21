@@ -244,8 +244,8 @@ internal class GetTranslateToken {
             val encodedText = URLEncoder.encode(text, "UTF-8")
             val queryParams =
                 "?from=${URLEncoder.encode(fromLang ?: PreferenceList.DEFAULT_SOURCE_LANGUAGE, "UTF-8")}&to=${URLEncoder.encode(toLang ?: PreferenceList.DEFAULT_TARGET_LANGUAGE, "UTF-8")}&text=$encodedText"
-            directUri = "content://akhil.alltrans.GtransProvider$queryParams".toUri()
-            proxyUri = "content://settings/system/alltransProxyProviderURI/akhil.alltrans.GtransProvider$queryParams".toUri()
+            directUri = "content://${BuildConfig.APPLICATION_ID}.GtransProvider$queryParams".toUri()
+            proxyUri = "content://settings/system/alltransProxyProviderURI/${BuildConfig.APPLICATION_ID}.GtransProvider$queryParams".toUri()
         } catch (e: UnsupportedEncodingException) {
             Log.e(TAG, "UTF-8 not supported?!", e)
             return text
@@ -338,8 +338,8 @@ internal class GetTranslateToken {
             val encodedText = URLEncoder.encode(text, "UTF-8")
             val queryParams =
                 "?from=${URLEncoder.encode(fromLang ?: PreferenceList.DEFAULT_SOURCE_LANGUAGE, "UTF-8")}&to=${URLEncoder.encode(toLang ?: PreferenceList.DEFAULT_TARGET_LANGUAGE, "UTF-8")}&text=$encodedText"
-            directUri = "content://akhil.alltrans.EdgeProvider$queryParams".toUri()
-            proxyUri = "content://settings/system/alltransProxyProviderURI/akhil.alltrans.EdgeProvider$queryParams".toUri()
+            directUri = "content://${BuildConfig.APPLICATION_ID}.EdgeProvider$queryParams".toUri()
+            proxyUri = "content://settings/system/alltransProxyProviderURI/${BuildConfig.APPLICATION_ID}.EdgeProvider$queryParams".toUri()
         } catch (e: UnsupportedEncodingException) {
             Log.e(TAG, "UTF-8 not supported?!", e)
             return text
@@ -432,8 +432,8 @@ internal class GetTranslateToken {
                 "?from=${URLEncoder.encode(fromLang ?: PreferenceList.VIETPHRASE_SOURCE_LANGUAGE, "UTF-8")}" +
                     "&to=${URLEncoder.encode(toLang ?: PreferenceList.VIETPHRASE_TARGET_LANGUAGE, "UTF-8")}" +
                     "&text=$encodedText"
-            directUri = "content://akhil.alltrans.VietPhraseProvider$queryParams".toUri()
-            proxyUri = "content://settings/system/alltransProxyProviderURI/akhil.alltrans.VietPhraseProvider$queryParams".toUri()
+            directUri = "content://${BuildConfig.APPLICATION_ID}.VietPhraseProvider$queryParams".toUri()
+            proxyUri = "content://settings/system/alltransProxyProviderURI/${BuildConfig.APPLICATION_ID}.VietPhraseProvider$queryParams".toUri()
         } catch (e: UnsupportedEncodingException) {
             Log.e(TAG, "UTF-8 not supported?!", e)
             return text
@@ -635,6 +635,24 @@ internal class GetTranslateToken {
 
         fun submitIoTask(task: Runnable) {
             ioExecutor.submit(task)
+        }
+
+        /**
+         * Translates [text] with the configured provider on the calling thread
+         * (never the main thread). Returns null when the provider fails. Used
+         * where the caller must have the result before continuing, e.g. while
+         * rewriting a network response before the app reads it.
+         */
+        fun translateBlocking(text: String): String? {
+            val fromLang = PreferenceList.TranslateFromLanguage ?: PreferenceList.DEFAULT_SOURCE_LANGUAGE
+            val toLang = PreferenceList.TranslateToLanguage ?: PreferenceList.DEFAULT_TARGET_LANGUAGE
+            val provider = PreferenceList.TranslatorProvider ?: "g"
+            return try {
+                GetTranslateToken().queryProvider(provider, text, fromLang, toLang)
+            } catch (t: Throwable) {
+                Log.e(TAG, "translateBlocking failed", t)
+                null
+            }
         }
 
         fun <T> submitIoTask(task: java.util.concurrent.Callable<T>): CompletableFuture<T> {

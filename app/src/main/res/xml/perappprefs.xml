@@ -2,7 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <SwitchPreference
+    <akhil.alltrans.LockableSwitchPreference
         app:iconSpaceReserved="false"
         app:defaultValue="false"
         app:key="LocalEnabled"
@@ -10,6 +10,14 @@
         app:summaryOff="@string/local_on_off_summary_off"
         app:summaryOn="@string/local_on_off_summary_on"
         app:title="@string/local_on_off" />
+
+    <Preference
+        app:iconSpaceReserved="false"
+        app:key="Scope"
+        app:persistent="false"
+        app:title="@string/scope_title"
+        app:summary="@string/app_language_loading"
+        android:layout="@layout/preference_material_item" />
 
     <SwitchPreference
         app:iconSpaceReserved="false"
@@ -26,6 +34,29 @@
         app:summary="@string/clear_cache_summary"
         app:title="@string/clear_cache"
         android:layout="@layout/preference_material_item" />
+
+    <Preference
+        app:iconSpaceReserved="false"
+        app:key="ForceStop"
+        app:persistent="false"
+        app:summary="@string/force_stop_summary"
+        app:title="@string/force_stop"
+        android:layout="@layout/preference_material_item" />
+
+    <PreferenceCategory
+        app:title="@string/pref_cat_app_language"
+        app:iconSpaceReserved="false"
+        app:allowDividerAbove="true">
+
+        <akhil.alltrans.LockableListPreference
+            app:iconSpaceReserved="false"
+            app:key="AppLanguage"
+            app:persistent="false"
+            app:title="@string/app_language"
+            app:summary="@string/app_language_loading"
+            android:layout="@layout/preference_material_item" />
+
+    </PreferenceCategory>
 
     <PreferenceCategory
         app:title="@string/pref_cat_translate_settings"
@@ -64,6 +95,43 @@
             app:title="@string/transTo"
             app:useSimpleSummaryProvider="true"
             android:layout="@layout/preference_material_item" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:title="@string/pref_cat_alibaba"
+        app:iconSpaceReserved="false"
+        app:allowDividerAbove="true">
+
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:defaultValue="true"
+            app:key="AlibabaOptimize"
+            app:persistent="false"
+            app:summaryOff="@string/alibaba_optimize_summary_off"
+            app:summaryOn="@string/alibaba_optimize_summary_on"
+            app:title="@string/alibaba_optimize" />
+
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:defaultValue="true"
+            app:key="SafeMode"
+            app:persistent="false"
+            app:dependency="AlibabaOptimize"
+            app:disableDependentsState="true"
+            app:summaryOff="@string/safe_mode_summary_off"
+            app:summaryOn="@string/safe_mode_summary_on"
+            app:title="@string/safe_mode" />
+
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:defaultValue="false"
+            app:key="MtopTranslate"
+            app:persistent="false"
+            app:dependency="SafeMode"
+            app:summaryOff="@string/mtop_translate_summary_off"
+            app:summaryOn="@string/mtop_translate_summary_on"
+            app:title="@string/mtop_translate" />
 
     </PreferenceCategory>
 

@@ -154,6 +154,11 @@ object PreferenceManager {
     private fun getPreferencesViaProviders(context: Context?, packageName: String?): Bundle? {
         if (context == null || packageName == null) return null
         val resultBundle = Bundle()
+        HookRuntime.readRemoteSettings(packageName)?.let { (global, local) ->
+            resultBundle.putString("globalPref", global)
+            resultBundle.putString("localPref", local)
+            return resultBundle
+        }
         var globalPref: String? = null
         var localPref: String? = null
         var cursor: Cursor? = null
@@ -163,7 +168,7 @@ object PreferenceManager {
             // Tentar primeiro via proxy
             if (Alltrans.isProxyEnabled) {
                 try {
-                    val proxyUri = "content://settings/system/alltransProxyProviderURI/akhil.alltrans.SharedPrefProvider/$packageName".toUri()
+                    val proxyUri = "content://settings/system/alltransProxyProviderURI/${BuildConfig.APPLICATION_ID}.SharedPrefProvider/$packageName".toUri()
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         val queryArgSqlSelectionBehavior = "android:queryArgSelectionBehavior"
@@ -199,7 +204,7 @@ object PreferenceManager {
             // Se o proxy falhar, tentar conexão direta
             if (globalPref == null) {
                 try {
-                    val directUri = "content://akhil.alltrans.SharedPrefProvider/$packageName".toUri()
+                    val directUri = "content://${BuildConfig.APPLICATION_ID}.SharedPrefProvider/$packageName".toUri()
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                         val queryArgSqlSelectionBehavior = "android:queryArgSelectionBehavior"

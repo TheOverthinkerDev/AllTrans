@@ -30,7 +30,31 @@ internal object PreferenceList {
     var DelayWebView: Int = 0
     var Scroll: Boolean = false
 
+    // Per-app options for Alibaba apps (DinamicX / UC WebView / MTOP).
+    /** Use the renderer-specific hooks (DinamicX text, tab bar, UC WebView). */
+    var AlibabaOptimize: Boolean = true
+    /** Only change what is drawn or displayed; never the app's data. */
+    var SafeMode: Boolean = true
+    /** Translate MTOP API responses (changes app data). Only when SafeMode is off. */
+    var MtopTranslate: Boolean = false
+
+    val mtopTranslationAllowed: Boolean
+        get() = AlibabaOptimize && !SafeMode && MtopTranslate
+
     var TranslatorProvider: String? = "g"
+
+    /** Apps built on Alibaba's DinamicX / UC WebView / MTOP stack. */
+    val ALIBABA_PACKAGES = setOf(
+        "com.taobao.taobao",          // Taobao
+        "com.taobao.litetao",         // Taobao Lite
+        "com.tmall.wireless",         // Tmall
+        "com.taobao.idlefish",        // Xianyu
+        "com.alibaba.wireless",       // 1688
+        "com.alibaba.aliexpresshd",   // AliExpress
+        "com.taobao.trip",            // Fliggy
+        "me.ele",                     // Ele.me
+        "com.taobao.etao"             // eTao
+    )
 
     fun isVietPhraseLanguagePair(fromLanguage: String?, toLanguage: String?): Boolean {
         return (fromLanguage == DEFAULT_SOURCE_LANGUAGE || fromLanguage == VIETPHRASE_SOURCE_LANGUAGE) &&
@@ -66,6 +90,17 @@ internal object PreferenceList {
 
         TranslatorProvider =
             getValue(lPref, "TranslatorProvider", getValue(gPref, "TranslatorProvider", "g")) as String?
+
+        // Per-app value if the user set one for this app, else the global default
+        // (independent of "override global settings").
+        // Only Alibaba apps follow the global default; other apps keep it off
+        // unless the user turned it on for that app.
+        AlibabaOptimize = getValue(
+            lPref, "AlibabaOptimize",
+            packageName in ALIBABA_PACKAGES && getValue(gPref, "AlibabaOptimize", true) as Boolean
+        ) as Boolean
+        SafeMode = getValue(lPref, "SafeMode", getValue(gPref, "SafeMode", true)) as Boolean
+        MtopTranslate = getValue(lPref, "MtopTranslate", getValue(gPref, "MtopTranslate", false)) as Boolean
 
         val useLocalSettings = getValue(lPref, "OverRide", false) as Boolean
 

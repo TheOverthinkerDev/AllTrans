@@ -195,6 +195,8 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
 
         val prefManager = preferenceManager
         prefManager.sharedPreferencesName = applicationInfo!!.packageName
+        // Mirror this app's settings to libxposed remote preferences on change.
+        RemotePrefs.watch(applicationInfo!!.packageName)
         val localPrefs = prefManager.sharedPreferences
 
         addPreferencesFromResource(R.xml.perappprefs)
@@ -203,6 +205,7 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
         val overrideEnabled = localPrefs?.getBoolean("OverRide", false) ?: false
 
         findPreference<SwitchPreference>("LocalEnabled")?.isChecked = isGloballyEnabled
+        translationOn = isGloballyEnabled
         findPreference<SwitchPreference>("OverRide")?.isChecked = overrideEnabled
 
         enableLocalPrefs(overrideEnabled)
@@ -264,19 +267,242 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
             true
         }
 
-        findPreference<SwitchPreference>("LocalEnabled")?.setOnPreferenceChangeListener { _, newValue ->
-            val enabled = newValue as Boolean
-            globalSettings?.edit()?.apply {
-                if (enabled) {
-                    putBoolean(applicationInfo!!.packageName, true)
-                    Utils.debugLog("LocalPref: Added ${applicationInfo!!.packageName} to global list.")
-                } else {
-                    remove(applicationInfo!!.packageName)
-                    Utils.debugLog("LocalPref: Removed ${applicationInfo!!.packageName} from global list.")
+        setupAppLanguage(applicationInfo!!.packageName)
+        setupForceStop(applicationInfo!!.packageName)
+
+        // Alibaba switches are not persistent: a value is stored only when the
+        // user flips it, otherwise the app follows the effective default. Only
+        // Alibaba apps follow the global default; for others it is off.
+        val pkgName = applicationInfo!!.packageName
+        val alibaba = AppConfig.isAlibabaApp(pkgName)
+        for ((key, default) in listOf("AlibabaOptimize" to true, "SafeMode" to true, "MtopTranslate" to false)) {
+            findPreference<SwitchPreference>(key)?.apply {
+                val effectiveDefault = if (key == "AlibabaOptimize" && !alibaba) false
+                    else globalSettings?.getBoolean(key, default) ?: default
+                isChecked = localPrefs?.getBoolean(key, effectiveDefault) ?: effectiveDefault
+                setOnPreferenceChangeListener { _, newValue ->
+                    localPrefs?.edit()?.putBoolean(key, newValue as Boolean)?.apply()
+                    true
                 }
-                apply()
             }
+        }
+
+        setupScope(pkgName)
+
+        findPreference<SwitchPreference>("LocalEnabled")?.setOnPreferenceChangeListener { pref, newValue ->
+            val enabled = newValue as Boolean
+            if (enabled) {
+                // On only once the app is in the LSPosed scope; the switch flips
+                // back if the scope request is denied or not answered in time.
+                AppConfig.enableTranslation(requireContext(), pkgName) { ok ->
+                    if (!isAdded) return@enableTranslation
+                    (pref as SwitchPreference).isChecked = ok
+                    translationOn = ok
+                    refreshScope(pkgName)
+                    updateLocks()
+                }
+            } else {
+                AppConfig.setTranslation(requireContext(), pkgName, false)
+            }
+            // Translation and the built-in language exclude each other.
+            translationOn = enabled
+            updateLocks()
             true
+        }
+
+        // Any change the user makes here keeps the app ticked in the list.
+        localPrefs?.registerOnSharedPreferenceChangeListener(configuredListener)
+        updateLocks()
+    }
+
+    private val configuredListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        val pkg = applicationInfo?.packageName ?: return@OnSharedPreferenceChangeListener
+        if (key != null && key != "Configured" && key != "LocalEnabled" && key != "ClearCacheTime" && key != AppConfig.KEY_BUILT_IN_LANGUAGE) {
+            context?.let { AppConfig.markConfigured(it, pkg) }
+        }
+    }
+
+    override fun onDestroy() {
+        preferenceManager.sharedPreferences?.unregisterOnSharedPreferenceChangeListener(configuredListener)
+        super.onDestroy()
+    }
+
+    /** Current per-app language of the app ("" = system default, null = unknown). */
+    private var currentAppLocale: String? = null
+    private var translationOn = false
+    private var appLanguageSupported = false
+    private var appDeclaresLocales = false
+    private var appLanguagePref: LockableListPreference? = null
+    private var appLanguageSummary: ((String?) -> Unit)? = null
+
+    /**
+     * Translation and the built-in language are mutually exclusive: while one
+     * is in use the other is greyed out and explains how to free it.
+     */
+    private fun updateLocks() {
+        if (!isAdded) return
+        val builtIn = appDeclaresLocales && !currentAppLocale.isNullOrEmpty()
+        findPreference<LockableSwitchPreference>("LocalEnabled")?.lockedMessage =
+            if (builtIn && !translationOn) getString(R.string.lock_translation_built_in) else null
+        appLanguagePref?.lockedMessage =
+            if (translationOn && !builtIn && appLanguageSupported) getString(R.string.lock_built_in_translation) else null
+    }
+
+    // ------------------------------------------------------------------ scope
+
+    private fun setupScope(pkg: String) {
+        val pref = findPreference<Preference>("Scope") ?: return
+        pref.setOnPreferenceClickListener {
+            AppConfig.requestScopeIfNeeded(requireContext(), pkg)
+            true
+        }
+        refreshScope(pkg)
+    }
+
+    private fun refreshScope(pkg: String) {
+        val pref = findPreference<Preference>("Scope") ?: return
+        pref.summary = getString(
+            when (AppConfig.isInScope(pkg)) {
+                true -> R.string.scope_in
+                false -> R.string.scope_not_in
+                null -> R.string.scope_no_service
+            }
+        )
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // The user may have approved the scope request in the framework meanwhile.
+        applicationInfo?.packageName?.let { pkg ->
+            Thread {
+                AppConfig.refreshScope()
+                android.os.Handler(android.os.Looper.getMainLooper()).post { if (isAdded) refreshScope(pkg) }
+            }.start()
+        }
+    }
+
+    /** "Force stop & reopen": applies changed settings without going to system settings. */
+    private fun setupForceStop(pkg: String) {
+        val pref = findPreference<Preference>("ForceStop") ?: return
+        pref.setOnPreferenceClickListener {
+            val appContext = requireContext().applicationContext
+            pref.isEnabled = false
+            Thread {
+                val result = SystemBridge.forceStop(appContext, pkg)
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    pref.isEnabled = true
+                    if (result.ok) {
+                        appContext.packageManager.getLaunchIntentForPackage(pkg)?.let { launch ->
+                            launch.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                            // Give the process a moment to die before relaunching.
+                            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                                try { appContext.startActivity(launch) } catch (_: Throwable) {}
+                            }, 400)
+                        }
+                        Toast.makeText(appContext, R.string.force_stop_done, Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(appContext, appContext.getString(R.string.force_stop_failed, result.error ?: ""), Toast.LENGTH_LONG).show()
+                    }
+                }
+            }.start()
+            true
+        }
+    }
+
+    /**
+     * "App language": the app's own built-in translations through Android's
+     * per-app language setting (no machine translation involved).
+     */
+    private fun setupAppLanguage(pkg: String) {
+        val pref = findPreference<LockableListPreference>("AppLanguage") ?: return
+        appLanguagePref = pref
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
+            pref.isEnabled = false
+            pref.summary = getString(R.string.app_language_unsupported)
+            return
+        }
+        pref.isEnabled = false
+        val appContext = requireContext().applicationContext
+        val main = android.os.Handler(android.os.Looper.getMainLooper())
+
+        fun describe(tags: String?): String =
+            if (tags.isNullOrEmpty()) getString(R.string.app_language_system_default)
+            else tags.split(',').joinToString(", ") { SystemBridge.displayName(it) }
+
+        Thread {
+            val locales = SystemBridge.appLocales(appContext, pkg)
+            val current = SystemBridge.getLocales(appContext, pkg)
+            main.post {
+                if (!isAdded) return@post
+                val currentTag = current.value.orEmpty().substringBefore(',')
+                currentAppLocale = if (current.ok) currentTag else null
+                val supported = locales.support == SystemBridge.LocaleSupport.SUPPORTED
+                // Offer only what the app declares. If the app is not eligible but a
+                // language is set anyway, still allow going back to the system language.
+                val tags = when {
+                    supported -> locales.tags
+                    currentTag.isNotEmpty() -> listOf(currentTag)
+                    else -> emptyList()
+                }
+                pref.entries = (listOf(getString(R.string.app_language_system_default)) +
+                    tags.map { SystemBridge.displayName(it) }).toTypedArray()
+                pref.entryValues = (listOf("") + tags).toTypedArray()
+                pref.value = currentTag
+                pref.isEnabled = current.ok && (supported || currentTag.isNotEmpty())
+                appLanguageSupported = supported || currentTag.isNotEmpty()
+                appDeclaresLocales = supported
+                // Follow a language changed elsewhere (system settings). A locale on an
+                // app that declares no languages is a leftover, not a built-in language.
+                if (current.ok) AppConfig.setBuiltInLanguage(appContext, pkg, currentTag.takeIf { supported && it.isNotEmpty() })
+                updateLocks()
+
+                val reason = when (locales.support) {
+                    SystemBridge.LocaleSupport.SUPPORTED -> null
+                    SystemBridge.LocaleSupport.NOT_DECLARED -> getString(R.string.app_language_not_declared)
+                    SystemBridge.LocaleSupport.PARSE_FAILED -> getString(R.string.app_language_parse_failed)
+                    SystemBridge.LocaleSupport.OS_TOO_OLD -> getString(R.string.app_language_unsupported)
+                    SystemBridge.LocaleSupport.ERROR -> getString(R.string.app_language_check_failed, locales.error ?: "")
+                }
+                val available = if (supported) getString(R.string.app_language_available, locales.tags.size) else null
+                appLanguageSummary = { tag ->
+                    pref.summary = listOfNotNull(
+                        if (!current.ok) getString(R.string.app_language_unavailable, current.error ?: "")
+                        else getString(R.string.app_language_current, describe(tag)),
+                        reason,
+                        available
+                    ).joinToString("\n")
+                }
+                appLanguageSummary?.invoke(currentTag)
+            }
+        }.start()
+
+        pref.setOnPreferenceChangeListener { _, newValue ->
+            val tag = newValue as? String ?: ""
+            pref.isEnabled = false
+            Thread {
+                val result = SystemBridge.setLocales(appContext, pkg, tag)
+                main.post {
+                    if (!isAdded) return@post
+                    pref.isEnabled = true
+                    if (result.ok) {
+                        val applied = result.value.orEmpty().substringBefore(',')
+                        currentAppLocale = applied
+                        pref.value = applied
+                        appLanguageSummary?.invoke(applied)
+                        AppConfig.setBuiltInLanguage(appContext, pkg, applied)
+                        updateLocks()
+                        if (applied.isNotEmpty()) {
+                            // The app shows its own translation: AllTrans hooks are not
+                            // needed there any more, so leave its LSPosed scope.
+                            Thread { AppConfig.removeScope(appContext, pkg); main.post { if (isAdded) refreshScope(pkg) } }.start()
+                        }
+                        Toast.makeText(appContext, getString(R.string.app_language_applied, describe(result.value)), Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(appContext, getString(R.string.app_language_unavailable, result.error ?: ""), Toast.LENGTH_LONG).show()
+                    }
+                }
+            }.start()
+            false // value is set from the actual result above
         }
     }
 

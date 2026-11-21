@@ -1,251 +1,94 @@
-# AllTrans
+# ReAllTrans
 
 [Tiếng Việt](README.md)
 
-> **About this fork:** forked from [akhilkedia/AllTrans](https://github.com/akhilkedia/AllTrans) (the original only works up to Android 13), with the libxposed API 102 port and features from [Chanhnh/AllTrans](https://github.com/Chanhnh/AllTrans) merged in, keeping the original `akhil.alltrans` package name. The goal is Android 14–17 support. Tested on a Redmi K40s running HyperOS 4 (Android 17) with the Wukong framework.
+ReAllTrans is an Xposed module (libxposed API 102) that translates the interface of Android apps while they run, without modifying their APKs. It continues [AllTrans](https://github.com/akhilkedia/AllTrans) by Akhil Kedia (which only works up to Android 13) so it runs on Android 14 to 17, building on the port by [Chanhnh](https://github.com/Chanhnh/AllTrans).
 
-AllTrans is an Xposed/LSPosed module that translates Android app interfaces at runtime. You do not need to modify APKs or copy text into another app — supported text on screen is replaced with a translation in the language you choose.
-
-## Overview
-
-- **Package name:** `akhil.alltrans`
-- **Version:** `3.0.0` (`versionCode` 300)
-- **Minimum Android:** Android 10 (API 29)
-- **Compile/target SDK:** 36
-- **Platform:** LSPosed 2.1+ or an Xposed environment compatible with the libxposed API
-- **UI:** Material 3, light and dark themes
-- **App UI locales:** English, Vietnamese, Simplified Chinese, Traditional Chinese (Taiwan)
-- **Translation providers:** Google Translate, Microsoft Translate, VietPhrase
-
-Default settings:
-
-- Translation provider: `Google Translate`
-- Translate from: `Auto Detect`
-- Translate to: `Vietnamese`
+- Package name: `ovtk.realltrans`
+- Version: 3.1.0
+- Android 10 or later; tested on a Redmi K40s (HyperOS, Android 17) with LSPosed 2.2.1 (API 102)
 
 ## Features
 
-- Real-time in-app translation without modifying APKs
-- Translates normal text, text hints (`setHint`), notifications, and `WebView` content
-- Extended translation for custom views and content drawn outside the normal `TextView` path
-- Global settings plus per-app overrides
-- Flexible source/target language selection with automatic language detection
-- Translation cache to reduce repeated requests and speed up rendering
-- Automatic cache invalidation when the provider, language, or translation engine changes
-- `VietPhrase` offline Chinese-to-Vietnamese translation using local dictionaries
-- `VietPhrase` rule engine for names, pronouns, numbers/dates, chapter labels, and sentence formatting
-- Debug mode with `logcat` output for troubleshooting
+- Translates app text at runtime: normal text, input hints, notifications, WebView and text drawn by custom views.
+- Three translation services: Google Translate, Microsoft Translate and VietPhrase (Chinese to Vietnamese, offline).
+- Global settings for all apps, plus per-app settings when needed.
+- Translation cache, refreshed when the service or languages change.
+- Long translations can scroll back and forth instead of being cut with "…" (optional).
+- Extra support for Alibaba apps (Taobao, Tmall, Xianyu…): DinamicX text, the tab bar and UC WebView pages, with a safe mode that only changes what is shown.
+- Picks an app's own built-in language (Android 13+ per-app languages), even on ROMs that hide that screen.
+- Asks LSPosed to add an app to the module scope when you choose to translate it.
+- A settings screen for ReAllTrans itself: language, light/dark theme, module status, test translation, settings backup and restore.
+- Interface in English, Vietnamese, Simplified and Traditional Chinese.
 
 ## Requirements
 
-| Component | Requirement |
-| --- | --- |
-| Device | Android 10 or newer (API 29+) |
-| Module | LSPosed 2.1+ or an Xposed environment compatible with the libxposed API |
-| System access | A device with LSPosed installed (usually requires root/Magisk, KernelSU, or APatch) |
-| Internet | Required for Google Translate and Microsoft Translate; not required for VietPhrase |
-| Build | JDK 17, Android SDK 36 |
+- Android 10 or later.
+- A rooted device with LSPosed 2.1 or later, or another framework supporting libxposed API 102.
+- Internet for Google Translate or Microsoft Translate. VietPhrase works offline.
+- Choosing an app's built-in language needs Android 13 or later.
 
 ## Installation
 
-1. Build or download the AllTrans APK.
-2. Install the APK on your device.
-3. Open LSPosed and enable the **AllTrans** module.
-4. Select the apps you want to translate in **Scope**.
-5. Reboot the device or force-stop the target apps.
-6. Open AllTrans and configure the provider and languages.
+1. Download `ReAllTrans-v3.1.0.apk` from [Releases](https://github.com/TheOverthinkerDev/ReAllTrans/releases) and install it.
+2. Open LSPosed, enable the **ReAllTrans** module and select **System Framework** in its scope.
+3. Reboot.
+4. Open ReAllTrans and go to the **ReAllTrans** tab. **Framework** under module status should say it is active.
 
-> If a target app cannot query providers directly, you can also add **System Framework** to the module scope to use the proxy path.
+If you used the old AllTrans (package `akhil.alltrans`): ReAllTrans is a separate app and does not pick up the old settings. Back up your settings in the old AllTrans if it offers that, uninstall it and disable the old module in LSPosed so two modules do not translate at once, then restore the backup in ReAllTrans.
 
 ## Usage
 
-### Global settings
+1. **Translation** tab: choose the service, the source language and the target language.
+2. **Apps** tab: tick the apps to translate. If an app is not in the LSPosed scope yet, LSPosed shows a notification asking for permission. Tap **Approve**. If it is not approved within about 20 seconds, the tick is removed again.
+3. Force-stop and reopen the target app. The app's page has a **Force stop & reopen** button for this.
 
-1. Open the **Global** tab.
-2. Choose a **Translation Service**.
-3. Choose the **source language** and **target language**.
-4. Turn on the **Master On/Off** switch.
-5. Open the **Apps** tab and enable translation for the apps you want.
-6. Force-stop and reopen the target app.
+In the app list:
 
-### Per-app settings
+- Apps that are set up (translating, using a built-in language, or with their own settings) are always ticked and listed first.
+- An amber tick means the app uses its built-in language instead of translation.
+- Unticking asks first, then turns translation off, deletes the app's own settings, resets its language to the system default and removes it from the LSPosed scope.
 
-1. Open the target app from the **Apps** tab.
-2. Enable **Translate This App**.
-3. Enable **OverRide Global Settings** if you want app-specific configuration.
-4. Choose the provider, languages, and advanced options.
-5. Force-stop the target app to apply the changes.
+On an app's page:
 
-### Main settings
-
-| Setting | Description |
-| --- | --- |
-| Master On/Off | Enables or disables the whole module |
-| Translation Service | Selects Google Translate, Microsoft Translate, or VietPhrase |
-| Translate From Language | The app's current language; can be auto-detected |
-| Translate To Language | The language you want the app translated into |
-| Translate Normal Text | Translates text set with `setText` |
-| Translate Text Hints | Translates text set with `setHint` |
-| Extended View Translation | Adds hooks for custom views, layout constructors, and framework View methods |
-| Translate Text in WebView | Translates content inside `WebView` |
-| Translate Notifications | Translates notification text |
-| Use Caching | Stores translations for reuse |
-| Delay | Wait time before replacing text with the translation |
-| Delay WebView | Wait time before starting WebView translation |
-| Scroll Long Translated Text | Scrolls automatically when a translation is too long |
-| Debug Mode | Writes detailed logs to `logcat` |
-
-## Translation providers
-
-| Provider | ID | Internet | Notes |
-| --- | --- | --- | --- |
-| Google Translate | `g` | Yes | Uses Google language codes |
-| Microsoft Translate | `edge` | Yes | Uses the Edge endpoint and Microsoft/Edge native language codes |
-| VietPhrase | `vietphrase` | No | Only supports `zh → vi`; uses local dictionaries in `assets/vietphrase` |
-
-### Google Translate
-
-Suitable for general-purpose translation with a broad language list. Requires an Internet connection.
-
-### Microsoft Translate
-
-Uses the Edge endpoint and Edge-native language codes. Switching between Google Translate and Microsoft Translate updates the language list accordingly. If the currently selected language is not available in the new list, AllTrans resets it to the default language instead of sending an invalid code.
-
-### VietPhrase
-
-- Only translates from Chinese (`zh`) to Vietnamese (`vi`)
-- Uses local dictionaries and works without an Internet connection
-- The rule engine handles names, pronouns, numbers/dates, chapter labels, and sentence formatting
-- Useful for fast, stable, offline translation
-- The rule engine and some pronoun data are adapted from duongden's `vietphrase-translator` project (GPL-3.0)
-
-## Translation cache
-
-- The cache stores translations by text to avoid repeated provider calls
-- You can clear it manually from global settings or per-app settings
-- AllTrans automatically marks the cache for clearing when the provider or language changes
-- The cache is also refreshed when the translation engine version changes
-- After clearing the cache, force-stop the target app to apply the change
-
-## Languages
-
-The AllTrans UI is available in four locales:
-
-- English
-- Vietnamese
-- Simplified Chinese
-- Traditional Chinese (Taiwan)
-
-The translation language list depends on the selected provider. VietPhrase only supports `zh → vi`.
+- **OverRide Global Settings**: use a service, languages and options just for this app.
+- **App language**: only available when the app declares its languages to Android. It shows how many languages the app supports.
+- Translation and the built-in language cannot be used together. While one is in use the other is greyed out, and tapping it says which one to turn off first.
+- The **Alibaba apps** options are only on by default for Alibaba apps. For any other app they start off.
 
 ## Privacy
 
-- AllTrans has no proprietary backend server and does not collect analytics.
-- When using Google Translate or Microsoft Translate, the text to be translated is sent to the corresponding service.
-- VietPhrase processes everything locally on the device.
-- The `QUERY_ALL_PACKAGES` permission is used to show the app list for selection.
-- The `INTERNET` permission is used for online translation providers.
+- ReAllTrans has no server of its own and collects no usage data.
+- With Google Translate or Microsoft Translate, the text to translate is sent to that service.
+- VietPhrase translates entirely on the device.
+- `INTERNET` is used for the online services. `QUERY_ALL_PACKAGES` is used to list apps for you to choose from.
+- Root is only used when the system hook is not working, to change an app's language or force-stop an app.
 
 ## How it works
 
-- Hooks text rendering points such as `TextView.setText`, `setHint`, `StaticLayout.Builder.build()`, layout constructors, framework View methods, and custom View setters.
-- Adds support for notifications and `WebView` content.
-- Each provider is queried through an internal `ContentProvider`:
-  - `content://akhil.alltrans.GtransProvider`
-  - `content://akhil.alltrans.EdgeProvider`
-  - `content://akhil.alltrans.VietPhraseProvider`
-- The selected provider is used explicitly. If the provider is unavailable or returns an empty result, AllTrans keeps the original text.
-- Provider queries try the proxy path first, then fall back to a direct query.
-
-## Build
-
-This project uses a Gradle Android application module, Kotlin, and Java 17.
-
-```bash
-./gradlew :app:testDebugUnitTest
-./gradlew :app:assembleDebug
-./gradlew :app:assembleRelease
-```
-
-APK outputs:
-
-- `app/build/outputs/apk/debug/AllTrans-v3.0.0-debug.apk`
-- `app/build/outputs/apk/release/AllTrans-v3.0.0-release.apk`
-
-To sign a release build, configure these properties in `gradle.properties`:
-
-```properties
-RELEASE_STORE_FILE=/path/to/keystore.jks
-RELEASE_STORE_PASSWORD=...
-RELEASE_KEY_ALIAS=...
-RELEASE_KEY_PASSWORD=...
-```
+- LSPosed loads the module into apps in its scope. The module hooks the places where text is shown (such as `TextView.setText`, `StaticLayout`, notifications, WebView), sends the text for translation and puts the translation in its place.
+- Translation is done by ContentProviders inside ReAllTrans (Google, Microsoft, VietPhrase). Target apps reach them through a proxy in the system process, which is why the **System Framework** scope is needed.
+- ReAllTrans copies its settings into the framework with [libxposed/service](https://github.com/libxposed/service). Target apps read them back with `getRemotePreferences()` from [libxposed/api](https://github.com/libxposed/api) instead of querying a provider on every start.
+- Changing an app's built-in language and force-stopping apps happen in the system process through the hook, or through root when the hook is not available.
 
 ## Project structure
 
-| Component | Purpose |
-| --- | --- |
-| `Alltrans.kt` | Module entry point and SettingsProvider proxy hook |
-| `AttachBaseContextHookHandler.kt` | Reads preferences, manages cache, and applies hooks |
-| `GetTranslateToken.kt` | Dispatches providers and handles cache/fallback |
-| `EdgeProvider.kt` | Microsoft Translate |
-| `GtransProvider.kt` | Google Translate |
-| `VietPhraseProvider.kt` | ContentProvider for VietPhrase |
-| `VietPhraseTranslator.kt` | Loads dictionaries and the VietPhrase engine |
-| `VietPhraseTranslationEngine.kt` | Translation pipeline and rule engine |
-| `PreferenceList.kt` | Reads global and per-app preferences |
-| `GlobalPreferencesFragment.kt` | Global settings UI |
-| `LocalPreferenceFragment.kt` | Per-app settings UI |
-| `app/src/main/assets/vietphrase/` | VietPhrase dictionaries and data |
+See [docs/PROJECT_STRUCTURE_en.md](docs/PROJECT_STRUCTURE_en.md) for what each file does and how to build.
 
 ## Troubleshooting
 
-**The app is not being translated**
-
-- Check that the AllTrans module is enabled in LSPosed.
-- Check that the target app is included in the module scope.
-- Check that **Master On/Off** and **Translate This App** are enabled.
-- Force-stop and reopen the target app.
-- Enable **Debug Mode** and inspect `logcat`.
-
-**Google Translate or Microsoft Translate is not working**
-
-- Check the Internet connection.
-- Try switching between Google Translate and Microsoft Translate.
-- If you use a proxy, check the system proxy configuration.
-
-**VietPhrase is not translating**
-
-- VietPhrase only supports `zh → vi`.
-- Check that the dictionaries in `assets/vietphrase` are present.
-
-**Some content is still not translated**
-
-- Games or apps that draw text directly with canvas often cannot be hooked.
-- Try enabling **Extended View Translation**.
-- Try increasing **Delay** or **Delay WebView**.
-
-**The target app crashes after translation**
-
-- Disable **Scroll Long Translated Text**.
-- Disable **Translate Notifications** or **Translate Text in WebView** if not needed.
-- Clear the translation cache and force-stop the target app.
+See [docs/TROUBLESHOOTING_en.md](docs/TROUBLESHOOTING_en.md).
 
 ## Contributing
 
-- Fork the repository, create a branch, and open a pull request.
-- When reporting a bug, include:
-  - Android version
-  - LSPosed version
-  - Target app name and version
-  - `logcat` output with the `AllTrans` tag
-  - Steps to reproduce
+- Report bugs or suggestions in [Issues](https://github.com/TheOverthinkerDev/ReAllTrans/issues).
+- Include your Android version, ROM, LSPosed version, the target app's name and version, and the steps that cause the problem. If possible, turn on **Advanced: Enable debug mode** and attach `adb logcat -s AllTrans`.
+- To change code: fork the repository, create a branch and open a pull request.
 
 ## Credits
 
-- Original project: [akhilkedia/AllTrans](https://github.com/akhilkedia/AllTrans)
-- VietPhrase rules and data adapted from [duongden/script-vietphrase-translator](https://github.com/duongden/script-vietphrase-translator)
+- **Original:** [AllTrans](https://github.com/akhilkedia/AllTrans) by Akhil Kedia.
+- **VietPhrase from Chanhnh:** the VietPhrase engine, the libxposed API 102 port and more from [Chanhnh/AllTrans](https://github.com/Chanhnh/AllTrans). VietPhrase rules and some data come from [duongden/script-vietphrase-translator](https://github.com/duongden/script-vietphrase-translator).
+- **libxposed:** [libxposed/api](https://github.com/libxposed/api) and [libxposed/service](https://github.com/libxposed/service) (Apache-2.0).
 
-## License
-
-GPL-3.0-or-later. See `LICENSE.GPL` for details.
+License: GPL-3.0-or-later, see [LICENSE.GPL](LICENSE.GPL).

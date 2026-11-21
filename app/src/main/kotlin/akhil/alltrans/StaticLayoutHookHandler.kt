@@ -11,6 +11,8 @@ class StaticLayoutHookHandler : SafeReplacementHook() {
 
     override fun replaceHookedMethod(param: HookParam): Any? {
         val builder = param.thisObject ?: return HookRuntime.invokeOriginal(param.method, param.thisObject, param.args)
+        // Layouts AllTrans builds from translations must not be translated again.
+        if (TaobaoHooks.isBuildingLayout()) return HookRuntime.invokeOriginal(param.method, param.thisObject, param.args)
 
         try {
             val sourceText = readBuilderText(builder)
@@ -158,6 +160,7 @@ class StaticLayoutHookHandler : SafeReplacementHook() {
             if (Alltrans.pendingTextViewTranslations.contains(compositeKey)) return
             Alltrans.pendingTextViewTranslations.add(compositeKey)
         }
+        Utils.debugLog("$TAG: prefetch [${requestKey.take(40)}]")
 
         val getTranslate = GetTranslate().apply {
             stringToBeTrans = requestKey

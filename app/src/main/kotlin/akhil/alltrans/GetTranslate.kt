@@ -21,6 +21,8 @@ class GetTranslate : Callback {
     var spanTranslationPayload: SpanTranslationPayload? = null
     var translatedSegments: List<String>? = null
     var forceCacheResult: Boolean = false
+    /** True when the request came from TextView.setHint(). */
+    var isHint: Boolean = false
 
     /**
      * Set by GetTranslateToken when this request is the leader of a
@@ -123,8 +125,10 @@ class GetTranslate : Callback {
             try {
                 if (currentUserData is TextView) {
                     val tv = currentUserData
-                    val pendingText = tv.getTag(Alltrans.ALLTRANS_PENDING_TRANSLATION_TAG_KEY) as? String
-                    val pendingSpanPayload = tv.getTag(Alltrans.ALLTRANS_PENDING_SPAN_PAYLOAD_TAG_KEY) as? SpanTranslationPayload
+                    val pendingKey = if (isHint) Alltrans.ALLTRANS_PENDING_HINT_TAG_KEY else Alltrans.ALLTRANS_PENDING_TRANSLATION_TAG_KEY
+                    val appliedKey = if (isHint) Alltrans.ALLTRANS_HINT_APPLIED_TAG_KEY else Alltrans.ALLTRANS_TRANSLATION_APPLIED_TAG_KEY
+                    val pendingText = tv.getTag(pendingKey) as? String
+                    val pendingSpanPayload = if (isHint) null else tv.getTag(Alltrans.ALLTRANS_PENDING_SPAN_PAYLOAD_TAG_KEY) as? SpanTranslationPayload
 
                     if (pendingText != originalString) {
                         Utils.debugLog("$TAG: Discarding stale translation for (${tv.hashCode()}). Expected '$pendingText', got '$originalString'.")
@@ -137,21 +141,45 @@ class GetTranslate : Callback {
                         finalString
                     }
 
-                    if (tv.layoutParams == null) {
-                        // A detached/programmatic TextView can have no layout
-                        // params yet. Setting text then makes the framework
-                        // throw from checkForRelayout(); a later setText will
-                        // translate it once the view is attached.
-                        Utils.debugLog("$TAG: Skipping TextView update (${tv.hashCode()}) key ($keyToRemove) - no layout params.")
-                    } else if (translatedText.toString() != originalString || !tv.text.toString().equals(translatedText.toString())) {
-                        Utils.debugLog("$TAG: Updating TextView (${tv.hashCode()}) key ($keyToRemove): [${translatedText.toString()}]")
-                        tv.setTag(Alltrans.ALLTRANS_TRANSLATION_APPLIED_TAG_KEY, true)
-                        tv.text = translatedText
+                    // Write the translation to the same property it came from:
+                    // a hint translation must never become the view's text.
+                    fun currentValue(): String = (if (isHint) tv.hint else tv.text)?.toString().orEmpty()
+                    // For spanned text the request key encodes segments, so
+                    // compare the view against the plain text it showed.
+                    val expectedCurrent = if (pendingSpanPayload != null && pendingSpanPayload.requestKey == originalString) {
+                        pendingSpanPayload.plainText
                     } else {
-                        Utils.debugLog("$TAG: Skipping TextView update (${tv.hashCode()}) key ($keyToRemove) - same text.")
+                        originalString
                     }
-                    tv.setTag(Alltrans.ALLTRANS_PENDING_TRANSLATION_TAG_KEY, null)
-                    tv.setTag(Alltrans.ALLTRANS_PENDING_SPAN_PAYLOAD_TAG_KEY, null)
+                    fun apply() {
+                        tv.setTag(appliedKey, translatedText.toString())
+                        if (isHint) tv.hint = translatedText else {
+                            tv.text = translatedText
+                            MarqueeHelper.onTranslated(tv)
+                        }
+                    }
+
+                    if (translatedText.toString() == originalString) {
+                        Utils.debugLog("$TAG: Skipping TextView update (${tv.hashCode()}) key ($keyToRemove) - same text.")
+                    } else if (tv.layoutParams == null) {
+                        // A detached/programmatic TextView can have no layout
+                        // params yet, and setting text then throws from
+                        // checkForRelayout(). View.post() on a detached view is
+                        // queued until it is attached, so apply it then instead
+                        // of dropping it (tabs and search hints are often set
+                        // only once, before they are added to the layout).
+                        Utils.debugLog("$TAG: Deferring TextView update (${tv.hashCode()}) key ($keyToRemove) until attached.")
+                        tv.post {
+                            if (tv.layoutParams != null && currentValue() == expectedCurrent) apply()
+                        }
+                    } else if (currentValue() == expectedCurrent) {
+                        Utils.debugLog("$TAG: Updating ${if (isHint) "hint" else "TextView"} (${tv.hashCode()}) key ($keyToRemove): [$translatedText]")
+                        apply()
+                    } else {
+                        Utils.debugLog("$TAG: Skipping TextView update (${tv.hashCode()}) key ($keyToRemove) - view now shows other text.")
+                    }
+                    tv.setTag(pendingKey, null)
+                    if (!isHint) tv.setTag(Alltrans.ALLTRANS_PENDING_SPAN_PAYLOAD_TAG_KEY, null)
                 } else if (currentCanCallOriginal && currentOriginalCallable != null) {
                     Utils.debugLog("$TAG: Calling originalCallable for key ($keyToRemove): [$finalString]")
                     currentOriginalCallable.callOriginalMethod(finalString, currentUserData)
@@ -199,8 +227,11 @@ class GetTranslate : Callback {
             try {
                 if (localUserData is TextView) {
                     Utils.debugLog("$TAG: Network failure for TextView (key $keyToRemove), original text remains.")
-                    localUserData.setTag(Alltrans.ALLTRANS_PENDING_TRANSLATION_TAG_KEY, null)
-                    localUserData.setTag(Alltrans.ALLTRANS_PENDING_SPAN_PAYLOAD_TAG_KEY, null)
+                    val pendingKey = if (isHint) Alltrans.ALLTRANS_PENDING_HINT_TAG_KEY else Alltrans.ALLTRANS_PENDING_TRANSLATION_TAG_KEY
+                    if (localUserData.getTag(pendingKey) == localOriginalString) {
+                        localUserData.setTag(pendingKey, null)
+                        if (!isHint) localUserData.setTag(Alltrans.ALLTRANS_PENDING_SPAN_PAYLOAD_TAG_KEY, null)
+                    }
                 } else if (localCanCallOriginal && localOriginalCallable != null) {
                     Utils.debugLog("$TAG: Calling originalCallable on failure for key ($keyToRemove).")
                     localOriginalCallable.callOriginalMethod(localOriginalString.orEmpty(), localUserData)

@@ -26,12 +26,14 @@
         tools:ignore="QueryAllPackagesPermission" />
 
     <application
+        android:name=".AllTransApp"
         android:forceQueryable="true"
         android:allowBackup="false"
         android:description="@string/app_description"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
+        android:localeConfig="@xml/locales_config"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning"
@@ -46,23 +48,32 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Stores the in-app UI language on Android 12 and older (AppCompat). -->
+        <service
+            android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
+            android:enabled="false"
+            android:exported="false">
+            <meta-data
+                android:name="autoStoreLocales"
+                android:value="true" />
+        </service>
         <provider
-            android:authorities="akhil.alltrans.SharedPrefProvider"
+            android:authorities="${applicationId}.SharedPrefProvider"
             android:name="akhil.alltrans.SharedPrefProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
         <provider
-            android:authorities="akhil.alltrans.GtransProvider"
+            android:authorities="${applicationId}.GtransProvider"
             android:name="akhil.alltrans.GtransProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
         <provider
-            android:authorities="akhil.alltrans.EdgeProvider"
+            android:authorities="${applicationId}.EdgeProvider"
             android:name="akhil.alltrans.EdgeProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />
         <provider
-            android:authorities="akhil.alltrans.VietPhraseProvider"
+            android:authorities="${applicationId}.VietPhraseProvider"
             android:name="akhil.alltrans.VietPhraseProvider"
             android:exported="true"
             tools:ignore="ExportedContentProvider" />

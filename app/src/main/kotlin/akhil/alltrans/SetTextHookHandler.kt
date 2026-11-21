@@ -197,13 +197,25 @@ class SetTextHookHandler : SafeHook() {
         textView.setTag(Alltrans.ALLTRANS_PENDING_SPAN_PAYLOAD_TAG_KEY, null)
     }
 
+    private fun markApplied(textView: TextView, translated: CharSequence, isHint: Boolean) {
+        if (isHint) {
+            textView.setTag(Alltrans.ALLTRANS_HINT_APPLIED_TAG_KEY, translated.toString())
+            textView.setTag(Alltrans.ALLTRANS_PENDING_HINT_TAG_KEY, null)
+        } else {
+            textView.setTag(Alltrans.ALLTRANS_TRANSLATION_APPLIED_TAG_KEY, translated.toString())
+            textView.setTag(Alltrans.ALLTRANS_PENDING_TRANSLATION_TAG_KEY, null)
+            clearPendingSpanPayload(textView)
+        }
+    }
+
     private fun requestTranslation(
         requestKey: String,
-        textView: TextView,
+        textView: TextView?,
         compositeKey: Int,
-        spanPayload: SpanTranslationPayload? = null
+        spanPayload: SpanTranslationPayload? = null,
+        isHint: Boolean = false
     ) {
-        val context = textView.context
+        val context = textView?.context
         if (context is Activity && (context.isFinishing || context.isDestroyed)) {
             removePendingTranslation(compositeKey, "Activity destroyed")
             return
@@ -218,6 +230,7 @@ class SetTextHookHandler : SafeHook() {
             canCallOriginal = false
             pendingCompositeKey = compositeKey
             spanTranslationPayload = spanPayload
+            this.isHint = isHint
         }
         GetTranslateToken().apply { this.getTranslate = getTranslate }.doAll()
     }
@@ -226,19 +239,25 @@ class SetTextHookHandler : SafeHook() {
     override fun beforeHookedMethod(param: HookParam) {
         val methodName = param.method.name
         val textView = param.thisObject as? TextView ?: return
-
-        // Verifica tag de tradução aplicada
-        val appliedByAllTransTag = textView.getTag(Alltrans.ALLTRANS_TRANSLATION_APPLIED_TAG_KEY)
-        if (appliedByAllTransTag == true) {
-            textView.setTag(Alltrans.ALLTRANS_TRANSLATION_APPLIED_TAG_KEY, false)
-            return
-        }
+        // New text replaces whatever AllTrans was scrolling: restore the view.
+        if (methodName == "setText") MarqueeHelper.reset(textView)
 
         if (param.args.isEmpty() || param.args[0] !is CharSequence) return
 
         val originalTextCS = param.args[0] as CharSequence
         val originalText = originalTextCS.toString()
         if (!isNotWhiteSpace(originalText)) return
+
+        val isHint = methodName == "setHint"
+        val pendingKey = if (isHint) Alltrans.ALLTRANS_PENDING_HINT_TAG_KEY else Alltrans.ALLTRANS_PENDING_TRANSLATION_TAG_KEY
+        val appliedKey = if (isHint) Alltrans.ALLTRANS_HINT_APPLIED_TAG_KEY else Alltrans.ALLTRANS_TRANSLATION_APPLIED_TAG_KEY
+
+        // Skip text that AllTrans itself put on this view. A one-shot boolean
+        // was not enough: it was consumed by the first of several hooked calls
+        // and the translation was then sent off to be translated again.
+        if (methodName != "append" && originalText == textView.getTag(appliedKey)) {
+            return
+        }
 
         val packageName = textView.context?.packageName
         if (!PreferenceManager.isEnabledForPackage(textView.context, packageName)) return
@@ -247,12 +266,7 @@ class SetTextHookHandler : SafeHook() {
         if (methodName == "setText" && !PreferenceList.SetText) return
 
         // EditText: não traduz conteúdo editável (apenas hint)
-        if (isEditableTextView(textView) && methodName != "setHint") {
-            if (PreferenceList.Scroll) configureScroll(textView)
-            return
-        }
-
-        if (PreferenceList.Scroll) configureScroll(textView)
+        if (isEditableTextView(textView) && methodName != "setHint") return
 
         // Verificação de skip antes de detecção de idioma
         if (shouldSkipTranslation(originalText)) {
@@ -274,29 +288,51 @@ class SetTextHookHandler : SafeHook() {
 
         // Proceed directly to cache check + translation
         // The online Google API natively handles "auto" source language detection
-        val spanPayload = if (originalTextCS is Spanned) {
+        val spanPayload = if (originalTextCS is Spanned && !isHint) {
             SpanTranslationHelper.createPayload(originalTextCS)
         } else {
             null
         }
         val requestKey = spanPayload?.requestKey ?: originalText
-        val compositeKey = createCompositeKey(textView.hashCode(), requestKey)
+        // Hints get their own key space so a pending hint and a pending text
+        // with the same string do not block each other.
+        val compositeKey = createCompositeKey(textView.hashCode(), requestKey) + if (isHint) 1 else 0
 
         if (spanPayload != null) {
             val cachedSpannedTranslation = getCachedSpannedTranslation(spanPayload)
             if (cachedSpannedTranslation != null) {
-                textView.setTag(Alltrans.ALLTRANS_TRANSLATION_APPLIED_TAG_KEY, true)
+                markApplied(textView, cachedSpannedTranslation, isHint)
                 modifyArgument(param, cachedSpannedTranslation)
-                clearPendingSpanPayload(textView)
+                if (!isHint) MarqueeHelper.onTranslated(textView)
                 return
             }
         } else {
             val cachedTranslation = getCachedTranslation(originalText, compositeKey)
             if (cachedTranslation != null) {
-                textView.setTag(Alltrans.ALLTRANS_TRANSLATION_APPLIED_TAG_KEY, true)
+                if (methodName != "append") markApplied(textView, cachedTranslation, isHint)
                 modifyArgument(param, cachedTranslation)
-                clearPendingSpanPayload(textView)
+                if (!isHint && methodName != "append") MarqueeHelper.onTranslated(textView)
                 return
+            }
+        }
+
+        if (methodName == "append") {
+            // An appended fragment cannot be written back on its own later,
+            // so only warm the cache; the next append/setText of it hits it.
+            requestTranslation(requestKey, null, compositeKey, null, false)
+            return
+        }
+
+        // The latest text always owns the view, even when an identical request
+        // is already in flight. Otherwise a recycled list item could keep an
+        // older pending tag: the right translation was discarded as stale and
+        // the wrong one was written into the view.
+        textView.setTag(pendingKey, requestKey)
+        if (!isHint) {
+            if (spanPayload != null) {
+                textView.setTag(Alltrans.ALLTRANS_PENDING_SPAN_PAYLOAD_TAG_KEY, spanPayload)
+            } else {
+                clearPendingSpanPayload(textView)
             }
         }
 
@@ -305,30 +341,6 @@ class SetTextHookHandler : SafeHook() {
             return
         }
 
-        textView.setTag(Alltrans.ALLTRANS_PENDING_TRANSLATION_TAG_KEY, requestKey)
-        if (spanPayload != null) {
-            textView.setTag(Alltrans.ALLTRANS_PENDING_SPAN_PAYLOAD_TAG_KEY, spanPayload)
-        } else {
-            clearPendingSpanPayload(textView)
-        }
-        requestTranslation(requestKey, textView, compositeKey, spanPayload)
-    }
-
-    private fun configureScroll(textView: TextView) {
-        try {
-            if (textView.movementMethod == null && !textView.isSingleLine) {
-                textView.isVerticalScrollBarEnabled = true
-                textView.movementMethod = ScrollingMovementMethod.getInstance()
-                textView.scrollBarStyle = View.SCROLLBARS_INSIDE_INSET
-            } else if (textView.isSingleLine) {
-                textView.ellipsize = TextUtils.TruncateAt.MARQUEE
-                textView.marqueeRepeatLimit = -1
-                textView.isFocusable = true
-                textView.isFocusableInTouchMode = true
-                textView.isSelected = true
-            }
-        } catch (e: Throwable) {
-            Log.w(TAG, "Failed to configure scroll", e)
-        }
+        requestTranslation(requestKey, textView, compositeKey, spanPayload, isHint)
     }
 }
