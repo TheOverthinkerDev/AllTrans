@@ -158,6 +158,7 @@ class StaticLayoutHookHandler : SafeReplacementHook() {
             if (Alltrans.pendingTextViewTranslations.contains(compositeKey)) return
             Alltrans.pendingTextViewTranslations.add(compositeKey)
         }
+        Utils.debugLog("$TAG: prefetch [${requestKey.take(40)}]")
 
         val getTranslate = GetTranslate().apply {
             stringToBeTrans = requestKey

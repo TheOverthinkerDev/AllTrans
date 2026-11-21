@@ -443,16 +443,29 @@ internal class AttachBaseContextHookHandler : SafeHook() {
             val setTextHook = SetTextHookHandler()
 
             if (PreferenceList.SetText) {
-                // Todas as variantes de setText
-                Utils.tryHookMethod(TextView::class.java, "setText", CharSequence::class.java, setTextHook)
-                Utils.tryHookMethod(TextView::class.java, "setText", CharSequence::class.java, BufferType::class.java, setTextHook)
-                // TextView has no public 3-argument setText overload; the hidden
-                // implementation is setText(CharSequence, BufferType, boolean, int).
-                Utils.tryHookMethod(TextView::class.java, "setText", CharSequence::class.java, BufferType::class.java, Boolean::class.javaPrimitiveType, Int::class.javaPrimitiveType, setTextHook)
+                // Every public setText overload funnels into the private
+                // setText(CharSequence, BufferType, boolean, int). Hooking only
+                // that one avoids handling the same text three times in nested
+                // calls, which re-translated already translated text and let
+                // the nested calls fight over the pending-translation tag.
+                try {
+                    HookRuntime.findAndHookMethod(
+                        TextView::class.java, "setText",
+                        CharSequence::class.java, BufferType::class.java,
+                        Boolean::class.javaPrimitiveType, Int::class.javaPrimitiveType,
+                        setTextHook
+                    )
+                    Utils.debugLog("AllTrans: hooked TextView#setText(CharSequence, BufferType, boolean, int)")
+                } catch (t: Throwable) {
+                    Utils.debugLog("AllTrans: private setText overload unavailable, hooking public overloads: ${t.message}")
+                    Utils.tryHookMethod(TextView::class.java, "setText", CharSequence::class.java, setTextHook)
+                    Utils.tryHookMethod(TextView::class.java, "setText", CharSequence::class.java, BufferType::class.java, setTextHook)
+                }
 
-                // Hook append()
+                // Only the one-argument append(): append(text, start, end) uses
+                // indices into the original text, so swapping in a translation
+                // of a different length would make it throw or cut the text.
                 Utils.tryHookMethod(TextView::class.java, "append", CharSequence::class.java, setTextHook)
-                Utils.tryHookMethod(TextView::class.java, "append", CharSequence::class.java, Int::class.javaPrimitiveType, Int::class.javaPrimitiveType, setTextHook)
             }
 
             if (PreferenceList.SetHint) {

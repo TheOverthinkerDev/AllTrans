@@ -65,6 +65,7 @@ class ViewTextMethodHookHandler : SafeHook(), OriginalCallable {
             Alltrans.pendingTextViewTranslations.add(compositeKey)
         }
 
+        Utils.debugLog("$TAG: ${target.javaClass.name}#${method.name} [${originalText.take(40)}]")
         val callbackData = ViewMethodCall(
             method = method,
             target = target,

@@ -11,10 +11,12 @@ internal class AppOnCreateHookHandler : SafeHook() {
 
     override fun afterHookedMethod(methodHookParam: HookParam) {
         try {
-            Utils.debugLog("AllTrans: in after OnCreate of Application")
+            Utils.debugLog("AllTrans: after Instrumentation.callApplicationOnCreate")
 
-            // Verificar se o objeto hookado é realmente uma Application
-            val application = methodHookParam.thisObject as? Application
+            // Hooked on Instrumentation.callApplicationOnCreate(Application):
+            // the Application is the first argument.
+            val application = methodHookParam.args.firstOrNull() as? Application
+                ?: methodHookParam.thisObject as? Application
             if (application == null) {
                 Utils.debugLog("AllTrans: Hooked object in Application.onCreate is not an Application instance")
                 return
