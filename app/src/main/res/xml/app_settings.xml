@@ -65,6 +65,14 @@
 
         <Preference
             app:iconSpaceReserved="false"
+            app:key="StatusBackground"
+            app:persistent="false"
+            app:title="@string/status_background"
+            app:summary="@string/app_language_loading"
+            android:layout="@layout/preference_material_item" />
+
+        <Preference
+            app:iconSpaceReserved="false"
             app:key="StatusRoot"
             app:persistent="false"
             app:title="@string/status_root"

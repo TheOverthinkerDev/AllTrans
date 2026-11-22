@@ -231,11 +231,29 @@ internal class GetTranslateToken {
         return translatedSegments
     }
 
+    /** The target app may lack INTERNET (rare): then only the provider can translate. */
+    private fun canTranslateInProcess(context: android.content.Context): Boolean =
+        context.checkSelfPermission(android.Manifest.permission.INTERNET) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+
     private fun queryGoogleProvider(text: String?, fromLang: String?, toLang: String?): String? {
         val context = Alltrans.context
         if (text.isNullOrEmpty() || context == null) {
             if (context == null) Log.e(TAG, "Static context is null in queryGoogleProvider.")
             return text
+        }
+
+        // Translate inside this (target) app first. It is in front, so its network
+        // is not throttled; the ReAllTrans process often is (background network
+        // limits, HyperOS QoS while video apps such as Douyin play). The provider
+        // in ReAllTrans stays as the fallback.
+        if (canTranslateInProcess(context)) {
+            GtransProvider.translateOnline(text, fromLang ?: PreferenceList.DEFAULT_SOURCE_LANGUAGE, toLang ?: PreferenceList.DEFAULT_TARGET_LANGUAGE)
+                ?.let {
+                    Utils.debugLog("$TAG: Translated in-process (GtransProvider): [$text] -> [$it]")
+                    return it
+                }
+            Utils.debugLog("$TAG: In-process translation failed, falling back to the provider")
         }
 
         val directUri: Uri
@@ -330,6 +348,19 @@ internal class GetTranslateToken {
         val context = Alltrans.context
         if (text.isNullOrEmpty() || context == null) {
             return text
+        }
+
+        // Translate inside this (target) app first. It is in front, so its network
+        // is not throttled; the ReAllTrans process often is (background network
+        // limits, HyperOS QoS while video apps such as Douyin play). The provider
+        // in ReAllTrans stays as the fallback.
+        if (canTranslateInProcess(context)) {
+            EdgeProvider.translateOnline(text, fromLang ?: PreferenceList.DEFAULT_SOURCE_LANGUAGE, toLang ?: PreferenceList.DEFAULT_TARGET_LANGUAGE)
+                ?.let {
+                    Utils.debugLog("$TAG: Translated in-process (EdgeProvider): [$text] -> [$it]")
+                    return it
+                }
+            Utils.debugLog("$TAG: In-process translation failed, falling back to the provider")
         }
 
         val directUri: Uri

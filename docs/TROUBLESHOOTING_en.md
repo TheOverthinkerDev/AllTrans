@@ -12,6 +12,11 @@ Before trying the steps below, open the **ReAllTrans** tab and look at the modul
 - Force-stop and reopen the target app (**Force stop & reopen**).
 - If the app uses its built-in language (amber tick), set **App language** back to **System default** before turning translation on.
 
+## An app that used to be translated is not any more
+
+- Check **Background** in the ReAllTrans tab. If it is restricted by battery optimisation, tap it to allow. On HyperOS you may also need Settings → Apps → ReAllTrans → Battery saver → No restrictions.
+- Google Translate and Microsoft Translate are called inside the target app, so they do not depend on this. VietPhrase and the fallback translation do need ReAllTrans to run in the background.
+
 ## The tick disappears after ticking an app
 
 LSPosed needs your approval to add the app to the scope. If you do not tap **Approve** within about 20 seconds, or you tap **Deny**, ReAllTrans does not turn translation on. Tick it again and tap **Approve** in the LSPosed notification. If no notification appears, open LSPosed and add the app to the ReAllTrans scope yourself.

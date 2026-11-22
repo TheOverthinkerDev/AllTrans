@@ -309,4 +309,12 @@
     <string name="scope_timeout">"未及時核准作用範圍：翻譯保持關閉。"</string>
     <string name="scope_denied">"%1$s 未加入作用範圍：翻譯保持關閉。"</string>
     <string name="list_waiting_scope">"等待核准作用範圍…"</string>
+    <string name="status_background">"背景執行"</string>
+    <string name="status_background_ok">"已允許：使用其他應用程式時也能翻譯。"</string>
+    <string name="status_background_blocked">"受電池最佳化限制：Android 會在背景切斷 ReAllTrans 的網路，應用程式將無法翻譯。點選以允許。"</string>
+    <string name="background_prompt_title">"允許 ReAllTrans 在背景執行"</string>
+    <string name="background_prompt_message">"在您使用其他應用程式時，翻譯由 ReAllTrans 取得。若未豁免電池最佳化，Android（以及 HyperOS 等系統）會在背景切斷其網路，應用程式將無法翻譯。請在下一個畫面中允許。"</string>
+    <string name="background_prompt_allow">"允許"</string>
+    <string name="background_prompt_later">"稍後"</string>
+    <string name="background_prompt_never">"不再詢問"</string>
 </resources>

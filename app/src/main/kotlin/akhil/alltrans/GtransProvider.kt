@@ -34,14 +34,6 @@ import java.util.concurrent.TimeUnit
 
 class GtransProvider : ContentProvider() {
 
-    private val httpClient: OkHttpClient by lazy {
-        OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
-            .writeTimeout(15, TimeUnit.SECONDS)
-            .build()
-    }
-
     override fun onCreate(): Boolean {
         Utils.debugLog("$TAG: onCreate")
         return true
@@ -72,74 +64,6 @@ class GtransProvider : ContentProvider() {
 
         val translatedText = translateOnline(textToTranslate, fromLanguage, toLanguage)
         return createResultCursor(translatedText ?: textToTranslate, projection, startTime)
-    }
-
-    private fun translateOnline(text: String, fromLang: String, toLang: String): String? {
-        return try {
-            // Build protobuf-like JSON body: [[[text], fromLang, toLang], "wt_lib"]
-            val bodyArray = JSONArray()
-            val innerArray = JSONArray()
-            // Replace newlines with <br> to preserve formatting in translateHtml endpoint
-            val htmlFormattedText = text.replace("\n", "<br>")
-            val textsArray = JSONArray()
-            textsArray.put(htmlFormattedText)
-            innerArray.put(textsArray)
-            innerArray.put(fromLang)
-            innerArray.put(toLang)
-            bodyArray.put(innerArray)
-            bodyArray.put("wt_lib")
-            val bodyString = bodyArray.toString()
-
-            Utils.debugLog("$TAG: Calling translate-pa API for: [$text] $fromLang -> $toLang")
-
-            val request = Request.Builder()
-                .url(API_URL)
-                .post(bodyString.toRequestBody(JSON_MEDIA_TYPE))
-                .addHeader("X-Goog-API-Key", API_KEY)
-                .addHeader("Content-Type", "application/json+protobuf")
-                .build()
-
-            val response = httpClient.newCall(request).execute()
-            val responseBody = response.body?.string()
-
-            if (!response.isSuccessful || responseBody.isNullOrEmpty()) {
-                Log.e(TAG, "API error ${response.code}: $responseBody")
-                return null
-            }
-
-            Utils.debugLog("$TAG: API response: $responseBody")
-
-            // Response format: [["translated text"],["detected_lang"]]
-            val jsonResponse = JSONArray(responseBody)
-            val translationsArray = jsonResponse.getJSONArray(0)
-            var translated = translationsArray.getString(0)
-
-            // Replace <br> and variants back to newlines
-            translated = translated.replace(Regex("(?i)<br\\s*/?>"), "\n")
-            // Handle optional paragraph tags if returned
-            translated = translated.replace(Regex("(?i)<p>"), "").replace(Regex("(?i)</p>"), "\n")
-            translated = Utils.XMLUnescape(translated) ?: translated
-            
-            // Trim if it ends with extra newline from </p>
-            if (translated.endsWith("\n") && !text.endsWith("\n")) {
-                translated = translated.substring(0, translated.length - 1)
-            }
-
-            // Detect if source == target (same language detection)
-            if (jsonResponse.length() > 1) {
-                val detectedLang = jsonResponse.optJSONArray(1)?.optString(0)
-                if (detectedLang != null && detectedLang == toLang && fromLang == "auto") {
-                    Utils.debugLog("$TAG: Detected lang ($detectedLang) == target ($toLang), returning original.")
-                    return text
-                }
-            }
-
-            Utils.debugLog("$TAG: Translation result: [$text] -> [$translated]")
-            translated
-        } catch (e: Exception) {
-            Log.e(TAG, "Error calling translate-pa API for: [$text]", e)
-            null
-        }
     }
 
     private fun createResultCursor(result: String?, projection: Array<String?>?, startTimeNanos: Long): MatrixCursor {
@@ -180,6 +104,75 @@ class GtransProvider : ContentProvider() {
     }
 
     companion object {
+        /** Online translation; also called directly inside target apps. */
+        fun translateOnline(text: String, fromLang: String, toLang: String): String? {
+            return try {
+                // Build protobuf-like JSON body: [[[text], fromLang, toLang], "wt_lib"]
+                val bodyArray = JSONArray()
+                val innerArray = JSONArray()
+                // Replace newlines with <br> to preserve formatting in translateHtml endpoint
+                val htmlFormattedText = text.replace("\n", "<br>")
+                val textsArray = JSONArray()
+                textsArray.put(htmlFormattedText)
+                innerArray.put(textsArray)
+                innerArray.put(fromLang)
+                innerArray.put(toLang)
+                bodyArray.put(innerArray)
+                bodyArray.put("wt_lib")
+                val bodyString = bodyArray.toString()
+
+                Utils.debugLog("$TAG: Calling translate-pa API for: [$text] $fromLang -> $toLang")
+
+                val request = Request.Builder()
+                    .url(API_URL)
+                    .post(bodyString.toRequestBody(JSON_MEDIA_TYPE))
+                    .addHeader("X-Goog-API-Key", API_KEY)
+                    .addHeader("Content-Type", "application/json+protobuf")
+                    .build()
+
+                val response = TranslateHttp.execute(request)
+                val responseBody = response.use { it.body?.string() }
+
+                if (!response.isSuccessful || responseBody.isNullOrEmpty()) {
+                    Log.e(TAG, "API error ${response.code}: $responseBody")
+                    return null
+                }
+
+                Utils.debugLog("$TAG: API response: $responseBody")
+
+                // Response format: [["translated text"],["detected_lang"]]
+                val jsonResponse = JSONArray(responseBody)
+                val translationsArray = jsonResponse.getJSONArray(0)
+                var translated = translationsArray.getString(0)
+
+                // Replace <br> and variants back to newlines
+                translated = translated.replace(Regex("(?i)<br\\s*/?>"), "\n")
+                // Handle optional paragraph tags if returned
+                translated = translated.replace(Regex("(?i)<p>"), "").replace(Regex("(?i)</p>"), "\n")
+                translated = Utils.XMLUnescape(translated) ?: translated
+            
+                // Trim if it ends with extra newline from </p>
+                if (translated.endsWith("\n") && !text.endsWith("\n")) {
+                    translated = translated.substring(0, translated.length - 1)
+                }
+
+                // Detect if source == target (same language detection)
+                if (jsonResponse.length() > 1) {
+                    val detectedLang = jsonResponse.optJSONArray(1)?.optString(0)
+                    if (detectedLang != null && detectedLang == toLang && fromLang == "auto") {
+                        Utils.debugLog("$TAG: Detected lang ($detectedLang) == target ($toLang), returning original.")
+                        return text
+                    }
+                }
+
+                Utils.debugLog("$TAG: Translation result: [$text] -> [$translated]")
+                translated
+            } catch (e: Exception) {
+                Log.e(TAG, "Error calling translate-pa API for: [$text]", e)
+                null
+            }
+        }
+
         const val TAG = "AllTrans:gtransProv"
         const val COLUMN_TRANSLATE: String = "translate"
         const val KEY_TEXT_TO_TRANSLATE: String = "text"

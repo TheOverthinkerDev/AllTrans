@@ -34,6 +34,7 @@ ReAllTrans is an Xposed module (libxposed API 102) that translates the interface
 2. Open LSPosed, enable the **ReAllTrans** module and select **System Framework** in its scope.
 3. Reboot.
 4. Open ReAllTrans and go to the **ReAllTrans** tab. **Framework** under module status should say it is active.
+5. When ReAllTrans asks, allow it to run in the background (**Background** under module status). Otherwise Android may cut its network in the background and VietPhrase or the fallback translation will not work.
 
 If you used the old AllTrans (package `akhil.alltrans`): ReAllTrans is a separate app and does not pick up the old settings. Back up your settings in the old AllTrans if it offers that, uninstall it and disable the old module in LSPosed so two modules do not translate at once, then restore the backup in ReAllTrans.
 
@@ -59,7 +60,7 @@ On an app's page:
 ## Privacy
 
 - ReAllTrans has no server of its own and collects no usage data.
-- With Google Translate or Microsoft Translate, the text to translate is sent to that service.
+- With Google Translate or Microsoft Translate, the text to translate is sent to that service, usually directly from the app being translated.
 - VietPhrase translates entirely on the device.
 - `INTERNET` is used for the online services. `QUERY_ALL_PACKAGES` is used to list apps for you to choose from.
 - Root is only used when the system hook is not working, to change an app's language or force-stop an app.
@@ -67,7 +68,7 @@ On an app's page:
 ## How it works
 
 - LSPosed loads the module into apps in its scope. The module hooks the places where text is shown (such as `TextView.setText`, `StaticLayout`, notifications, WebView), sends the text for translation and puts the translation in its place.
-- Translation is done by ContentProviders inside ReAllTrans (Google, Microsoft, VietPhrase). Target apps reach them through a proxy in the system process, which is why the **System Framework** scope is needed.
+- Google Translate and Microsoft Translate are called inside the target app, because the app in front is not network-restricted by the system. VietPhrase, and Google/Microsoft when that fails, run in ReAllTrans through ContentProviders. Target apps reach them through a proxy in the system process, which is why the **System Framework** scope is needed.
 - ReAllTrans copies its settings into the framework with [libxposed/service](https://github.com/libxposed/service). Target apps read them back with `getRemotePreferences()` from [libxposed/api](https://github.com/libxposed/api) instead of querying a provider on every start.
 - Changing an app's built-in language and force-stopping apps happen in the system process through the hook, or through root when the hook is not available.
 

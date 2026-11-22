@@ -309,4 +309,12 @@
     <string name="scope_timeout">"未及时批准作用域：翻译保持关闭。"</string>
     <string name="scope_denied">"%1$s 未加入作用域：翻译保持关闭。"</string>
     <string name="list_waiting_scope">"等待批准作用域…"</string>
+    <string name="status_background">"后台运行"</string>
+    <string name="status_background_ok">"已允许：使用其他应用时也能翻译。"</string>
+    <string name="status_background_blocked">"受电池优化限制：Android 会在后台切断 ReAllTrans 的网络，应用将无法翻译。点击允许。"</string>
+    <string name="background_prompt_title">"允许 ReAllTrans 在后台运行"</string>
+    <string name="background_prompt_message">"在您使用其他应用时，翻译由 ReAllTrans 获取。若未免除电池优化，Android（以及 HyperOS 等系统）会在后台切断其网络，应用将无法翻译。请在下一个界面中允许。"</string>
+    <string name="background_prompt_allow">"允许"</string>
+    <string name="background_prompt_later">"稍后"</string>
+    <string name="background_prompt_never">"不再询问"</string>
 </resources>

@@ -66,6 +66,9 @@ class MainViewModel : ViewModel() {
     }
 }
 
+
+private const val KEY_SKIP_BACKGROUND_PROMPT = "SkipBackgroundPrompt"
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigationView: BottomNavigationView
@@ -102,6 +105,8 @@ class MainActivity : AppCompatActivity() {
                 invalidateOptionsMenu() // Sempre invalida para mostrar/esconder o menu de pesquisa
             }
             .launchIn(lifecycleScope)
+
+        if (savedInstanceState == null) askBackgroundOnce()
 
         if (savedInstanceState == null) {
             // Na primeira carga, navega para o tipo de fragmento inicial da ViewModel (APPS por padrão)
@@ -207,6 +212,26 @@ class MainActivity : AppCompatActivity() {
                 bottomNavigationView.selectedItemId = itemId
             }
         }
+    }
+
+    /**
+     * Without a battery-optimisation exemption the translation providers lose
+     * network access whenever ReAllTrans is in the background. Ask once per
+     * app launch until the user allows it or chooses "Don't ask again".
+     */
+    private fun askBackgroundOnce() {
+        if (AppConfig.isBackgroundAllowed(this)) return
+        val prefs = getSharedPreferences(AppSettings.PREFS, MODE_PRIVATE)
+        if (prefs.getBoolean(KEY_SKIP_BACKGROUND_PROMPT, false)) return
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.background_prompt_title)
+            .setMessage(R.string.background_prompt_message)
+            .setPositiveButton(R.string.background_prompt_allow) { _, _ -> AppConfig.requestBackground(this) }
+            .setNeutralButton(R.string.background_prompt_never) { _, _ ->
+                prefs.edit().putBoolean(KEY_SKIP_BACKGROUND_PROMPT, true).apply()
+            }
+            .setNegativeButton(R.string.background_prompt_later, null)
+            .show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

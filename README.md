@@ -34,6 +34,7 @@ ReAllTrans là module Xposed (libxposed API 102) dịch giao diện ứng dụng
 2. Mở LSPosed, bật module **ReAllTrans** và chọn **System Framework** trong phạm vi của module.
 3. Khởi động lại máy.
 4. Mở ReAllTrans, vào tab **ReAllTrans** để xem trạng thái module. Mục **Framework** phải báo đang hoạt động.
+5. Khi ReAllTrans hỏi, cho phép nó chạy nền (mục **Chạy nền**). Nếu không, Android có thể chặn mạng của ReAllTrans khi chạy nền và VietPhrase hoặc bản dịch dự phòng sẽ không hoạt động.
 
 Nếu bạn đang dùng AllTrans cũ (tên gói `akhil.alltrans`): ReAllTrans là một ứng dụng riêng, không tự nhận cài đặt cũ. Hãy sao lưu cài đặt trong AllTrans cũ (nếu có chức năng này), gỡ AllTrans cũ và tắt module cũ trong LSPosed để tránh hai module cùng dịch, rồi khôi phục cài đặt trong ReAllTrans.
 
@@ -59,7 +60,7 @@ Trong trang của từng ứng dụng:
 ## Quyền riêng tư
 
 - ReAllTrans không có máy chủ riêng và không thu thập dữ liệu sử dụng.
-- Khi dùng Google Translate hoặc Microsoft Translate, chữ cần dịch được gửi tới dịch vụ đó.
+- Khi dùng Google Translate hoặc Microsoft Translate, chữ cần dịch được gửi tới dịch vụ đó, thường là trực tiếp từ ứng dụng đang được dịch.
 - VietPhrase dịch hoàn toàn trên máy.
 - Quyền `INTERNET` dùng cho dịch vụ dịch trực tuyến. Quyền `QUERY_ALL_PACKAGES` dùng để liệt kê ứng dụng cho bạn chọn.
 - Root chỉ được dùng khi hook hệ thống không hoạt động, để đổi ngôn ngữ ứng dụng hoặc buộc dừng ứng dụng.
@@ -67,7 +68,7 @@ Trong trang của từng ứng dụng:
 ## Cơ chế hoạt động
 
 - LSPosed nạp module vào các ứng dụng trong phạm vi. Module hook những chỗ hiển thị chữ (như `TextView.setText`, `StaticLayout`, thông báo, WebView), gửi chữ đi dịch và thay bằng bản dịch.
-- Việc dịch do các ContentProvider trong ReAllTrans đảm nhận (Google, Microsoft, VietPhrase). Ứng dụng đích gọi tới chúng qua một proxy trong tiến trình hệ thống, vì vậy cần phạm vi **System Framework**.
+- Google Translate và Microsoft Translate được gọi ngay trong ứng dụng đích, vì ứng dụng đang mở không bị hệ thống hạn chế mạng. VietPhrase, và Google/Microsoft khi cách trên lỗi, chạy trong ReAllTrans qua ContentProvider. Ứng dụng đích gọi tới chúng qua một proxy trong tiến trình hệ thống, vì vậy cần phạm vi **System Framework**.
 - Cài đặt được ReAllTrans chép lên framework bằng [libxposed/service](https://github.com/libxposed/service). Ứng dụng đích đọc lại bằng `getRemotePreferences()` của [libxposed/api](https://github.com/libxposed/api), không phải hỏi qua provider mỗi lần mở.
 - Đổi ngôn ngữ có sẵn và buộc dừng ứng dụng được thực hiện trong tiến trình hệ thống qua hook, hoặc qua root nếu hook không có.
 

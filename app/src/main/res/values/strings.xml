@@ -384,4 +384,12 @@
     <string name="scope_timeout">"Scope not approved in time: translation stays off."</string>
     <string name="scope_denied">"%1$s was not added to the scope: translation stays off."</string>
     <string name="list_waiting_scope">"Waiting for scope approval…"</string>
+    <string name="status_background">"Background"</string>
+    <string name="status_background_ok">"Allowed: translation works while other apps are in front."</string>
+    <string name="status_background_blocked">"Restricted by battery optimisation: Android cuts network access of ReAllTrans in the background, so apps are not translated. Tap to allow."</string>
+    <string name="background_prompt_title">"Allow ReAllTrans in the background"</string>
+    <string name="background_prompt_message">"Translations are fetched by ReAllTrans while you use other apps. Android (and ROMs such as HyperOS) cut its network access in the background unless it is exempt from battery optimisation, and apps then stay untranslated. Allow it on the next screen."</string>
+    <string name="background_prompt_allow">"Allow"</string>
+    <string name="background_prompt_later">"Later"</string>
+    <string name="background_prompt_never">"Do not ask again"</string>
 </resources>

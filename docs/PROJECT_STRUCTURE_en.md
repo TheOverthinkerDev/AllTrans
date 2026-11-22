@@ -18,7 +18,8 @@ One Android application module (`app`), written in Kotlin. Sources are in `app/s
 | `VirtWebViewOnLoad.kt`, `WebViewClientWrapper.kt`, `WebViewOnCreateHookHandler.kt`, `WebViewSetClientHookHandler.kt` | Translate WebView pages |
 | `TaobaoHooks.kt`, `UcWebViewTranslator.kt`, `MtopTranslator.kt` | Alibaba app support: DinamicX text, tab bar, UC WebView, MTOP data |
 | `MarqueeHelper.kt` | Scrolls long translations back and forth |
-| `GetTranslateToken.kt` | Sends text to the translation service, handles the cache |
+| `GetTranslateToken.kt` | Sends text for translation (Google/Microsoft inside the target app, the provider as fallback), handles the cache |
+| `TranslateHttp.kt` | Shared HTTP client for Google/Microsoft: short timeouts, drops stale connections, retries once |
 | `SystemBridge.kt` | Changes app languages and force-stops apps from the system process (or through root) |
 
 ## Code that runs in the ReAllTrans app
@@ -27,7 +28,7 @@ One Android application module (`app`), written in Kotlin. Sources are in `app/s
 | --- | --- |
 | `AllTransApp.kt` | `Application` class, connects to the libxposed service when the app opens |
 | `RemotePrefs.kt` | Copies settings into the framework with libxposed/service |
-| `AppConfig.kt` | Per-app state: translating, built-in language, LSPosed scope |
+| `AppConfig.kt` | Per-app state: translating, built-in language, LSPosed scope; ReAllTrans background permission |
 | `MainActivity.kt` | Main screen and navigation |
 | `AppListFragment.kt` | App list |
 | `LocalPreferenceFragment.kt` | Per-app settings page |

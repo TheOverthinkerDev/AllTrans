@@ -12,6 +12,11 @@ Trước khi thử các bước dưới đây, mở tab **ReAllTrans** và xem p
 - Buộc dừng rồi mở lại ứng dụng đích (nút **Buộc dừng & mở lại**).
 - Nếu ứng dụng đang dùng ngôn ngữ có sẵn (ô đánh dấu màu cam), hãy đặt **Ngôn ngữ của ứng dụng** về **Theo hệ thống** trước khi bật dịch.
 
+## Ứng dụng từng dịch được nay không dịch nữa
+
+- Xem mục **Chạy nền** trong tab ReAllTrans. Nếu đang bị tối ưu pin, chạm để cho phép. Trên HyperOS, có thể cần thêm Cài đặt → Ứng dụng → ReAllTrans → Tiết kiệm pin → Không giới hạn.
+- Google Translate và Microsoft Translate được gọi ngay trong ứng dụng đích nên không phụ thuộc mục này. VietPhrase và bản dịch dự phòng thì cần ReAllTrans được chạy nền.
+
 ## Đánh dấu ứng dụng xong thì ô tự bỏ
 
 LSPosed cần bạn đồng ý thêm ứng dụng vào phạm vi. Nếu không bấm **Approve** trong khoảng 20 giây, hoặc bấm **Deny**, ReAllTrans sẽ không bật dịch. Đánh dấu lại rồi bấm **Approve** trong thông báo của LSPosed. Nếu thông báo không hiện, mở LSPosed và tự thêm ứng dụng vào phạm vi của ReAllTrans.

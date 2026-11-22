@@ -84,6 +84,22 @@ class AppSettingsFragment : PreferenceFragmentCompat() {
 
     // ------------------------------------------------------------------- status
 
+    override fun onResume() {
+        super.onResume()
+        refreshBackground()
+    }
+
+    /** "Background": is ReAllTrans exempt from battery optimisation? */
+    private fun refreshBackground() {
+        val pref = findPreference<Preference>("StatusBackground") ?: return
+        val allowed = AppConfig.isBackgroundAllowed(requireContext())
+        pref.summary = getString(if (allowed) R.string.status_background_ok else R.string.status_background_blocked)
+        pref.setOnPreferenceClickListener {
+            if (!allowed) AppConfig.requestBackground(requireContext())
+            true
+        }
+    }
+
     private fun setupStatus() {
         val appContext = requireContext().applicationContext
         val framework = findPreference<Preference>("StatusFramework")
