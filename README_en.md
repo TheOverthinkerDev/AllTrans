@@ -5,20 +5,21 @@
 ReAllTrans is an Xposed module (libxposed API 102) that translates the interface of Android apps while they run, without modifying their APKs. It continues [AllTrans](https://github.com/akhilkedia/AllTrans) by Akhil Kedia (which only works up to Android 13) so it runs on Android 14 to 17, building on the port by [Chanhnh](https://github.com/Chanhnh/AllTrans).
 
 - Package name: `ovtk.realltrans`
-- Version: 3.1.0
+- Version: 3.1.1
 - Android 10 or later; tested on a Redmi K40s (HyperOS, Android 17) with LSPosed 2.2.1 (API 102)
 
 ## Features
 
 - Translates app text at runtime: normal text, input hints, notifications, WebView and text drawn by custom views.
 - Three translation services: Google Translate, Microsoft Translate and VietPhrase (Chinese to Vietnamese, offline).
+- Google Translate and Microsoft Translate are called inside the app being translated, so translation keeps working when the system restricts ReAllTrans in the background (for example HyperOS while Douyin plays). This can be turned off globally or per app; on failure ReAllTrans is used instead.
 - Global settings for all apps, plus per-app settings when needed.
 - Translation cache, refreshed when the service or languages change.
 - Long translations can scroll back and forth instead of being cut with "…" (optional).
 - Extra support for Alibaba apps (Taobao, Tmall, Xianyu…): DinamicX text, the tab bar and UC WebView pages, with a safe mode that only changes what is shown.
 - Picks an app's own built-in language (Android 13+ per-app languages), even on ROMs that hide that screen.
 - Asks LSPosed to add an app to the module scope when you choose to translate it.
-- A settings screen for ReAllTrans itself: language, light/dark theme, module status, test translation, settings backup and restore.
+- A settings screen for ReAllTrans itself: language, light/dark theme, module status (framework, scope, settings delivery, background permission, root), test translation, settings backup and restore.
 - Interface in English, Vietnamese, Simplified and Traditional Chinese.
 
 ## Requirements
@@ -30,10 +31,11 @@ ReAllTrans is an Xposed module (libxposed API 102) that translates the interface
 
 ## Installation
 
-1. Download `ReAllTrans-v3.1.0.apk` from [Releases](https://github.com/TheOverthinkerDev/ReAllTrans/releases) and install it.
+1. Download `ReAllTrans-v3.1.1.apk` from [Releases](https://github.com/TheOverthinkerDev/ReAllTrans/releases) and install it.
 2. Open LSPosed, enable the **ReAllTrans** module and select **System Framework** in its scope.
 3. Reboot.
 4. Open ReAllTrans and go to the **ReAllTrans** tab. **Framework** under module status should say it is active.
+5. When ReAllTrans asks, allow it to run in the background (**Background** under module status). Otherwise Android may cut its network in the background and VietPhrase or the fallback translation will not work.
 
 If you used the old AllTrans (package `akhil.alltrans`): ReAllTrans is a separate app and does not pick up the old settings. Back up your settings in the old AllTrans if it offers that, uninstall it and disable the old module in LSPosed so two modules do not translate at once, then restore the backup in ReAllTrans.
 
@@ -51,15 +53,22 @@ In the app list:
 
 On an app's page:
 
-- **OverRide Global Settings**: use a service, languages and options just for this app.
+- **OverRide Global Settings**: use a service, languages and options just for this app. When it is off, those items are greyed out and the app follows the global settings.
+- **Translate inside the app** (under advanced settings; turn on override to change it per app): turn it off to send every translation through ReAllTrans, for example for banking apps or apps with security checks. Turning it on shows a warning about the effects.
 - **App language**: only available when the app declares its languages to Android. It shows how many languages the app supports.
 - Translation and the built-in language cannot be used together. While one is in use the other is greyed out, and tapping it says which one to turn off first.
 - The **Alibaba apps** options are only on by default for Alibaba apps. For any other app they start off.
 
+In the **ReAllTrans** tab:
+
+- **Framework**: the running framework and the apps in the module scope.
+- **Settings delivery**: whether settings reach target apps through libxposed remote preferences or the fallback provider.
+- **Background**: whether ReAllTrans is exempt from battery optimisation. Needed for VietPhrase and the fallback translation.
+
 ## Privacy
 
 - ReAllTrans has no server of its own and collects no usage data.
-- With Google Translate or Microsoft Translate, the text to translate is sent to that service.
+- With Google Translate or Microsoft Translate, the text to translate is sent to that service, usually directly from the app being translated.
 - VietPhrase translates entirely on the device.
 - `INTERNET` is used for the online services. `QUERY_ALL_PACKAGES` is used to list apps for you to choose from.
 - Root is only used when the system hook is not working, to change an app's language or force-stop an app.
@@ -67,7 +76,7 @@ On an app's page:
 ## How it works
 
 - LSPosed loads the module into apps in its scope. The module hooks the places where text is shown (such as `TextView.setText`, `StaticLayout`, notifications, WebView), sends the text for translation and puts the translation in its place.
-- Translation is done by ContentProviders inside ReAllTrans (Google, Microsoft, VietPhrase). Target apps reach them through a proxy in the system process, which is why the **System Framework** scope is needed.
+- Google Translate and Microsoft Translate are called inside the target app, because the app in front is not network-restricted by the system. This can be turned off with **Translate inside the app** (globally, or per app with override on); turning it on shows a warning about the effects. VietPhrase, and Google/Microsoft when that fails, run in ReAllTrans through ContentProviders. Target apps reach them through a proxy in the system process, which is why the **System Framework** scope is needed.
 - ReAllTrans copies its settings into the framework with [libxposed/service](https://github.com/libxposed/service). Target apps read them back with `getRemotePreferences()` from [libxposed/api](https://github.com/libxposed/api) instead of querying a provider on every start.
 - Changing an app's built-in language and force-stopping apps happen in the system process through the hook, or through root when the hook is not available.
 

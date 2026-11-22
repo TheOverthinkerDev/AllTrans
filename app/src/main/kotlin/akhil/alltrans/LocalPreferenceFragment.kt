@@ -164,9 +164,11 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
     }
 
     private fun enableLocalPrefs(enable: Boolean) {
+        // Everything that only applies with "override global settings" on.
+        // (The language lists are handled by updateLanguageLists.)
         val keysToToggle = listOf(
-            "TranslateFromLanguage", "TranslateToLanguage", "SetText",
-            "SetHint", "LoadURL", "Notif", "Cache", "Scroll", "Delay", "DelayWebView"
+            "TranslatorProvider", "SetText", "SetHint", "ExtendedViewTranslation",
+            "LoadURL", "Notif", "Cache", "Scroll", "Delay", "DelayWebView", "InProcessTranslate"
         )
         keysToToggle.forEach { key ->
             findPreference<Preference>(key)?.isEnabled = enable
@@ -216,8 +218,10 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
 
         configureTranslatorProviderPreference(translatorProvider)
 
-        fun refreshLanguageLists() {
-            val localOverrideEnabled = findPreference<SwitchPreference>("OverRide")?.isChecked == true
+        // [override] is passed in: inside OverRide's change listener the switch
+        // still holds its old value, so reading isChecked there inverted the state.
+        fun refreshLanguageLists(override: Boolean = findPreference<SwitchPreference>("OverRide")?.isChecked == true) {
+            val localOverrideEnabled = override
             updateLanguageLists(
                 translatorProvider?.value,
                 translateFromLanguage,
@@ -245,10 +249,13 @@ class LocalPreferenceFragment : PreferenceFragmentCompat() {
         refreshLanguageLists()
 
         findPreference<SwitchPreference>("OverRide")?.setOnPreferenceChangeListener { _, newValue ->
-            enableLocalPrefs(newValue as Boolean)
-            refreshLanguageLists()
+            val override = newValue as Boolean
+            enableLocalPrefs(override)
+            refreshLanguageLists(override)
             true
         }
+
+        InProcessWarning.attach(findPreference("InProcessTranslate"))
 
         findPreference<Preference>("ClearCache")?.setOnPreferenceClickListener { preference ->
             localPrefs?.edit()

@@ -195,6 +195,35 @@ internal object AppConfig {
         }
     }
 
+    // ---------------------------------------------------------- background
+
+    /**
+     * The translation providers run in the ReAllTrans process while another app
+     * is in front. Unless ReAllTrans is exempt from battery optimisation,
+     * Android 15+ / HyperOS block its network (and may freeze it) in the
+     * background, and every translation request times out.
+     */
+    fun isBackgroundAllowed(context: Context): Boolean =
+        context.getSystemService(android.os.PowerManager::class.java)
+            ?.isIgnoringBatteryOptimizations(context.packageName) == true
+
+    /** Shows Android's own "allow background" dialog (the user decides). */
+    fun requestBackground(context: Context) {
+        val pkgUri = android.net.Uri.parse("package:" + context.packageName)
+        val intents = listOf(
+            android.content.Intent(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, pkgUri),
+            android.content.Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
+            android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS, pkgUri)
+        )
+        for (intent in intents) {
+            try {
+                context.startActivity(intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK))
+                return
+            } catch (_: Throwable) {
+            }
+        }
+    }
+
     private fun toast(context: Context, text: String) {
         Handler(Looper.getMainLooper()).post { Toast.makeText(context, text, Toast.LENGTH_LONG).show() }
     }

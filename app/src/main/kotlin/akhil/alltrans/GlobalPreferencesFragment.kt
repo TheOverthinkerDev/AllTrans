@@ -197,6 +197,7 @@ class GlobalPreferencesFragment : PreferenceFragmentCompat() {
         }
 
         updateLanguageLists(translatorProvider?.value, translateFromLanguage, translateToLanguage)
+        InProcessWarning.attach(findPreference("InProcessTranslate"))
 
         translateFromLanguage?.setOnPreferenceChangeListener { _, _ ->
             requestCacheClear()
@@ -233,7 +234,8 @@ class GlobalPreferencesFragment : PreferenceFragmentCompat() {
             "ExtendedViewTranslation",
             "AlibabaOptimize",
             "SafeMode",
-            "MtopTranslate"
+            "MtopTranslate",
+            "InProcessTranslate"
         )
     }
 }

@@ -332,4 +332,19 @@
     <string name="scope_timeout">"Chưa duyệt phạm vi kịp: dịch vẫn tắt."</string>
     <string name="scope_denied">"%1$s chưa được thêm vào phạm vi: dịch vẫn tắt."</string>
     <string name="list_waiting_scope">"Đang chờ duyệt phạm vi…"</string>
+    <string name="status_background">"Chạy nền"</string>
+    <string name="status_background_ok">"Đã cho phép: dịch được khi đang dùng ứng dụng khác."</string>
+    <string name="status_background_blocked">"Đang bị tối ưu pin: Android chặn mạng của ReAllTrans khi chạy nền nên ứng dụng không được dịch. Chạm để cho phép."</string>
+    <string name="background_prompt_title">"Cho phép ReAllTrans chạy nền"</string>
+    <string name="background_prompt_message">"Bản dịch do ReAllTrans lấy về trong lúc bạn dùng ứng dụng khác. Android (và các ROM như HyperOS) sẽ chặn mạng của nó khi chạy nền nếu chưa được miễn tối ưu pin, khi đó ứng dụng sẽ không được dịch. Hãy cho phép ở màn hình tiếp theo."</string>
+    <string name="background_prompt_allow">"Cho phép"</string>
+    <string name="background_prompt_later">"Để sau"</string>
+    <string name="background_prompt_never">"Không hỏi lại"</string>
+    <string name="in_process">"Dịch trong ứng dụng đích"</string>
+    <string name="in_process_summary_on">"Bật: gọi Google/Microsoft ngay trong ứng dụng đang dịch (vẫn chạy khi ReAllTrans bị hạn chế chạy nền)."</string>
+    <string name="in_process_summary_off">"Tắt: mọi bản dịch đi qua ReAllTrans. Cần cho phép ReAllTrans chạy nền."</string>
+    <string name="in_process_warning_title">"Dịch trong ứng dụng đích?"</string>
+    <string name="in_process_warning_message">"Chính ứng dụng đang được dịch sẽ gửi chữ tới Google hoặc Microsoft:\n\n- Lưu lượng được tính cho ứng dụng đó, và tường lửa hoặc VPN của ứng dụng đó được áp dụng (bị chặn thì dùng ReAllTrans).\n- Ứng dụng dùng thêm vài MB bộ nhớ.\n- Ứng dụng có kiểm tra bảo mật chặt (ngân hàng, ví, một số game) có thể phát hiện kết nối lạ. Hãy tắt mục này cho chúng, hoặc không dịch chúng.\n\nNội dung gửi đi và dịch vụ nhận vẫn như trước. VietPhrase luôn chạy trong ReAllTrans."</string>
+    <string name="in_process_warning_ok">"Bật"</string>
+    <string name="in_process_warning_cancel">"Huỷ"</string>
 </resources>

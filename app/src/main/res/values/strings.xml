@@ -384,4 +384,19 @@
     <string name="scope_timeout">"Scope not approved in time: translation stays off."</string>
     <string name="scope_denied">"%1$s was not added to the scope: translation stays off."</string>
     <string name="list_waiting_scope">"Waiting for scope approval…"</string>
+    <string name="status_background">"Background"</string>
+    <string name="status_background_ok">"Allowed: translation works while other apps are in front."</string>
+    <string name="status_background_blocked">"Restricted by battery optimisation: Android cuts network access of ReAllTrans in the background, so apps are not translated. Tap to allow."</string>
+    <string name="background_prompt_title">"Allow ReAllTrans in the background"</string>
+    <string name="background_prompt_message">"Translations are fetched by ReAllTrans while you use other apps. Android (and ROMs such as HyperOS) cut its network access in the background unless it is exempt from battery optimisation, and apps then stay untranslated. Allow it on the next screen."</string>
+    <string name="background_prompt_allow">"Allow"</string>
+    <string name="background_prompt_later">"Later"</string>
+    <string name="background_prompt_never">"Do not ask again"</string>
+    <string name="in_process">"Translate inside the app"</string>
+    <string name="in_process_summary_on">"On: Google/Microsoft are called from the app being translated (works even when ReAllTrans is restricted in the background)."</string>
+    <string name="in_process_summary_off">"Off: every translation goes through ReAllTrans. Needs ReAllTrans to be allowed in the background."</string>
+    <string name="in_process_warning_title">"Translate inside the app?"</string>
+    <string name="in_process_warning_message">"The app being translated will itself send the text to Google or Microsoft:\n\n- Traffic is counted for that app, and its firewall or VPN rules apply (ReAllTrans is used if it is blocked).\n- The app uses a few more MB of memory.\n- Apps with strong security checks (banking, wallets, some games) may notice an unexpected connection. Turn this off for them, or do not translate them.\n\nThe text sent and the service receiving it are the same as before. VietPhrase always runs in ReAllTrans."</string>
+    <string name="in_process_warning_ok">"Turn on"</string>
+    <string name="in_process_warning_cancel">"Cancel"</string>
 </resources>

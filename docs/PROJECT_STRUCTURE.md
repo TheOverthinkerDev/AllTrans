@@ -18,7 +18,8 @@ Một module Android ứng dụng (`app`), viết bằng Kotlin. Mã nguồn n�
 | `VirtWebViewOnLoad.kt`, `WebViewClientWrapper.kt`, `WebViewOnCreateHookHandler.kt`, `WebViewSetClientHookHandler.kt` | Dịch WebView |
 | `TaobaoHooks.kt`, `UcWebViewTranslator.kt`, `MtopTranslator.kt` | Tối ưu cho ứng dụng Alibaba: chữ DinamicX, thanh tab, UC WebView, dữ liệu MTOP |
 | `MarqueeHelper.kt` | Cho chữ dịch dài chạy qua lại |
-| `GetTranslateToken.kt` | Gửi chữ tới dịch vụ dịch, xử lý bộ nhớ đệm |
+| `GetTranslateToken.kt` | Gửi chữ đi dịch (Google/Microsoft gọi ngay trong ứng dụng đích, provider làm dự phòng), xử lý bộ nhớ đệm |
+| `TranslateHttp.kt` | Kết nối HTTP dùng chung cho Google/Microsoft: thời gian chờ ngắn, bỏ kết nối cũ, thử lại một lần |
 | `SystemBridge.kt` | Đổi ngôn ngữ ứng dụng và buộc dừng ứng dụng từ tiến trình hệ thống (hoặc qua root) |
 
 ## Phần chạy trong ứng dụng ReAllTrans
@@ -27,7 +28,7 @@ Một module Android ứng dụng (`app`), viết bằng Kotlin. Mã nguồn n�
 | --- | --- |
 | `AllTransApp.kt` | Lớp `Application`, kết nối dịch vụ libxposed khi ứng dụng mở |
 | `RemotePrefs.kt` | Chép cài đặt lên framework bằng libxposed/service |
-| `AppConfig.kt` | Trạng thái của từng ứng dụng: đang dịch, ngôn ngữ có sẵn, phạm vi LSPosed |
+| `AppConfig.kt` | Trạng thái của từng ứng dụng: đang dịch, ngôn ngữ có sẵn, phạm vi LSPosed; quyền chạy nền của ReAllTrans |
 | `MainActivity.kt` | Màn hình chính và thanh điều hướng |
 | `AppListFragment.kt` | Danh sách ứng dụng |
 | `LocalPreferenceFragment.kt` | Trang cài đặt của từng ứng dụng |
@@ -60,8 +61,8 @@ Cần JDK 17 và Android SDK có nền tảng `android-37.0` (thư viện libxpo
 
 Tệp đầu ra:
 
-- `app/build/outputs/apk/debug/ReAllTrans-v3.1.0-debug.apk`
-- `app/build/outputs/apk/release/ReAllTrans-v3.1.0.apk`
+- `app/build/outputs/apk/debug/ReAllTrans-v3.1.1-debug.apk`
+- `app/build/outputs/apk/release/ReAllTrans-v3.1.1.apk`
 
 Để ký bản release bằng khoá riêng, khai báo trong `gradle.properties`:
 

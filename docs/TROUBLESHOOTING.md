@@ -12,6 +12,40 @@ Trước khi thử các bước dưới đây, mở tab **ReAllTrans** và xem p
 - Buộc dừng rồi mở lại ứng dụng đích (nút **Buộc dừng & mở lại**).
 - Nếu ứng dụng đang dùng ngôn ngữ có sẵn (ô đánh dấu màu cam), hãy đặt **Ngôn ngữ của ứng dụng** về **Theo hệ thống** trước khi bật dịch.
 
+## Ứng dụng từng dịch được nay không dịch nữa
+
+- Xem mục **Chạy nền** trong tab ReAllTrans. Nếu đang bị tối ưu pin, chạm để cho phép. Trên HyperOS, có thể cần thêm Cài đặt → Ứng dụng → ReAllTrans → Tiết kiệm pin → Không giới hạn.
+- Google Translate và Microsoft Translate được gọi ngay trong ứng dụng đích nên không phụ thuộc mục này. VietPhrase và bản dịch dự phòng thì cần ReAllTrans được chạy nền.
+
+## Dịch được trên Wi-Fi nhưng không dịch được trên dữ liệu di động
+
+- Kiểm tra **Dịch trong ứng dụng đích** đang bật (chung, hoặc trong trang của ứng dụng nếu đã bật ghi đè). Khi bật, ứng dụng đích tự dùng mạng của nó nên không phụ thuộc ReAllTrans.
+- Nếu tắt mục trên hoặc dùng VietPhrase, bản dịch đi qua ReAllTrans. Cho phép ReAllTrans dùng dữ liệu nền: Cài đặt → Ứng dụng → ReAllTrans → Sử dụng dữ liệu → bật dữ liệu nền (tên mục tuỳ ROM), và cho phép mục **Chạy nền**.
+- Kiểm tra tường lửa hoặc giới hạn dữ liệu di động theo từng ứng dụng (của ROM hoặc NetGuard) không chặn ứng dụng đích.
+- Mạng 3G (HSPA) hoặc sóng yếu có thể làm yêu cầu dịch quá thời gian chờ khi ứng dụng đang tải video. Thử lại khi có 4G hoặc Wi-Fi.
+
+## Lần đầu mở ứng dụng, bản dịch hiện chậm hoặc chỉ dịch một phần
+
+- Lần đầu mọi chữ đều phải gửi đi dịch, bản dịch sẽ hiện dần. Những lần sau dùng bộ nhớ đệm nên nhanh hơn.
+- Nếu một số chữ mãi không đổi, cuộn hoặc chuyển màn hình để ứng dụng vẽ lại chữ.
+
+## Một số chữ giữ nguyên ngôn ngữ gốc
+
+- Chữ đã cùng ngôn ngữ với ngôn ngữ đích (Google nhận diện như vậy) được giữ nguyên.
+- Chữ ghép trong video, ảnh, biểu tượng hoặc phụ đề in sẵn không dịch được.
+- Một số ứng dụng tự vẽ chữ bằng engine riêng (ví dụ giỏ hàng Taobao dùng Weex 2). Xem mục "Một số chữ vẫn không được dịch".
+
+## Chữ bị chồng lên nhau hoặc bị cắt
+
+- Một số ứng dụng xếp chữ theo độ rộng cố định của chữ gốc. Bản dịch dài hơn sẽ chồng lên nhau, ví dụ hàng tab trên cùng của Douyin. ReAllTrans không đổi bố cục của ứng dụng nên hiện chưa khắc phục được.
+- Bật **Tự cuộn bản dịch dài** để chữ dài chạy qua lại thay vì bị cắt (áp dụng cho dòng chữ đơn).
+
+## Đổi cài đặt nhưng ứng dụng đích không thay đổi
+
+- Phần lớn cài đặt áp dụng khi ứng dụng đích khởi động lại. Dùng **Buộc dừng & mở lại** trong trang của ứng dụng.
+- Sau khi cài lại hoặc xoá dữ liệu ReAllTrans, mở ReAllTrans một lần để cài đặt được chép lên framework. Mục **Truyền cài đặt** trong tab ReAllTrans phải báo đang dùng remote preferences.
+- Muốn đổi dịch vụ, ngôn ngữ hay tuỳ chọn cho riêng một ứng dụng, bật **Ghi đè cài đặt toàn cục** trong trang của ứng dụng đó. Khi tắt, các mục này xám và ứng dụng dùng cài đặt chung.
+
 ## Đánh dấu ứng dụng xong thì ô tự bỏ
 
 LSPosed cần bạn đồng ý thêm ứng dụng vào phạm vi. Nếu không bấm **Approve** trong khoảng 20 giây, hoặc bấm **Deny**, ReAllTrans sẽ không bật dịch. Đánh dấu lại rồi bấm **Approve** trong thông báo của LSPosed. Nếu thông báo không hiện, mở LSPosed và tự thêm ứng dụng vào phạm vi của ReAllTrans.
@@ -46,6 +80,7 @@ LSPosed cần bạn đồng ý thêm ứng dụng vào phạm vi. Nếu không b
 - Tắt **Dịch thông báo** hoặc **Dịch văn bản trong WebView** nếu không cần.
 - Với ứng dụng không phải Alibaba, tắt **Tối ưu cho ứng dụng Alibaba** nếu đang bật.
 - Xoá bộ nhớ đệm dịch rồi buộc dừng ứng dụng đích.
+- Với ứng dụng ngân hàng, ví hoặc game có kiểm tra bảo mật, tắt **Dịch trong ứng dụng đích** cho riêng ứng dụng đó (bật ghi đè cài đặt toàn cục trước).
 - Nếu vẫn lỗi, bỏ đánh dấu ứng dụng trong danh sách và báo lỗi kèm log.
 
 ## Sau khi chuyển từ AllTrans cũ sang ReAllTrans
