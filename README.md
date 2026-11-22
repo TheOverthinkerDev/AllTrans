@@ -5,20 +5,21 @@
 ReAllTrans là module Xposed (libxposed API 102) dịch giao diện ứng dụng Android ngay khi ứng dụng đang chạy, không cần sửa APK. Dự án làm tiếp [AllTrans](https://github.com/akhilkedia/AllTrans) của Akhil Kedia (chỉ chạy tới Android 13) để chạy được trên Android 14 đến 17, có kế thừa phần port của [Chanhnh](https://github.com/Chanhnh/AllTrans).
 
 - Tên gói: `ovtk.realltrans`
-- Phiên bản: 3.1.0
+- Phiên bản: 3.1.1
 - Android 10 trở lên, đã thử trên Redmi K40s (HyperOS, Android 17) với LSPosed 2.2.1 (API 102)
 
 ## Tính năng
 
 - Dịch chữ trong ứng dụng khi đang chạy: chữ thường, gợi ý trong ô nhập, thông báo, WebView và chữ của View tự vẽ.
 - Ba dịch vụ dịch: Google Translate, Microsoft Translate và VietPhrase (Trung sang Việt, chạy offline).
+- Google Translate và Microsoft Translate được gọi ngay trong ứng dụng đang dịch, nên vẫn dịch được khi ReAllTrans bị hệ thống hạn chế chạy nền (ví dụ HyperOS khi đang xem Douyin). Có thể tắt chung hoặc cho từng ứng dụng; nếu lỗi sẽ tự chuyển sang ReAllTrans.
 - Cài đặt chung cho mọi ứng dụng, và cài đặt riêng cho từng ứng dụng khi cần.
 - Bộ nhớ đệm bản dịch, tự làm mới khi đổi dịch vụ hoặc ngôn ngữ.
 - Chữ dịch dài tự chạy qua lại thay vì bị cắt bằng "…" (tuỳ chọn).
 - Tối ưu riêng cho ứng dụng Alibaba (Taobao, Tmall, Xianyu…): dịch chữ DinamicX, thanh tab, trang UC WebView. Có chế độ an toàn chỉ đổi phần hiển thị.
 - Chọn ngôn ngữ có sẵn của ứng dụng (tính năng ngôn ngữ riêng cho từng ứng dụng của Android 13+), dùng được cả trên ROM đã ẩn mục này.
 - Tự yêu cầu thêm ứng dụng vào phạm vi LSPosed khi bạn chọn dịch ứng dụng đó.
-- Màn hình cài đặt của chính ReAllTrans: ngôn ngữ, giao diện sáng/tối, trạng thái module, thử dịch, sao lưu và khôi phục cài đặt.
+- Màn hình cài đặt của chính ReAllTrans: ngôn ngữ, giao diện sáng/tối, trạng thái module (framework, phạm vi, cách truyền cài đặt, quyền chạy nền, root), thử dịch, sao lưu và khôi phục cài đặt.
 - Giao diện tiếng Anh, tiếng Việt, tiếng Trung giản thể và phồn thể.
 
 ## Yêu cầu
@@ -30,7 +31,7 @@ ReAllTrans là module Xposed (libxposed API 102) dịch giao diện ứng dụng
 
 ## Cài đặt
 
-1. Tải `ReAllTrans-v3.1.0.apk` ở trang [Releases](https://github.com/TheOverthinkerDev/ReAllTrans/releases) và cài lên máy.
+1. Tải `ReAllTrans-v3.1.1.apk` ở trang [Releases](https://github.com/TheOverthinkerDev/ReAllTrans/releases) và cài lên máy.
 2. Mở LSPosed, bật module **ReAllTrans** và chọn **System Framework** trong phạm vi của module.
 3. Khởi động lại máy.
 4. Mở ReAllTrans, vào tab **ReAllTrans** để xem trạng thái module. Mục **Framework** phải báo đang hoạt động.
@@ -52,10 +53,17 @@ Trong danh sách ứng dụng:
 
 Trong trang của từng ứng dụng:
 
-- **Ghi đè cài đặt toàn cục**: dùng dịch vụ, ngôn ngữ và tuỳ chọn riêng cho ứng dụng này.
+- **Ghi đè cài đặt toàn cục**: dùng dịch vụ, ngôn ngữ và tuỳ chọn riêng cho ứng dụng này. Khi tắt, các mục đó chuyển xám và ứng dụng dùng cài đặt chung.
+- **Dịch trong ứng dụng đích** (trong nhóm cài đặt nâng cao, cần bật ghi đè để đổi riêng): tắt nếu muốn mọi bản dịch đi qua ReAllTrans, ví dụ với ứng dụng ngân hàng hoặc ứng dụng có kiểm tra bảo mật. Bật lại sẽ hiện cảnh báo về ảnh hưởng.
 - **Ngôn ngữ của ứng dụng**: chỉ chọn được khi ứng dụng có khai báo danh sách ngôn ngữ với Android. Mục này ghi ứng dụng hỗ trợ bao nhiêu ngôn ngữ.
 - Dịch và ngôn ngữ có sẵn không dùng cùng lúc. Khi đang dùng một bên, bên kia chuyển xám, chạm vào sẽ báo cần tắt bên nào trước.
 - Nhóm **Ứng dụng Alibaba** chỉ bật sẵn cho các ứng dụng Alibaba. Với ứng dụng khác, nhóm này mặc định tắt.
+
+Trong tab **ReAllTrans**:
+
+- **Framework**: framework đang chạy và danh sách ứng dụng trong phạm vi.
+- **Truyền cài đặt**: cài đặt đang tới ứng dụng đích qua libxposed remote preferences hay qua provider dự phòng.
+- **Chạy nền**: ReAllTrans đã được miễn tối ưu pin chưa. Cần cho VietPhrase và bản dịch dự phòng.
 
 ## Quyền riêng tư
 

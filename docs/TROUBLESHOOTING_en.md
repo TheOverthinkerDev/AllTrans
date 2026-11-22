@@ -17,6 +17,35 @@ Before trying the steps below, open the **ReAllTrans** tab and look at the modul
 - Check **Background** in the ReAllTrans tab. If it is restricted by battery optimisation, tap it to allow. On HyperOS you may also need Settings → Apps → ReAllTrans → Battery saver → No restrictions.
 - Google Translate and Microsoft Translate are called inside the target app, so they do not depend on this. VietPhrase and the fallback translation do need ReAllTrans to run in the background.
 
+## Translation works on Wi-Fi but not on mobile data
+
+- Check that **Translate inside the app** is on (globally, or on the app's page if override is on). Then the target app uses its own network and does not depend on ReAllTrans.
+- With that option off, or with VietPhrase, translations go through ReAllTrans. Allow ReAllTrans to use background data: Settings → Apps → ReAllTrans → Data usage → background data (the name depends on the ROM), and allow **Background**.
+- Check that a per-app firewall or mobile data limit (from the ROM or NetGuard) does not block the target app.
+- On 3G (HSPA) or a weak signal, translation requests can time out while the app loads video. Try again on 4G or Wi-Fi.
+
+## On first launch, translations appear slowly or only partly
+
+- The first time, every string has to be translated, so translations appear gradually. Later launches use the cache and are faster.
+- If some text never changes, scroll or switch screens so the app draws it again.
+
+## Some text stays in the original language
+
+- Text that is already in the target language (as detected by Google) is kept as is.
+- Text inside videos, images, icons or burned-in subtitles cannot be translated.
+- Some apps draw text with their own engine (for example the Taobao cart, Weex 2). See "Some text is still not translated".
+
+## Text overlaps or is cut off
+
+- Some apps lay text out using the fixed width of the original text. A longer translation then overlaps, for example the top tab row in Douyin. ReAllTrans does not change app layouts, so this cannot be fixed yet.
+- Turn on **Scroll Long Translated Text** so long single-line text scrolls back and forth instead of being cut.
+
+## Changing a setting has no effect in the target app
+
+- Most settings apply when the target app restarts. Use **Force stop & reopen** on the app's page.
+- After reinstalling ReAllTrans or clearing its data, open ReAllTrans once so the settings are copied to the framework. **Settings delivery** in the ReAllTrans tab should say remote preferences are used.
+- To change the service, languages or options for one app only, turn on **OverRide Global Settings** on that app's page. While it is off, these items are greyed out and the app follows the global settings.
+
 ## The tick disappears after ticking an app
 
 LSPosed needs your approval to add the app to the scope. If you do not tap **Approve** within about 20 seconds, or you tap **Deny**, ReAllTrans does not turn translation on. Tick it again and tap **Approve** in the LSPosed notification. If no notification appears, open LSPosed and add the app to the ReAllTrans scope yourself.

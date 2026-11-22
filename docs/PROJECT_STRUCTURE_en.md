@@ -61,8 +61,8 @@ Requires JDK 17 and the Android SDK platform `android-37.0` (libxposed/service 1
 
 Outputs:
 
-- `app/build/outputs/apk/debug/ReAllTrans-v3.1.0-debug.apk`
-- `app/build/outputs/apk/release/ReAllTrans-v3.1.0.apk`
+- `app/build/outputs/apk/debug/ReAllTrans-v3.1.1-debug.apk`
+- `app/build/outputs/apk/release/ReAllTrans-v3.1.1.apk`
 
 To sign the release with your own key, set these in `gradle.properties`:
 

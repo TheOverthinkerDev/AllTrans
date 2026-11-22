@@ -61,8 +61,8 @@ Cần JDK 17 và Android SDK có nền tảng `android-37.0` (thư viện libxpo
 
 Tệp đầu ra:
 
-- `app/build/outputs/apk/debug/ReAllTrans-v3.1.0-debug.apk`
-- `app/build/outputs/apk/release/ReAllTrans-v3.1.0.apk`
+- `app/build/outputs/apk/debug/ReAllTrans-v3.1.1-debug.apk`
+- `app/build/outputs/apk/release/ReAllTrans-v3.1.1.apk`
 
 Để ký bản release bằng khoá riêng, khai báo trong `gradle.properties`:
 
