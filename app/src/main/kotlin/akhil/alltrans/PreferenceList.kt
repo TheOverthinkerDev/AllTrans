@@ -23,6 +23,8 @@ internal object PreferenceList {
     var ExtendedViewTranslation: Boolean = true
     var LoadURL: Boolean = false
     var Notif: Boolean = false
+    /** Call Google/Microsoft from inside the target app (provider as fallback). */
+    var InProcessTranslate: Boolean = true
 
     var Caching: Boolean = false
     var CachingTime: Long = 0
@@ -127,6 +129,7 @@ internal object PreferenceList {
             ) as Boolean
             LoadURL = getValue(lPref, "LoadURL", getValue(gPref, "LoadURL", true)) as Boolean
             Notif = getValue(lPref, "Notif", getValue(gPref, "Notif", true)) as Boolean
+            InProcessTranslate = getValue(lPref, "InProcessTranslate", getValue(gPref, "InProcessTranslate", true)) as Boolean
             Caching = getValue(lPref, "Cache", getValue(gPref, "Cache", true)) as Boolean
             Scroll = getValue(lPref, "Scroll", getValue(gPref, "Scroll", false)) as Boolean
 
@@ -147,6 +150,7 @@ internal object PreferenceList {
             ExtendedViewTranslation = getValue(gPref, "ExtendedViewTranslation", true) as Boolean
             LoadURL = getValue(gPref, "LoadURL", true) as Boolean
             Notif = getValue(gPref, "Notif", true) as Boolean
+            InProcessTranslate = getValue(gPref, "InProcessTranslate", true) as Boolean
             Caching = getValue(gPref, "Cache", true) as Boolean
             Scroll = getValue(gPref, "Scroll", false) as Boolean
 

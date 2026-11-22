@@ -194,6 +194,14 @@
         <SwitchPreference
             app:iconSpaceReserved="false"
             app:defaultValue="true"
+            app:key="InProcessTranslate"
+            app:summaryOff="@string/in_process_summary_off"
+            app:summaryOn="@string/in_process_summary_on"
+            app:title="@string/in_process" />
+
+        <SwitchPreference
+            app:iconSpaceReserved="false"
+            app:defaultValue="true"
             app:key="ExtendedViewTranslation"
             app:summaryOff="@string/extended_view_translation_summary_off"
             app:summaryOn="@string/extended_view_translation_summary_on"

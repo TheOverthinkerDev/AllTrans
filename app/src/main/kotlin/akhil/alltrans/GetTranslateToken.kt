@@ -233,7 +233,8 @@ internal class GetTranslateToken {
 
     /** The target app may lack INTERNET (rare): then only the provider can translate. */
     private fun canTranslateInProcess(context: android.content.Context): Boolean =
-        context.checkSelfPermission(android.Manifest.permission.INTERNET) ==
+        PreferenceList.InProcessTranslate &&
+            context.checkSelfPermission(android.Manifest.permission.INTERNET) ==
             android.content.pm.PackageManager.PERMISSION_GRANTED
 
     private fun queryGoogleProvider(text: String?, fromLang: String?, toLang: String?): String? {

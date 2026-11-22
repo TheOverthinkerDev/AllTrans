@@ -68,7 +68,7 @@ On an app's page:
 ## How it works
 
 - LSPosed loads the module into apps in its scope. The module hooks the places where text is shown (such as `TextView.setText`, `StaticLayout`, notifications, WebView), sends the text for translation and puts the translation in its place.
-- Google Translate and Microsoft Translate are called inside the target app, because the app in front is not network-restricted by the system. VietPhrase, and Google/Microsoft when that fails, run in ReAllTrans through ContentProviders. Target apps reach them through a proxy in the system process, which is why the **System Framework** scope is needed.
+- Google Translate and Microsoft Translate are called inside the target app, because the app in front is not network-restricted by the system. This can be turned off with **Translate inside the app** (globally, or per app with override on); turning it on shows a warning about the effects. VietPhrase, and Google/Microsoft when that fails, run in ReAllTrans through ContentProviders. Target apps reach them through a proxy in the system process, which is why the **System Framework** scope is needed.
 - ReAllTrans copies its settings into the framework with [libxposed/service](https://github.com/libxposed/service). Target apps read them back with `getRemotePreferences()` from [libxposed/api](https://github.com/libxposed/api) instead of querying a provider on every start.
 - Changing an app's built-in language and force-stopping apps happen in the system process through the hook, or through root when the hook is not available.
 

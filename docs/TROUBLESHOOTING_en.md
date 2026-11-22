@@ -51,6 +51,7 @@ LSPosed needs your approval to add the app to the scope. If you do not tap **App
 - Turn off **Translate Notifications** or **Translate Text in WebView** if you do not need them.
 - For non-Alibaba apps, turn off **Optimize for Alibaba apps** if it is on.
 - Clear the translation cache and force-stop the target app.
+- For banking, wallet or game apps with security checks, turn off **Translate inside the app** for that app (turn on OverRide Global Settings first).
 - If it still fails, untick the app in the list and report the problem with a log.
 
 ## After moving from the old AllTrans to ReAllTrans

@@ -51,6 +51,7 @@ LSPosed cần bạn đồng ý thêm ứng dụng vào phạm vi. Nếu không b
 - Tắt **Dịch thông báo** hoặc **Dịch văn bản trong WebView** nếu không cần.
 - Với ứng dụng không phải Alibaba, tắt **Tối ưu cho ứng dụng Alibaba** nếu đang bật.
 - Xoá bộ nhớ đệm dịch rồi buộc dừng ứng dụng đích.
+- Với ứng dụng ngân hàng, ví hoặc game có kiểm tra bảo mật, tắt **Dịch trong ứng dụng đích** cho riêng ứng dụng đó (bật ghi đè cài đặt toàn cục trước).
 - Nếu vẫn lỗi, bỏ đánh dấu ứng dụng trong danh sách và báo lỗi kèm log.
 
 ## Sau khi chuyển từ AllTrans cũ sang ReAllTrans

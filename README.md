@@ -68,7 +68,7 @@ Trong trang của từng ứng dụng:
 ## Cơ chế hoạt động
 
 - LSPosed nạp module vào các ứng dụng trong phạm vi. Module hook những chỗ hiển thị chữ (như `TextView.setText`, `StaticLayout`, thông báo, WebView), gửi chữ đi dịch và thay bằng bản dịch.
-- Google Translate và Microsoft Translate được gọi ngay trong ứng dụng đích, vì ứng dụng đang mở không bị hệ thống hạn chế mạng. VietPhrase, và Google/Microsoft khi cách trên lỗi, chạy trong ReAllTrans qua ContentProvider. Ứng dụng đích gọi tới chúng qua một proxy trong tiến trình hệ thống, vì vậy cần phạm vi **System Framework**.
+- Google Translate và Microsoft Translate được gọi ngay trong ứng dụng đích, vì ứng dụng đang mở không bị hệ thống hạn chế mạng. Có thể tắt bằng **Dịch trong ứng dụng đích** (chung, hoặc riêng từng ứng dụng khi bật ghi đè); bật lại sẽ có cảnh báo về ảnh hưởng. VietPhrase, và Google/Microsoft khi cách trên lỗi, chạy trong ReAllTrans qua ContentProvider. Ứng dụng đích gọi tới chúng qua một proxy trong tiến trình hệ thống, vì vậy cần phạm vi **System Framework**.
 - Cài đặt được ReAllTrans chép lên framework bằng [libxposed/service](https://github.com/libxposed/service). Ứng dụng đích đọc lại bằng `getRemotePreferences()` của [libxposed/api](https://github.com/libxposed/api), không phải hỏi qua provider mỗi lần mở.
 - Đổi ngôn ngữ có sẵn và buộc dừng ứng dụng được thực hiện trong tiến trình hệ thống qua hook, hoặc qua root nếu hook không có.
 

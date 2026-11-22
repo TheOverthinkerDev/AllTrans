@@ -317,4 +317,11 @@
     <string name="background_prompt_allow">"允許"</string>
     <string name="background_prompt_later">"稍後"</string>
     <string name="background_prompt_never">"不再詢問"</string>
+    <string name="in_process">"在目標應用程式內翻譯"</string>
+    <string name="in_process_summary_on">"開啟：在被翻譯的應用程式內直接呼叫 Google/Microsoft（即使 ReAllTrans 背景受限也能運作）。"</string>
+    <string name="in_process_summary_off">"關閉：所有翻譯都經過 ReAllTrans，需要允許 ReAllTrans 背景執行。"</string>
+    <string name="in_process_warning_title">"在目標應用程式內翻譯？"</string>
+    <string name="in_process_warning_message">"被翻譯的應用程式將自行把文字傳送到 Google 或 Microsoft：\n\n- 流量計入該應用程式，並受其防火牆或 VPN 規則約束（被阻擋時改用 ReAllTrans）。\n- 該應用程式會多佔用幾 MB 記憶體。\n- 安全檢查嚴格的應用程式（銀行、錢包、部分遊戲）可能察覺到異常連線，請為它們關閉此項或不要翻譯它們。\n\n傳送的內容與接收的服務不變。VietPhrase 始終在 ReAllTrans 中執行。"</string>
+    <string name="in_process_warning_ok">"開啟"</string>
+    <string name="in_process_warning_cancel">"取消"</string>
 </resources>

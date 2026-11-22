@@ -340,4 +340,11 @@
     <string name="background_prompt_allow">"Cho phép"</string>
     <string name="background_prompt_later">"Để sau"</string>
     <string name="background_prompt_never">"Không hỏi lại"</string>
+    <string name="in_process">"Dịch trong ứng dụng đích"</string>
+    <string name="in_process_summary_on">"Bật: gọi Google/Microsoft ngay trong ứng dụng đang dịch (vẫn chạy khi ReAllTrans bị hạn chế chạy nền)."</string>
+    <string name="in_process_summary_off">"Tắt: mọi bản dịch đi qua ReAllTrans. Cần cho phép ReAllTrans chạy nền."</string>
+    <string name="in_process_warning_title">"Dịch trong ứng dụng đích?"</string>
+    <string name="in_process_warning_message">"Chính ứng dụng đang được dịch sẽ gửi chữ tới Google hoặc Microsoft:\n\n- Lưu lượng được tính cho ứng dụng đó, và tường lửa hoặc VPN của ứng dụng đó được áp dụng (bị chặn thì dùng ReAllTrans).\n- Ứng dụng dùng thêm vài MB bộ nhớ.\n- Ứng dụng có kiểm tra bảo mật chặt (ngân hàng, ví, một số game) có thể phát hiện kết nối lạ. Hãy tắt mục này cho chúng, hoặc không dịch chúng.\n\nNội dung gửi đi và dịch vụ nhận vẫn như trước. VietPhrase luôn chạy trong ReAllTrans."</string>
+    <string name="in_process_warning_ok">"Bật"</string>
+    <string name="in_process_warning_cancel">"Huỷ"</string>
 </resources>

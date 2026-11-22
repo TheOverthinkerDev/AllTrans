@@ -392,4 +392,11 @@
     <string name="background_prompt_allow">"Allow"</string>
     <string name="background_prompt_later">"Later"</string>
     <string name="background_prompt_never">"Do not ask again"</string>
+    <string name="in_process">"Translate inside the app"</string>
+    <string name="in_process_summary_on">"On: Google/Microsoft are called from the app being translated (works even when ReAllTrans is restricted in the background)."</string>
+    <string name="in_process_summary_off">"Off: every translation goes through ReAllTrans. Needs ReAllTrans to be allowed in the background."</string>
+    <string name="in_process_warning_title">"Translate inside the app?"</string>
+    <string name="in_process_warning_message">"The app being translated will itself send the text to Google or Microsoft:\n\n- Traffic is counted for that app, and its firewall or VPN rules apply (ReAllTrans is used if it is blocked).\n- The app uses a few more MB of memory.\n- Apps with strong security checks (banking, wallets, some games) may notice an unexpected connection. Turn this off for them, or do not translate them.\n\nThe text sent and the service receiving it are the same as before. VietPhrase always runs in ReAllTrans."</string>
+    <string name="in_process_warning_ok">"Turn on"</string>
+    <string name="in_process_warning_cancel">"Cancel"</string>
 </resources>
